@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pure Motion — Connexion sécurisée</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cyan:#00C6E0;--navy:#12205A;--gold:#F5B731;--gold-l:#FDD05A;
+  --blue:#0066CC;--txt:#1a1a2e;--mut:#5a6282;--hint:#9aa0bc;
+  --bord:#e2e6f0;--surf:#f5f6fa;--white:#fff;
+  --up:#0a6b4f;--dn:#a32d2d;--r:14px;--rs:10px;
+}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--surf);}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.act{display:flex;}
+
+/* TOPBAR */
+.topbar{padding:13px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bord);background:var(--white);flex-shrink:0;}
+.logo-wrap{display:flex;align-items:center;gap:10px;}
+.logo-sq{width:38px;height:38px;flex-shrink:0;}
+.logo-name{font-size:15px;font-weight:800;color:var(--navy);letter-spacing:.4px;}
+.logo-tag{font-size:9px;color:var(--hint);margin-top:1px;}
+.topbar-link{font-size:11px;color:var(--hint);}
+.topbar-link a{color:var(--cyan);text-decoration:none;font-weight:600;}
+
+/* MAIN */
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:28px 16px;}
+
+/* CARD */
+.card{background:var(--white);border:1px solid var(--bord);border-radius:var(--r);width:100%;max-width:430px;box-shadow:0 4px 24px rgba(18,32,90,.07);}
+
+/* ROLE TABS */
+.role-tabs{display:flex;border-bottom:1px solid var(--bord);}
+.rtab{flex:1;padding:13px 8px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--hint);border-bottom:2.5px solid transparent;margin-bottom:-1px;display:flex;flex-direction:column;align-items:center;gap:3px;user-select:none;}
+.rtab-icon{font-size:17px;}
+.rtab.act{color:var(--navy);border-bottom-color:var(--cyan);}
+.rtab.gold-act{color:#7a5800!important;border-bottom-color:var(--gold)!important;}
+
+/* HEAD */
+.card-head{padding:18px 26px 0;}
+.sec-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:var(--up);background:#e1f5ee;padding:3px 9px;border-radius:20px;margin-bottom:8px;}
+.card-title{font-size:19px;font-weight:800;color:var(--txt);margin-bottom:3px;}
+.card-sub{font-size:12px;color:var(--mut);line-height:1.6;}
+
+/* BODY */
+.card-body{padding:16px 26px 22px;}
+
+/* METHOD TOGGLE */
+.mtog{display:flex;gap:5px;background:var(--surf);border-radius:var(--rs);padding:3px;margin-bottom:16px;}
+.mbtn{flex:1;padding:7px 4px;font-size:11px;font-weight:600;border-radius:8px;cursor:pointer;text-align:center;color:var(--hint);border:none;background:transparent;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px;}
+.mbtn.act{background:var(--white);color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+
+/* PANELS */
+.mpanel{display:none;}.mpanel.act{display:block;}
+
+/* STEP DOTS */
+.step-ind{display:flex;align-items:center;gap:5px;margin-bottom:14px;}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--bord);}
+.sdot.act{background:var(--cyan);width:20px;border-radius:4px;}
+.sdot.done{background:var(--navy);}
+.slbl{font-size:10px;color:var(--hint);margin-left:3px;}
+
+/* FIELDS */
+.field{margin-bottom:12px;}
+.lbl{font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;display:block;}
+.iw{position:relative;}
+.ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--hint);pointer-events:none;}
+.ico-r{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--hint);cursor:pointer;}
+input[type=text],input[type=email],input[type=tel],input[type=password]{
+  width:100%;padding:10px 38px 10px 36px;font-size:13px;
+  border:1px solid var(--bord);border-radius:var(--rs);
+  background:var(--white);color:var(--txt);outline:none;font-family:inherit;transition:all .15s;
+}
+input.nop{padding-right:12px;}
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,198,224,.09);}
+input.err{border-color:var(--dn)!important;box-shadow:0 0 0 3px rgba(162,45,45,.08)!important;}
+.ferr{font-size:10px;color:var(--dn);margin-top:3px;display:none;}
+.ferr.show{display:block;}
+.fhint{font-size:10px;color:var(--hint);margin-top:3px;}
+
+/* PHONE ROW */
+.ph-row{display:flex;gap:7px;}
+select.csel{width:105px;min-width:105px;padding:10px 7px;font-size:12px;border:1px solid var(--bord);border-radius:var(--rs);background:var(--white);color:var(--txt);outline:none;cursor:pointer;font-family:inherit;}
+select.csel:focus{border-color:var(--cyan);}
+
+/* OTP */
+.otp-wrap{margin:8px 0 10px;}
+.otp-label{font-size:11px;color:var(--mut);margin-bottom:10px;line-height:1.5;}
+.otp-label strong{color:var(--navy);}
+.otp-row{display:flex;gap:7px;justify-content:center;}
+.otp-in{width:44px;height:50px;text-align:center;font-size:20px;font-weight:700;border:1.5px solid var(--bord);border-radius:10px;background:var(--white);color:var(--navy);outline:none;font-family:inherit;transition:all .15s;padding:0;}
+.otp-in:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,198,224,.09);}
+.otp-in.filled{border-color:var(--navy);background:#f0f4ff;}
+.otp-in.err-otp{border-color:var(--dn)!important;background:#fcebeb!important;}
+.otp-res{font-size:11px;text-align:center;color:var(--hint);margin-top:10px;}
+.otp-res .lk{color:var(--cyan);cursor:pointer;font-weight:600;}
+
+/* DIVIDER */
+.div-wrap{display:flex;align-items:center;gap:9px;margin:14px 0;}
+.dl{flex:1;height:1px;background:var(--bord);}
+.dt{font-size:11px;color:var(--hint);}
+
+/* BUTTONS */
+.btn{width:100%;padding:12px;font-size:13px;font-weight:700;border:none;border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;transition:all .15s;}
+.btn-n{background:var(--navy);color:#fff;}.btn-n:hover{background:#1a2d80;}
+.btn-g{background:var(--gold);color:var(--navy);}.btn-g:hover{background:var(--gold-l);}
+.btn-o{background:var(--white);color:var(--txt);border:1.5px solid var(--bord);}.btn-o:hover{background:var(--surf);}
+.btn:disabled{opacity:.6;cursor:not-allowed;}
+
+/* ALERTS */
+.alertb{border-radius:var(--rs);padding:9px 12px;font-size:11px;line-height:1.6;display:none;gap:7px;align-items:flex-start;margin-bottom:12px;}
+.alertb.show{display:flex;}
+.aerr{background:#fcebeb;border:1px solid rgba(226,75,74,.25);color:var(--dn);}
+.aok{background:#e1f5ee;border:1px solid rgba(29,158,117,.25);color:#085041;}
+.awarning{background:#faeeda;border:1px solid rgba(245,183,49,.3);color:#5a3d00;}
+
+/* INFO */
+.info{background:var(--surf);border-radius:var(--rs);padding:9px 12px;font-size:11px;color:var(--mut);line-height:1.6;display:flex;gap:7px;align-items:flex-start;margin-top:12px;}
+.info i{font-size:14px;color:var(--hint);flex-shrink:0;margin-top:1px;}
+
+/* FORGOT */
+.forgot{font-size:11px;color:var(--cyan);cursor:pointer;text-align:right;display:block;margin:-5px 0 11px;}
+.back{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--hint);cursor:pointer;margin-bottom:12px;}
+
+/* FOOTER */
+.card-foot{padding:11px 26px;border-top:1px solid var(--bord);display:flex;align-items:center;justify-content:space-between;}
+.flinks{display:flex;gap:12px;}
+.flink{font-size:11px;color:var(--hint);cursor:pointer;}
+.sec-ft{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--up);}
+
+/* CONFIG NOTICE */
+.cfg-box{background:linear-gradient(135deg,var(--navy),#1a3a8a);border-radius:10px;padding:12px 14px;margin-bottom:14px;}
+.cfg-title{font-size:11px;font-weight:700;color:var(--cyan);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.cfg-item{font-size:11px;color:rgba(255,255,255,.75);line-height:1.6;display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;}
+.cfg-item:last-child{margin-bottom:0;}
+.cfg-dot{color:var(--gold);flex-shrink:0;margin-top:1px;}
+
+/* WELCOME */
+#sc-welcome{align-items:center;justify-content:center;}
+.wcard{background:var(--white);border:1px solid var(--bord);border-radius:16px;width:100%;max-width:460px;padding:36px 30px;text-align:center;box-shadow:0 4px 24px rgba(18,32,90,.06);margin:auto;}
+.wlogo{margin-bottom:22px;}
+.wtitle{font-size:21px;font-weight:800;color:var(--txt);margin-bottom:6px;}
+.wsub{font-size:12px;color:var(--mut);line-height:1.7;margin-bottom:24px;}
+.rgrid{display:flex;gap:12px;margin-bottom:20px;}
+.rcard{flex:1;border:1.5px solid var(--bord);border-radius:12px;padding:18px 12px;cursor:pointer;transition:all .2s;}
+.rcard:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(18,32,90,.1);}
+.rcard.rc-c:hover{border-color:var(--cyan);}
+.rcard.rc-cl:hover{border-color:var(--gold);}
+.rci{font-size:30px;margin-bottom:9px;}
+.rct{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px;}
+.rcs{font-size:10px;color:var(--hint);line-height:1.5;}
+.wadmin{font-size:11px;color:var(--hint);}
+.wadmin a{color:var(--cyan);text-decoration:none;font-weight:600;}
+
+/* SUCCESS */
+#sc-success{align-items:center;justify-content:center;}
+.scard{background:var(--white);border:1px solid var(--bord);border-radius:var(--r);width:100%;max-width:380px;padding:36px 28px;text-align:center;box-shadow:0 4px 24px rgba(18,32,90,.06);margin:auto;}
+.sicon{width:64px;height:64px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;}
+.stitle{font-size:19px;font-weight:800;color:var(--txt);margin-bottom:5px;}
+.ssub{font-size:12px;color:var(--mut);line-height:1.6;margin-bottom:20px;}
+
+/* SPINNER */
+.spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0;}
+.spin-d{border-color:rgba(18,32,90,.15);border-top-color:var(--navy);}
+@keyframes sp{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<!-- ═══ WELCOME ═══ -->
+<div class="screen act" id="sc-welcome">
+  <div class="main">
+    <div class="wcard">
+      <div class="wlogo">
+        <svg width="200" height="82" viewBox="0 0 200 82" fill="none">
+          <line x1="5" y1="26" x2="28" y2="26" stroke="#00C6E0" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+          <line x1="10" y1="34" x2="28" y2="34" stroke="#00C6E0" stroke-width="3" stroke-linecap="round" opacity=".38"/>
+          <line x1="15" y1="42" x2="28" y2="42" stroke="#00C6E0" stroke-width="3" stroke-linecap="round" opacity=".22"/>
+          <line x1="30" y1="14" x2="30" y2="62" stroke="#12205A" stroke-width="7" stroke-linecap="round"/>
+          <path d="M30 14 Q60 14 60 30 Q60 46 30 46" stroke="url(#wg)" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <polygon points="42,23 42,38 56,30.5" fill="#F5B731"/>
+          <defs><linearGradient id="wg" x1="30" y1="14" x2="60" y2="62" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00C6E0"/><stop offset="100%" stop-color="#0066CC"/></linearGradient></defs>
+          <text x="72" y="38" font-family="-apple-system,sans-serif" font-size="22" font-weight="800" fill="#12205A" letter-spacing="0.5">PURE</text>
+          <text x="72" y="63" font-family="-apple-system,sans-serif" font-size="22" font-weight="800" fill="#12205A" letter-spacing="0.5">MOTION</text>
+          <text x="72" y="78" font-family="-apple-system,sans-serif" font-size="8.5" fill="#9aa0bc" letter-spacing="0.4">Social-First Video That Moves Your Audience.</text>
+        </svg>
+      </div>
+      <div class="wtitle">Bienvenue sur votre espace</div>
+      <div class="wsub">Connexion sécurisée en 2 étapes — vos identifiants puis un code unique envoyé sur votre email ou téléphone.</div>
+      <div class="rgrid">
+        <div class="rcard rc-c" onclick="openLogin('collaborateur')">
+          <div class="rci">👥</div>
+          <div class="rct">Collaborateur</div>
+          <div class="rcs">Outils de production et calendriers éditoriaux</div>
+        </div>
+        <div class="rcard rc-cl" onclick="openLogin('client')">
+          <div class="rci">🏪</div>
+          <div class="rct">Client</div>
+          <div class="rcs">Vos statistiques et contenus Pure Motion</div>
+        </div>
+      </div>
+      <div class="wadmin">Accès administrateur ? <a href="#" onclick="openAdmin();return false;">Connexion Admin →</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="screen" id="sc-login">
+  <div class="topbar">
+    <div class="logo-wrap">
+      <svg class="logo-sq" viewBox="0 0 38 38" fill="none">
+        <rect width="38" height="38" rx="9" fill="#12205A"/>
+        <line x1="4" y1="13" x2="12" y2="13" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+        <line x1="6" y1="19" x2="12" y2="19" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+        <line x1="8" y1="25" x2="12" y2="25" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".25"/>
+        <line x1="13" y1="8" x2="13" y2="30" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M13 8 Q29 8 29 17 Q29 26 13 26" stroke="url(#lg)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <polygon points="19,13 19,22 27,17.5" fill="#F5B731"/>
+        <defs><linearGradient id="lg" x1="13" y1="8" x2="29" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00C6E0"/><stop offset="100%" stop-color="#0066CC"/></linearGradient></defs>
+      </svg>
+      <div><div class="logo-name">PURE MOTION</div><div class="logo-tag">Social-First Video That Moves Your Audience.</div></div>
+    </div>
+    <div class="topbar-link"><a href="#" onclick="goWelcome();return false;">← Retour à l'accueil</a></div>
+  </div>
+
+  <div class="main">
+    <div class="card" id="login-card">
+
+      <div class="role-tabs">
+        <div class="rtab act" id="rt-co" onclick="setRole('collaborateur')"><span class="rtab-icon">👥</span>Collaborateur</div>
+        <div class="rtab" id="rt-cl" onclick="setRole('client')"><span class="rtab-icon">🏪</span>Client</div>
+      </div>
+
+      <div class="card-head">
+        <div style="height:16px;"></div>
+        <div class="sec-badge">🔐 Connexion 2 facteurs — Twilio Verify</div>
+        <div class="card-title" id="ctitle">Connexion Collaborateur</div>
+        <div class="card-sub" id="csub">Le code de vérification sera envoyé sur l'adresse ou le numéro que vous saisissez.</div>
+        <div style="height:14px;"></div>
+      </div>
+
+      <div class="card-body">
+
+        <div class="mtog">
+          <button class="mbtn act" id="mb-em" onclick="setMethod('email')">
+            <i class="ti ti-mail" style="font-size:13px;"></i> Email
+          </button>
+          <button class="mbtn" id="mb-ph" onclick="setMethod('phone')">
+            <i class="ti ti-device-mobile" style="font-size:13px;"></i> Téléphone
+          </button>
+        </div>
+
+        <!-- ═══ EMAIL ═══ -->
+        <div class="mpanel act" id="p-email">
+
+          <!-- STEP A : identifiants -->
+          <div id="em-a">
+            <div class="step-ind"><div class="sdot act"></div><div class="sdot"></div><span class="slbl">Étape 1/2 — Identifiants</span></div>
+
+            <div class="alertb aerr" id="em-err"><i class="ti ti-alert-circle"></i><span id="em-err-txt">Email ou mot de passe incorrect.</span></div>
+
+            <div class="field">
+              <label class="lbl">Adresse email</label>
+              <div class="iw">
+                <i class="ti ti-mail ico"></i>
+                <input type="email" id="em-email" placeholder="votre.email@exemple.ci" class="nop" autocomplete="email"/>
+              </div>
+              <div class="ferr" id="e1">Adresse email invalide.</div>
+            </div>
+
+            <div class="field">
+              <label class="lbl">Mot de passe</label>
+              <div class="iw">
+                <i class="ti ti-lock ico"></i>
+                <input type="password" id="em-pass" placeholder="Minimum 8 caractères" autocomplete="current-password"/>
+                <i class="ti ti-eye ico-r" id="eye1" onclick="togglePw('em-pass','eye1')"></i>
+              </div>
+              <div class="ferr" id="e2">Mot de passe requis (8 caractères minimum).</div>
+            </div>
+
+            <span class="forgot" onclick="showForgot()">Mot de passe oublié ?</span>
+
+            <div class="cfg-box">
+              <div class="cfg-title">📡 Ce qui se passe côté serveur</div>
+              <div class="cfg-item"><span class="cfg-dot">→</span> Twilio Verify envoie un code à 6 chiffres <strong style="color:#fff">sur cette adresse email</strong></div>
+              <div class="cfg-item"><span class="cfg-dot">→</span> Code valable 10 minutes · usage unique</div>
+              <div class="cfg-item"><span class="cfg-dot">→</span> Expéditeur : <strong style="color:var(--cyan)">noreply@puremotion.ci</strong></div>
+            </div>
+
+            <button class="btn btn-n" id="btn-em-send" onclick="sendEmailOTP()">
+              <i class="ti ti-mail" style="font-size:14px;"></i> Envoyer le code sur mon email
+            </button>
+
+            <div class="div-wrap"><div class="dl"></div><span class="dt">ou</span><div class="dl"></div></div>
+
+            <button class="btn btn-o" onclick="handleGoogle()">
+              <svg width="16" height="16" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+              Se connecter avec Google
+            </button>
+          </div>
+
+          <!-- STEP B : OTP email -->
+          <div id="em-b" style="display:none;">
+            <div class="step-ind"><div class="sdot done"></div><div class="sdot act"></div><span class="slbl">Étape 2/2 — Code reçu par email</span></div>
+            <div class="back" onclick="backTo('em')"><i class="ti ti-arrow-left" style="font-size:12px;"></i> Modifier l'email</div>
+
+            <div class="alertb aerr" id="em-otp-err"><i class="ti ti-alert-circle"></i> Code incorrect ou expiré. Vérifiez votre boîte mail.</div>
+            <div class="alertb aok" id="em-otp-ok"><i class="ti ti-check"></i> Code envoyé ! Vérifiez votre boîte mail.</div>
+
+            <div class="otp-wrap">
+              <div class="otp-label">Un code à 6 chiffres a été envoyé à <strong id="em-dest"></strong><br>Vérifiez aussi vos spams.</div>
+              <div class="otp-row">
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="e_1" oninput="oN(this,'e_2','em')" onkeydown="oB(event,'e_1','')"/>
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="e_2" oninput="oN(this,'e_3','em')" onkeydown="oB(event,'e_2','e_1')"/>
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="e_3" oninput="oN(this,'e_4','em')" onkeydown="oB(event,'e_3','e_2')"/>
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="e_4" oninput="oN(this,'e_5','em')" onkeydown="oB(event,'e_4','e_3')"/>
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="e_5" oninput="oN(this,'e_6','em')" onkeydown="oB(event,'e_5','e_4')"/>
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="e_6" oninput="oN(this,null,'em')" onkeydown="oB(event,'e_6','e_5')"/>
+              </div>
+              <div class="otp-res">Non reçu ? <span class="lk" onclick="resend('email')">Renvoyer</span> · <span id="tmr-em">00:59</span></div>
+            </div>
+
+            <div style="height:12px;"></div>
+            <button class="btn btn-n" id="vbtn-em" onclick="verifyOTP('em')">
+              <i class="ti ti-shield-check" style="font-size:14px;"></i> Confirmer l'accès
+            </button>
+            <div class="info"><i class="ti ti-info-circle"></i>Code valable 10 minutes. Envoyé via Twilio Verify directement sur votre adresse email.</div>
+          </div>
+        </div>
+
+        <!-- ═══ TÉLÉPHONE ═══ -->
+        <div class="mpanel" id="p-phone">
+
+          <!-- STEP A : numéro + mot de passe -->
+          <div id="ph-a">
+            <div class="step-ind"><div class="sdot act"></div><div class="sdot"></div><span class="slbl">Étape 1/2 — Identifiants</span></div>
+
+            <div class="alertb aerr" id="ph-err"><i class="ti ti-alert-circle"></i> Numéro ou mot de passe incorrect.</div>
+
+            <div class="field">
+              <label class="lbl">Numéro de téléphone</label>
+              <div class="ph-row">
+                <select class="csel" id="ph-country">
+                  <option value="+225">🇨🇮 +225</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+221">🇸🇳 +221</option>
+                  <option value="+229">🇧🇯 +229</option>
+                  <option value="+226">🇧🇫 +226</option>
+                  <option value="+223">🇲🇱 +223</option>
+                  <option value="+228">🇹🇬 +228</option>
+                  <option value="+237">🇨🇲 +237</option>
+                  <option value="+242">🇨🇬 +242</option>
+                </select>
+                <div class="iw" style="flex:1;">
+                  <i class="ti ti-phone ico"></i>
+                  <input type="tel" id="ph-num" placeholder="07 05 82 88 10" class="nop" autocomplete="tel"/>
+                </div>
+              </div>
+              <div class="ferr" id="e3">Numéro invalide (minimum 8 chiffres).</div>
+              <div class="fhint">Numéro enregistré lors de votre onboarding Pure Motion</div>
+            </div>
+
+            <div class="field">
+              <label class="lbl">Mot de passe</label>
+              <div class="iw">
+                <i class="ti ti-lock ico"></i>
+                <input type="password" id="ph-pass" placeholder="Minimum 8 caractères" autocomplete="current-password"/>
+                <i class="ti ti-eye ico-r" id="eye2" onclick="togglePw('ph-pass','eye2')"></i>
+              </div>
+              <div class="ferr" id="e4">Mot de passe requis (8 caractères minimum).</div>
+            </div>
+
+            <span class="forgot" onclick="showForgot()">Mot de passe oublié ?</span>
+
+            <div class="field">
+              <label class="lbl">Recevoir le code par</label>
+              <div class="mtog" style="margin-bottom:0;">
+                <button class="mbtn act" id="via-sms" onclick="setVia('sms')">
+                  <i class="ti ti-message" style="font-size:13px;"></i> SMS
+                </button>
+                <button class="mbtn" id="via-wa" onclick="setVia('whatsapp')">
+                  <i class="ti ti-brand-whatsapp" style="font-size:13px;color:#25D366;"></i> WhatsApp
+                </button>
+              </div>
+            </div>
+
+            <div class="cfg-box" style="margin-top:12px;">
+              <div class="cfg-title">📡 Ce qui se passe côté serveur</div>
+              <div class="cfg-item"><span class="cfg-dot">→</span> Twilio Verify envoie un code à 6 chiffres <strong style="color:#fff" id="cfg-via-lbl">par SMS</strong> au numéro saisi</div>
+              <div class="cfg-item"><span class="cfg-dot">→</span> Code valable 10 minutes · usage unique · chiffré</div>
+              <div class="cfg-item"><span class="cfg-dot">→</span> Format E.164 international automatique</div>
+            </div>
+
+            <div style="height:6px;"></div>
+            <button class="btn btn-n" id="btn-ph-send" onclick="sendPhoneOTP()">
+              <i class="ti ti-send" style="font-size:14px;"></i> Envoyer le code sur mon téléphone
+            </button>
+          </div>
+
+          <!-- STEP B : OTP téléphone -->
+          <div id="ph-b" style="display:none;">
+            <div class="step-ind"><div class="sdot done"></div><div class="sdot act"></div><span class="slbl">Étape 2/2 — Code reçu sur téléphone</span></div>
+            <div class="back" onclick="backTo('ph')"><i class="ti ti-arrow-left" style="font-size:12px;"></i> Modifier le numéro</div>
+
+            <div class="alertb aerr" id="ph-otp-err"><i class="ti ti-alert-circle"></i> Code incorrect ou expiré. Vérifiez votre téléphone.</div>
+            <div class="alertb aok" id="ph-otp-ok"><i class="ti ti-check"></i> Code envoyé !</div>
+
+            <div class="otp-wrap">
+              <div class="otp-label">Code envoyé par <strong id="ph-via-lbl">SMS</strong> au <strong id="ph-dest"></strong></div>
+              <div class="otp-row">
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="p_1" oninput="oN(this,'p_2','ph')" onkeydown="oB(event,'p_1','')"/>
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="p_2" oninput="oN(this,'p_3','ph')" onkeydown="oB(event,'p_2','p_1')"/>
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="p_3" oninput="oN(this,'p_4','ph')" onkeydown="oB(event,'p_3','p_2')"/>
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="p_4" oninput="oN(this,'p_5','ph')" onkeydown="oB(event,'p_4','p_3')"/>
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="p_5" oninput="oN(this,'p_6','ph')" onkeydown="oB(event,'p_5','p_4')"/>
+                <input class="otp-in" type="text" inputmode="numeric" maxlength="1" id="p_6" oninput="oN(this,null,'ph')" onkeydown="oB(event,'p_6','p_5')"/>
+              </div>
+              <div class="otp-res">Non reçu ? <span class="lk" onclick="resend('phone')">Renvoyer</span> · <span id="tmr-ph">00:59</span></div>
+            </div>
+
+            <div style="height:12px;"></div>
+            <button class="btn btn-g" id="vbtn-ph" onclick="verifyOTP('ph')">
+              <i class="ti ti-shield-check" style="font-size:14px;"></i> Confirmer l'accès
+            </button>
+            <div class="info"><i class="ti ti-info-circle"></i>Code valable 10 minutes. Envoyé via Twilio Verify directement sur votre téléphone.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card-foot">
+        <div class="flinks">
+          <span class="flink" onclick="showForgot()">Mot de passe oublié</span>
+          <span class="flink" onclick="goWelcome()">← Accueil</span>
+        </div>
+        <div class="sec-ft">🔒 Twilio Verify · SSL</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SUCCESS ═══ -->
+<div class="screen" id="sc-success">
+  <div class="topbar">
+    <div class="logo-wrap">
+      <svg class="logo-sq" viewBox="0 0 38 38" fill="none"><rect width="38" height="38" rx="9" fill="#12205A"/><line x1="13" y1="8" x2="13" y2="30" stroke="white" stroke-width="3.5" stroke-linecap="round"/><path d="M13 8 Q29 8 29 17 Q29 26 13 26" stroke="url(#sg)" stroke-width="3.5" stroke-linecap="round" fill="none"/><polygon points="19,13 19,22 27,17.5" fill="#F5B731"/><defs><linearGradient id="sg" x1="13" y1="8" x2="29" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00C6E0"/><stop offset="100%" stop-color="#0066CC"/></linearGradient></defs></svg>
+      <div><div class="logo-name">PURE MOTION</div><div class="logo-tag">Social-First Video That Moves Your Audience.</div></div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="scard">
+      <div class="sicon" id="s-icon" style="background:linear-gradient(135deg,#00C6E0,#0066CC);">✓</div>
+      <div class="stitle" id="s-title">Connexion réussie</div>
+      <div class="ssub" id="s-sub">Identité vérifiée en 2 étapes via Twilio. Bienvenue sur votre espace Pure Motion.</div>
+      <button class="btn btn-n" onclick="goWelcome()"><i class="ti ti-layout-dashboard" style="font-size:14px;"></i> Accéder à mon tableau de bord</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FORGOT ═══ -->
+<div class="screen" id="sc-forgot">
+  <div class="main">
+    <div class="card" style="max-width:390px;">
+      <div class="card-head"><div style="height:18px;"></div><div class="card-title">Mot de passe oublié ?</div><div class="card-sub">Contactez Pure Motion pour réinitialiser votre accès.</div><div style="height:14px;"></div></div>
+      <div class="card-body">
+        <div style="background:#e1f5ee;border:1px solid rgba(29,158,117,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:#085041;line-height:1.8;margin-bottom:14px;">
+          <strong>Contacter Pure Motion</strong><br>
+          📧 puremotionci@gmail.com<br>
+          📱 +225 07-05-82-88-10<br>
+          💬 WhatsApp · Disponible 7j/7
+        </div>
+        <button class="btn btn-o" onclick="showScreen('sc-login')"><i class="ti ti-arrow-left" style="font-size:14px;"></i> Retour à la connexion</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// CONFIGURATION — À remplir dans ton backend
+// ══════════════════════════════════════════
+const CONFIG = {
+  // Ton Twilio Account SID (format: ACxxxxxxxxxxxxxxxx)
+  TWILIO_ACCOUNT_SID: 'TON_ACCOUNT_SID',
+  // Ton Twilio Auth Token
+  TWILIO_AUTH_TOKEN: 'TON_AUTH_TOKEN',
+  // Ton Twilio Verify Service SID (format: VAxxxxxxxxxxxxxxxx)
+  // Créer sur : console.twilio.com > Verify > Services > New Service
+  TWILIO_VERIFY_SID: 'TON_VERIFY_SERVICE_SID',
+};
+
+// ══════════════════════════════════════════
+// BASE DE DONNÉES UTILISATEURS (simulation)
+// En production : remplacer par ton backend sécurisé
+// ══════════════════════════════════════════
+const USERS = {
+  // Collaborateurs
+  'collab@puremotion.ci': { role:'collaborateur', password:'PureMotion2026!', phone:'+22507058281' },
+  // Clients
+  'soleil@communication.ci': { role:'client', password:'Soleil2026!', phone:'+22501234567' },
+  'fanta@maquis.ci': { role:'client', password:'Fanta2026!', phone:'+22507654321' },
+};
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let state = { role:'collaborateur', method:'email', via:'sms', timers:{}, currentDest:'' };
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('act')); document.getElementById(id).classList.add('act'); }
+function goWelcome(){ showScreen('sc-welcome'); resetAll(); }
+function openLogin(role){ showScreen('sc-login'); setRole(role); }
+function openAdmin(){ alert('Espace Admin — Accès réservé au Community Manager Pure Motion.\n\nRedirection vers l\'interface administrateur sécurisée...'); }
+function showForgot(){ showScreen('sc-forgot'); }
+
+function resetAll(){
+  ['em-a','em-b','ph-a','ph-b'].forEach(id=>{ const el=document.getElementById(id); if(el)el.style.display=id.includes('-a')?'block':'none'; });
+  clearOTP('e_'); clearOTP('p_');
+  Object.keys(state.timers).forEach(k=>clearInterval(state.timers[k]));
+  state.timers={};
+  document.querySelectorAll('.alertb').forEach(a=>a.classList.remove('show'));
+}
+
+// ══════════════════════════════════════════
+// ROLE & METHOD
+// ══════════════════════════════════════════
+function setRole(r){
+  state.role=r;
+  const isCl=r==='client';
+  document.getElementById('rt-co').classList.toggle('act',!isCl);
+  document.getElementById('rt-cl').classList.toggle('act',isCl);
+  document.getElementById('rt-cl').classList.toggle('gold-act',isCl);
+  document.getElementById('ctitle').textContent=isCl?'Connexion Client':'Connexion Collaborateur';
+  document.getElementById('csub').textContent=isCl?'Le code sera envoyé sur votre email ou téléphone enregistré.':'Le code sera envoyé sur votre email ou téléphone enregistré.';
+}
+
+function setMethod(m){
+  state.method=m;
+  document.getElementById('mb-em').classList.toggle('act',m==='email');
+  document.getElementById('mb-ph').classList.toggle('act',m==='phone');
+  document.getElementById('p-email').classList.toggle('act',m==='email');
+  document.getElementById('p-phone').classList.toggle('act',m==='phone');
+}
+
+function setVia(v){
+  state.via=v;
+  document.getElementById('via-sms').classList.toggle('act',v==='sms');
+  document.getElementById('via-wa').classList.toggle('act',v==='whatsapp');
+  const lbl=document.getElementById('cfg-via-lbl');
+  if(lbl)lbl.textContent=v==='whatsapp'?'par WhatsApp':'par SMS';
+}
+
+// ══════════════════════════════════════════
+// TOGGLE PASSWORD VISIBILITY
+// ══════════════════════════════════════════
+function togglePw(id,ico){
+  const i=document.getElementById(id); const ic=document.getElementById(ico);
+  if(i.type==='password'){i.type='text';ic.className='ti ti-eye-off ico-r';}
+  else{i.type='password';ic.className='ti ti-eye ico-r';}
+}
+
+// ══════════════════════════════════════════
+// VALIDATION
+// ══════════════════════════════════════════
+function vEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function vPw(p){ return p && p.length>=8; }
+function vPhone(p){ return p && p.replace(/[\s\-]/g,'').length>=8; }
+function setFerr(fid,eid,show){ const f=document.getElementById(fid); const e=document.getElementById(eid); if(f)f.classList.toggle('err',show); if(e)e.classList.toggle('show',show); }
+function showAlert(id,show){ const el=document.getElementById(id); if(el){if(show)el.classList.add('show'); else el.classList.remove('show');} }
+
+// ══════════════════════════════════════════
+// TWILIO VERIFY — ENVOI OTP
+// ══════════════════════════════════════════
+async function twilioSendOTP(destination, channel) {
+  // En production : appel à TON backend qui appelle Twilio
+  // Le backend sécurise les credentials — JAMAIS côté client en production
+  // Exemple d'appel backend :
+  // POST /api/send-otp { to: destination, channel: channel }
+  // Ton backend appelle :
+  // POST https://verify.twilio.com/v2/Services/{ServiceSid}/Verifications
+  // { To: destination, Channel: channel }
+
+  console.log(`[Twilio Verify] Envoi code OTP`);
+  console.log(`→ Destinataire : ${destination}`);
+  console.log(`→ Canal : ${channel}`);
+  console.log(`→ Service SID : ${CONFIG.TWILIO_VERIFY_SID}`);
+  console.log(`→ API : POST https://verify.twilio.com/v2/Services/${CONFIG.TWILIO_VERIFY_SID}/Verifications`);
+
+  // Simulation pour la démo — en production remplacer par l'appel fetch() vers ton backend
+  return new Promise(resolve => setTimeout(() => resolve({ status: 'pending', to: destination, channel }), 1200));
+}
+
+async function twilioVerifyOTP(destination, code) {
+  // En production : appel backend → Twilio
+  // POST https://verify.twilio.com/v2/Services/{ServiceSid}/VerificationCheck
+  // { To: destination, Code: code }
+
+  console.log(`[Twilio Verify] Vérification code OTP`);
+  console.log(`→ Destinataire : ${destination}`);
+  console.log(`→ Code saisi : ${code}`);
+  console.log(`→ API : POST https://verify.twilio.com/v2/Services/${CONFIG.TWILIO_VERIFY_SID}/VerificationCheck`);
+
+  // Simulation pour la démo
+  return new Promise(resolve => setTimeout(() => resolve({ status: code === '123456' ? 'approved' : 'pending', valid: code === '123456' }), 1000));
+}
+
+// ══════════════════════════════════════════
+// EMAIL FLOW
+// ══════════════════════════════════════════
+async function sendEmailOTP(){
+  const email = document.getElementById('em-email').value.trim();
+  const pass = document.getElementById('em-pass').value;
+  setFerr('em-email','e1',!vEmail(email));
+  setFerr('em-pass','e2',!vPw(pass));
+  if(!vEmail(email)||!vPw(pass)) return;
+
+  showAlert('em-err',false);
+  const btn=document.getElementById('btn-em-send');
+  btn.innerHTML='<div class="spin"></div> Envoi en cours...'; btn.disabled=true;
+
+  try {
+    const result = await twilioSendOTP(email, 'email');
+    btn.innerHTML='<i class="ti ti-mail" style="font-size:14px;"></i> Envoyer le code sur mon email';
+    btn.disabled=false;
+
+    state.currentDest=email;
+    document.getElementById('em-dest').textContent=email;
+    document.getElementById('em-a').style.display='none';
+    document.getElementById('em-b').style.display='block';
+    showAlert('em-otp-ok',true);
+    setTimeout(()=>showAlert('em-otp-ok',false),4000);
+    document.getElementById('e_1').focus();
+    startTimer('em');
+  } catch(err){
+    btn.innerHTML='<i class="ti ti-mail" style="font-size:14px;"></i> Envoyer le code sur mon email';
+    btn.disabled=false;
+    document.getElementById('em-err-txt').textContent='Erreur d\'envoi. Vérifiez votre connexion.';
+    showAlert('em-err',true);
+  }
+}
+
+// ══════════════════════════════════════════
+// PHONE FLOW
+// ══════════════════════════════════════════
+async function sendPhoneOTP(){
+  const num=document.getElementById('ph-num').value.trim();
+  const pass=document.getElementById('ph-pass').value;
+  const country=document.getElementById('ph-country').value;
+
+  setFerr('ph-num','e3',!vPhone(num));
+  setFerr('ph-pass','e4',!vPw(pass));
+  if(!vPhone(num)||!vPw(pass)) return;
+
+  showAlert('ph-err',false);
+  const btn=document.getElementById('btn-ph-send');
+  btn.innerHTML='<div class="spin"></div> Envoi en cours...'; btn.disabled=true;
+
+  // Format E.164 : +225 07 05 82 88 10 → +22507058810
+  const cleanNum=num.replace(/[\s\-]/g,'');
+  const e164=country+cleanNum;
+  const channel=state.via==='whatsapp'?'whatsapp':'sms';
+
+  try {
+    const result = await twilioSendOTP(e164, channel);
+    btn.innerHTML='<i class="ti ti-send" style="font-size:14px;"></i> Envoyer le code sur mon téléphone';
+    btn.disabled=false;
+
+    state.currentDest=e164;
+    document.getElementById('ph-dest').textContent=country+' '+num;
+    document.getElementById('ph-via-lbl').textContent=state.via==='whatsapp'?'WhatsApp':'SMS';
+    document.getElementById('ph-a').style.display='none';
+    document.getElementById('ph-b').style.display='block';
+    showAlert('ph-otp-ok',true);
+    setTimeout(()=>showAlert('ph-otp-ok',false),3000);
+    document.getElementById('p_1').focus();
+    startTimer('ph');
+  } catch(err){
+    btn.innerHTML='<i class="ti ti-send" style="font-size:14px;"></i> Envoyer le code sur mon téléphone';
+    btn.disabled=false;
+    showAlert('ph-err',true);
+  }
+}
+
+// ══════════════════════════════════════════
+// GOOGLE LOGIN
+// ══════════════════════════════════════════
+function handleGoogle(){
+  const btn=event.target.closest('button');
+  btn.innerHTML='<div class="spin spin-d"></div> Connexion Google...'; btn.disabled=true;
+  setTimeout(()=>{ btn.disabled=false; showSuccess('Google OAuth'); }, 1500);
+}
+
+// ══════════════════════════════════════════
+// OTP HELPERS
+// ══════════════════════════════════════════
+function oN(el,nid,type){
+  el.classList.toggle('filled',!!el.value);
+  if(el.value&&nid){ const n=document.getElementById(nid); if(n)n.focus(); }
+  const pfx=type==='em'?'e_':'p_';
+  const full=['1','2','3','4','5','6'].map(n=>{ const i=document.getElementById(pfx+n); return i?i.value:''; }).join('');
+  if(full.length===6) setTimeout(()=>verifyOTP(type),300);
+}
+
+function oB(e,cur,prev){
+  if(e.key==='Backspace'){
+    const c=document.getElementById(cur); c.classList.remove('filled');
+    if(!c.value&&prev){ const p=document.getElementById(prev); if(p){p.value='';p.classList.remove('filled');p.focus();} }
+  }
+}
+
+function clearOTP(pfx){ ['1','2','3','4','5','6'].forEach(n=>{ const e=document.getElementById(pfx+n); if(e){e.value='';e.classList.remove('filled','err-otp');} }); }
+
+// ══════════════════════════════════════════
+// VERIFY OTP
+// ══════════════════════════════════════════
+async function verifyOTP(type){
+  const pfx=type==='em'?'e_':'p_';
+  const code=['1','2','3','4','5','6'].map(n=>{ const i=document.getElementById(pfx+n); return i?i.value:''; }).join('');
+  if(code.length<6) return;
+
+  const btnId=type==='em'?'vbtn-em':'vbtn-ph';
+  const btn=document.getElementById(btnId);
+  btn.innerHTML='<div class="spin"></div> Vérification...'; btn.disabled=true;
+
+  try {
+    const result = await twilioVerifyOTP(state.currentDest, code);
+
+    if(result.valid || result.status==='approved'){
+      clearTimer(type);
+      showSuccess(type==='em'?'email':'téléphone');
+    } else {
+      btn.innerHTML=type==='em'?'<i class="ti ti-shield-check" style="font-size:14px;"></i> Confirmer l\'accès':'<i class="ti ti-shield-check" style="font-size:14px;"></i> Confirmer l\'accès';
+      btn.disabled=false;
+      // Marquer les cases en erreur
+      ['1','2','3','4','5','6'].forEach(n=>{ const i=document.getElementById(pfx+n); if(i)i.classList.add('err-otp'); });
+      const errId=type==='em'?'em-otp-err':'ph-otp-err';
+      showAlert(errId,true);
+      setTimeout(()=>{ showAlert(errId,false); clearOTP(pfx); document.getElementById(pfx+'1').focus(); },3000);
+    }
+  } catch(err){
+    btn.innerHTML='<i class="ti ti-shield-check" style="font-size:14px;"></i> Confirmer l\'accès';
+    btn.disabled=false;
+  }
+}
+
+// ══════════════════════════════════════════
+// RESEND & TIMER
+// ══════════════════════════════════════════
+async function resend(method){
+  clearTimer(method==='email'?'em':'ph');
+  const pfx=method==='email'?'e_':'p_';
+  clearOTP(pfx);
+  document.getElementById(pfx+'1').focus();
+
+  if(method==='email'){
+    await twilioSendOTP(state.currentDest,'email');
+    showAlert('em-otp-ok',true); setTimeout(()=>showAlert('em-otp-ok',false),3000);
+    startTimer('em');
+  } else {
+    const channel=state.via==='whatsapp'?'whatsapp':'sms';
+    await twilioSendOTP(state.currentDest,channel);
+    showAlert('ph-otp-ok',true); setTimeout(()=>showAlert('ph-otp-ok',false),3000);
+    startTimer('ph');
+  }
+
+  const vbtnId=method==='email'?'vbtn-em':'vbtn-ph';
+  const vbtn=document.getElementById(vbtnId);
+  if(vbtn){vbtn.disabled=false; vbtn.innerHTML=method==='email'?'<i class="ti ti-shield-check" style="font-size:14px;"></i> Confirmer l\'accès':'<i class="ti ti-shield-check" style="font-size:14px;"></i> Confirmer l\'accès';}
+}
+
+function startTimer(key){
+  clearTimer(key);
+  let s=59; const el=document.getElementById('tmr-'+key);
+  if(el)el.textContent='00:59';
+  state.timers[key]=setInterval(()=>{
+    s--; if(el)el.textContent='00:'+(s<10?'0':'')+s;
+    if(s<=0){clearTimer(key);if(el)el.textContent='Expiré';}
+  },1000);
+}
+function clearTimer(key){ if(state.timers[key]){clearInterval(state.timers[key]);delete state.timers[key];} }
+
+// ══════════════════════════════════════════
+// BACK
+// ══════════════════════════════════════════
+function backTo(type){
+  if(type==='em'){
+    document.getElementById('em-b').style.display='none';
+    document.getElementById('em-a').style.display='block';
+    clearTimer('em'); clearOTP('e_');
+    showAlert('em-otp-err',false);
+  } else {
+    document.getElementById('ph-b').style.display='none';
+    document.getElementById('ph-a').style.display='block';
+    clearTimer('ph'); clearOTP('p_');
+    showAlert('ph-otp-err',false);
+  }
+}
+
+// ══════════════════════════════════════════
+// SUCCESS
+// ══════════════════════════════════════════
+function showSuccess(via){
+  const isCl=state.role==='client';
+  const icon=document.getElementById('s-icon');
+  icon.style.background=isCl?'linear-gradient(135deg,#F5B731,#e6970f)':'linear-gradient(135deg,#00C6E0,#0066CC)';
+  icon.style.color=isCl?'#12205A':'#fff';
+  document.getElementById('s-title').textContent='Connexion réussie — '+(isCl?'Client':'Collaborateur');
+  document.getElementById('s-sub').textContent=`Identité vérifiée en 2 étapes via ${via}. Code OTP confirmé par Twilio Verify. Bienvenue sur votre espace Pure Motion.`;
+  showScreen('sc-success');
+}
+</script>
+</body>
+</html>
