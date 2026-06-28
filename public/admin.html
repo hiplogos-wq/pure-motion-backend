@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pure Motion — Espace Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cyan:#00C6E0;--navy:#12205A;--gold:#F5B731;--gold-l:#FDD05A;
+  --blue:#0066CC;--teal:#00A8C8;
+  --bg:#f5f6fa;--white:#fff;--surf:#f0f2f8;
+  --txt:#1a1a2e;--mut:#5a6282;--hint:#9aa0bc;--bord:#e2e6f0;
+  --up:#0a6b4f;--dn:#a32d2d;--r:12px;--rs:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);height:100vh;overflow:hidden;}
+
+/* ── LAYOUT ── */
+.shell{display:flex;height:100vh;}
+.side{width:224px;min-width:224px;background:var(--navy);display:flex;flex-direction:column;overflow:hidden;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.side-brand{padding:16px 14px 13px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.brand-row{display:flex;align-items:center;gap:9px;}
+.brand-logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--cyan),var(--blue));display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
+.brand-logo span{font-size:16px;font-weight:700;color:#fff;font-style:italic;}
+.brand-logo::after{content:'';position:absolute;bottom:5px;right:4px;width:0;height:0;border-top:3.5px solid transparent;border-bottom:3.5px solid transparent;border-left:6px solid var(--gold);}
+.brand-name{font-size:13px;font-weight:700;color:#fff;letter-spacing:.3px;}
+.brand-sub{font-size:9px;color:var(--cyan);margin-top:1px;}
+.admin-pill{margin-left:auto;background:rgba(0,198,224,.15);color:var(--cyan);font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;white-space:nowrap;}
+
+.side-nav{padding:10px 8px;flex:1;overflow-y:auto;}
+.ns{font-size:9px;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.9px;padding:0 7px;margin:12px 0 5px;}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);margin-bottom:1px;transition:all .15s;user-select:none;}
+.ni:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);}
+.ni.act{background:rgba(0,198,224,.15);color:var(--cyan);border-left:2px solid var(--cyan);padding-left:6px;}
+.ni i{font-size:15px;flex-shrink:0;}
+.ni-badge{margin-left:auto;font-size:9px;background:rgba(0,198,224,.2);color:var(--cyan);border-radius:8px;padding:1px 6px;}
+.ni-badge.gold{background:rgba(245,183,49,.2);color:var(--gold);}
+.ni-badge.red{background:rgba(226,75,74,.2);color:#e24b4a;}
+
+.side-clients{padding:8px;border-top:1px solid rgba(255,255,255,.08);}
+.cl-item{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:7px;cursor:pointer;font-size:11px;color:rgba(255,255,255,.45);margin-bottom:1px;}
+.cl-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.8);}
+.cl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.cl-add{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:7px;cursor:pointer;font-size:11px;color:rgba(255,255,255,.28);border:1px dashed rgba(255,255,255,.12);margin-top:5px;}
+.cl-add:hover{color:var(--cyan);border-color:rgba(0,198,224,.35);}
+
+/* ── TOPBAR ── */
+.topbar{padding:11px 20px;border-bottom:1px solid var(--bord);background:var(--white);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.tb-left{}
+.tb-title{font-size:15px;font-weight:700;color:var(--txt);}
+.tb-sub{font-size:11px;color:var(--mut);margin-top:1px;}
+.tb-right{display:flex;gap:8px;align-items:center;}
+.btn{padding:7px 14px;font-size:12px;border-radius:var(--rs);cursor:pointer;font-weight:600;border:1px solid var(--bord);background:var(--white);color:var(--mut);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.btn:hover{background:var(--surf);}
+.btn-navy{background:var(--navy);color:#fff;border-color:var(--navy);}
+.btn-navy:hover{background:#1a2d80;}
+.btn-gold{background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700;}
+.btn-gold:hover{background:var(--gold-l);}
+.btn-sm{padding:5px 11px;font-size:11px;}
+
+/* ── TABS ── */
+.tabs{display:flex;padding:0 20px;border-bottom:1px solid var(--bord);background:var(--white);flex-shrink:0;}
+.tab{padding:9px 13px;font-size:12px;cursor:pointer;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.tab.act{color:var(--navy);border-bottom-color:var(--cyan);font-weight:700;}
+.tab:hover:not(.act){color:var(--txt);}
+
+/* ── BODY ── */
+.body{flex:1;overflow-y:auto;padding:18px 20px;}
+
+/* ── PANELS ── */
+.panel{display:none;}
+.panel.act{display:block;}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:16px;}
+.kpi{background:var(--surf);border-radius:10px;padding:12px 14px;}
+.kpi-lbl{font-size:10px;color:var(--hint);margin-bottom:3px;display:flex;align-items:center;gap:3px;}
+.kpi-val{font-size:22px;font-weight:700;color:var(--txt);line-height:1.1;}
+.kpi-d{font-size:10px;margin-top:3px;}
+.up{color:var(--up);}.dn{color:var(--dn);}
+
+/* ── CARDS ── */
+.card{background:var(--white);border:1px solid var(--bord);border-radius:var(--r);padding:14px 16px;margin-bottom:12px;}
+.card-title{font-size:12px;font-weight:700;color:var(--mut);margin-bottom:11px;display:flex;align-items:center;justify-content:space-between;}
+.card-title a{font-size:11px;color:var(--cyan);cursor:pointer;font-weight:500;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* ── CONTRATS TABLE ── */
+.ct-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 120px;padding:8px 14px;background:var(--surf);border-bottom:1px solid var(--bord);border-radius:10px 10px 0 0;}
+.ct-th{font-size:10px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.6px;}
+.ct-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 120px;padding:10px 14px;border-bottom:1px solid var(--bord);align-items:center;}
+.ct-row:last-child{border-bottom:none;}
+.ct-row:hover{background:var(--surf);}
+.ct-cell{font-size:12px;color:var(--txt);}
+.ct-cell.mut{color:var(--mut);font-size:11px;}
+.ct-name{display:flex;align-items:center;gap:8px;}
+.ct-ava{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.ct-actions{display:flex;gap:5px;}
+.act-btn{padding:4px 9px;font-size:10px;border:1px solid var(--bord);border-radius:6px;cursor:pointer;background:transparent;color:var(--mut);}
+.act-btn:hover{background:var(--surf);}
+.act-btn.p{color:var(--cyan);border-color:rgba(0,198,224,.3);}
+.act-btn.g{color:var(--up);border-color:rgba(10,107,79,.3);}
+
+/* STATUS BADGES */
+.badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.b-draft{background:var(--surf);color:var(--mut);}
+.b-sent{background:#e6f1fb;color:#185fa5;}
+.b-signed{background:#e1f5ee;color:var(--up);}
+.b-expired{background:#fcebeb;color:var(--dn);}
+.b-active{background:#e1f5ee;color:var(--up);}
+
+/* ── GÉNÉRATEUR — STEPS ── */
+.gen-wrap{display:flex;gap:0;height:100%;}
+.gen-steps{width:200px;min-width:200px;border-right:1px solid var(--bord);padding:16px 12px;}
+.gen-step{display:flex;gap:9px;margin-bottom:5px;cursor:pointer;}
+.gs-left{display:flex;flex-direction:column;align-items:center;}
+.gs-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+.gs-num.done{background:var(--cyan);color:var(--navy);}
+.gs-num.act{background:var(--gold);color:var(--navy);}
+.gs-num.todo{background:var(--surf);color:var(--hint);}
+.gs-line{width:1px;height:20px;margin:3px auto;background:var(--bord);}
+.gs-line.done{background:rgba(0,198,224,.3);}
+.gs-title{font-size:11px;font-weight:600;color:var(--txt);padding-top:3px;}
+.gs-title.todo{color:var(--hint);}
+.gs-sub{font-size:9px;color:var(--hint);}
+.gen-prog{margin-top:12px;padding-top:12px;border-top:1px solid var(--bord);}
+.gen-prog-lbl{display:flex;justify-content:space-between;font-size:9px;color:var(--hint);margin-bottom:4px;}
+.gen-prog-track{height:3px;background:var(--bord);border-radius:3px;overflow:hidden;}
+.gen-prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--gold));border-radius:3px;transition:width .4s;}
+
+.gen-body{flex:1;padding:20px;overflow-y:auto;}
+.step-title{font-size:17px;font-weight:700;color:var(--txt);margin-bottom:4px;}
+.step-sub{font-size:12px;color:var(--mut);margin-bottom:18px;line-height:1.6;}
+
+/* FORMS */
+.frow{display:grid;gap:11px;margin-bottom:13px;}
+.frow.c2{grid-template-columns:1fr 1fr;}
+.frow.c3{grid-template-columns:1fr 1fr 1fr;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.lbl{font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;}
+.lbl .opt{font-size:9px;font-weight:500;color:var(--hint);text-transform:none;letter-spacing:0;}
+input,select,textarea{padding:8px 10px;font-size:12px;border:1px solid var(--bord);border-radius:var(--rs);background:var(--white);color:var(--txt);outline:none;width:100%;font-family:inherit;}
+input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,198,224,.08);}
+textarea{resize:none;line-height:1.5;}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px;}
+.chip{padding:5px 12px;font-size:11px;border:1px solid var(--bord);border-radius:20px;cursor:pointer;color:var(--mut);background:var(--white);transition:all .15s;}
+.chip:hover{border-color:var(--cyan);}
+.chip.sel{background:rgba(0,198,224,.1);border-color:var(--cyan);color:var(--teal);font-weight:600;}
+.chip.sel-gold{background:rgba(245,183,49,.12);border-color:var(--gold);color:#7a5800;font-weight:600;}
+
+/* TARIF CARDS */
+.tarif-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.tarif-card{border:1.5px solid var(--bord);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s;}
+.tarif-card:hover{border-color:var(--cyan);}
+.tarif-card.sel{border-color:var(--navy);background:rgba(18,32,90,.03);}
+.tarif-name{font-size:11px;font-weight:700;color:var(--mut);margin-bottom:5px;}
+.tarif-price{font-size:22px;font-weight:700;color:var(--txt);margin-bottom:10px;}
+.tarif-price small{font-size:11px;font-weight:400;color:var(--hint);}
+.tf{display:flex;gap:5px;font-size:11px;color:var(--txt);margin-bottom:4px;align-items:flex-start;}
+.tf-ok{color:var(--up);font-size:12px;flex-shrink:0;margin-top:1px;}
+.tarif-pop{position:relative;}
+.tarif-pop-badge{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--cyan);font-size:9px;font-weight:700;padding:2px 9px;border-radius:10px;white-space:nowrap;}
+
+/* PREVIEW CONTRAT */
+.preview-wrap{background:var(--white);border:1px solid var(--bord);border-radius:var(--r);overflow:hidden;}
+.prev-header{background:var(--navy);padding:20px 22px;display:flex;justify-content:space-between;align-items:flex-start;}
+.prev-logo{font-size:16px;font-weight:700;color:#fff;}
+.prev-logo-sub{font-size:9px;color:var(--cyan);margin-top:2px;}
+.prev-client{text-align:right;}
+.prev-client-name{font-size:13px;font-weight:700;color:var(--gold);}
+.prev-client-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;}
+.prev-body{padding:20px 22px;}
+.prev-section{margin-bottom:18px;}
+.prev-section-title{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--cyan);display:inline-block;}
+.prev-text{font-size:11px;color:var(--mut);line-height:1.7;}
+.prev-kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px;}
+.prev-kpi{background:var(--surf);border-radius:7px;padding:9px 11px;text-align:center;}
+.prev-kpi-val{font-size:16px;font-weight:700;color:var(--navy);}
+.prev-kpi-lbl{font-size:9px;color:var(--hint);margin-top:2px;}
+.prev-articles{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.prev-article{background:var(--surf);border-radius:7px;padding:9px 11px;}
+.prev-art-num{font-size:9px;font-weight:700;color:var(--cyan);margin-bottom:2px;}
+.prev-art-title{font-size:11px;font-weight:700;color:var(--txt);margin-bottom:3px;}
+.prev-art-txt{font-size:10px;color:var(--mut);line-height:1.5;}
+.prev-cta{background:var(--navy);border-radius:9px;padding:14px 18px;text-align:center;margin-top:12px;}
+.prev-cta-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.prev-cta-sub{font-size:10px;color:rgba(255,255,255,.5);}
+.prev-sigs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.prev-sig{border:1px solid var(--bord);border-radius:8px;padding:11px 14px;text-align:center;}
+.prev-sig-title{font-size:9px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.prev-sig-name{font-size:11px;font-weight:600;color:var(--txt);margin-bottom:12px;}
+.prev-sig-line{border-top:1px dashed var(--bord);padding-top:5px;font-size:9px;color:var(--hint);}
+
+/* AI BOX */
+.ai-box{background:var(--navy);border-radius:11px;padding:13px 16px;margin-bottom:14px;}
+.ai-hd{font-size:11px;font-weight:700;color:var(--cyan);margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+.ai-txt{font-size:12px;color:rgba(255,255,255,.82);line-height:1.7;}
+
+/* ALERT */
+.alert{border-radius:9px;padding:10px 13px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.6;}
+.alert.warn{background:#faeeda;border:1px solid rgba(245,183,49,.4);color:#5a3d00;}
+.alert.info{background:#e6f1fb;border:1px solid rgba(56,138,221,.3);color:#0c447c;}
+.alert.success{background:#e1f5ee;border:1px solid rgba(29,158,117,.3);color:#085041;}
+.alert i{font-size:14px;flex-shrink:0;margin-top:1px;}
+
+/* GEN FOOTER */
+.gen-footer{padding:11px 20px;border-top:1px solid var(--bord);background:var(--white);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.step-dots{display:flex;gap:5px;}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--bord);}
+.sdot.act{background:var(--cyan);}
+.sdot.done{background:var(--navy);}
+
+/* PROOF CARDS */
+.proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px;}
+.proof-card{background:var(--white);border:1px solid var(--bord);border-radius:10px;padding:12px 14px;}
+.proof-client{font-size:9px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.proof-stat{font-size:22px;font-weight:700;color:var(--txt);}
+.proof-desc{font-size:10px;color:var(--mut);line-height:1.4;margin-top:3px;}
+.proof-delta{font-size:10px;color:var(--up);font-weight:700;margin-top:3px;}
+
+/* SUCCESS */
+.success-wrap{text-align:center;padding:30px 20px;}
+.success-icon{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;}
+.success-title{font-size:18px;font-weight:700;color:var(--txt);margin-bottom:6px;}
+.success-sub{font-size:12px;color:var(--mut);line-height:1.6;max-width:380px;margin:0 auto 20px;}
+.success-actions{display:flex;gap:9px;justify-content:center;}
+</style>
+</head>
+<body>
+<script>
+// ── Garde de session : vérifie qu'on est bien connecté en admin ──
+(function(){
+  try {
+    var s = JSON.parse(sessionStorage.getItem('pm_session') || 'null');
+    if(!s || (s.role !== 'admin' && s.role !== 'collaborateur')){
+      window.location.href = '/';
+    }
+  } catch(e){ window.location.href = '/'; }
+})();
+function pmLogout(){
+  try { sessionStorage.removeItem('pm_session'); } catch(e){}
+  window.location.href = '/';
+}
+</script>
+<div class="shell">
+
+<!-- ══ SIDEBAR ══ -->
+<div class="side">
+  <div class="side-brand">
+    <div class="brand-row">
+      <div class="brand-logo"><span>P</span></div>
+      <div><div class="brand-name">PURE MOTION</div><div class="brand-sub">Espace Admin</div></div>
+      <div class="admin-pill">ADMIN</div>
+    </div>
+  </div>
+  <div class="side-nav">
+    <div class="ns">Workspace</div>
+    <div class="ni" onclick="showMain('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+    <div class="ni" onclick="showMain('calendrier',this)"><i class="ti ti-calendar-event"></i> Calendrier éditorial</div>
+    <div class="ni" onclick="showMain('performance',this)"><i class="ti ti-chart-line"></i> Performance réseaux</div>
+    <div class="ns">Commercial — Admin uniquement</div>
+    <div class="ni act" onclick="showMain('contrats',this)"><i class="ti ti-file-text"></i> Contrats <span class="ni-badge">3</span></div>
+    <div class="ni" onclick="showMain('propositions',this)"><i class="ti ti-file-plus"></i> Propositions <span class="ni-badge gold">2</span></div>
+    <div class="ni" onclick="showMain('tarifs',this)"><i class="ti ti-coin"></i> Grille tarifaire</div>
+    <div class="ni" onclick="showMain('preuves',this)"><i class="ti ti-star"></i> Preuves sociales</div>
+    <div class="ns">Stratégie — Admin uniquement</div>
+    <div class="ni" onclick="showMain('marche',this)"><i class="ti ti-telescope"></i> Étude de marché</div>
+    <div class="ni" onclick="showMain('objectifs',this)"><i class="ti ti-target"></i> Objectifs</div>
+    <div class="ns">Accès</div>
+    <div class="ni" onclick="showMain('acces',this)"><i class="ti ti-shield-lock"></i> Gestion des accès</div>
+    <div class="ni" onclick="showMain('settings',this)"><i class="ti ti-settings"></i> Paramètres</div>
+    <div class="ni" onclick="pmLogout()" style="color:rgba(255,150,150,.7);"><i class="ti ti-logout"></i> Déconnexion</div>
+  </div>
+  <div class="side-clients">
+    <div class="ns">Clients actifs</div>
+    <div class="cl-item"><div class="cl-dot" style="background:var(--cyan)"></div> Soleil Communication</div>
+    <div class="cl-item"><div class="cl-dot" style="background:var(--gold)"></div> Maquis Chez Fanta</div>
+    <div class="cl-item"><div class="cl-dot" style="background:#7B61FF"></div> Boutique Élégance CI</div>
+    <div class="cl-add" onclick="showMain('contrats',document.querySelector('.ni'))"><i class="ti ti-plus" style="font-size:11px"></i> Nouveau client</div>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar" id="topbar">
+    <div class="tb-left">
+      <div class="tb-title" id="tb-title">Contrats clients</div>
+      <div class="tb-sub" id="tb-sub">Gestion et génération des contrats de prestation — accès Admin uniquement</div>
+    </div>
+    <div class="tb-right" id="tb-actions">
+      <button class="btn btn-sm" onclick="showMain('propositions')"><i class="ti ti-file-plus" style="font-size:13px"></i> Nouvelle proposition</button>
+      <button class="btn btn-gold" onclick="startGen()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau contrat</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs" id="tabs">
+    <div class="tab act" id="tab-list" onclick="showTab('list',this)"><i class="ti ti-list" style="font-size:13px"></i> Mes contrats</div>
+    <div class="tab" id="tab-gen" onclick="showTab('gen',this)"><i class="ti ti-sparkles" style="font-size:13px"></i> Générateur IA</div>
+    <div class="tab" id="tab-modeles" onclick="showTab('modeles',this)"><i class="ti ti-template" style="font-size:13px"></i> Modèles</div>
+  </div>
+
+  <div class="body">
+
+    <!-- ════ PANEL LISTE ════ -->
+    <div class="panel act" id="panel-list">
+
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-lbl"><i class="ti ti-file-check" style="font-size:11px;color:var(--up)"></i> Contrats signés</div><div class="kpi-val">2</div><div class="kpi-d up">Actifs ce mois</div></div>
+        <div class="kpi"><div class="kpi-lbl"><i class="ti ti-clock" style="font-size:11px;color:#185fa5"></i> En attente</div><div class="kpi-val">1</div><div class="kpi-d" style="color:var(--hint)">Envoyé, pas signé</div></div>
+        <div class="kpi"><div class="kpi-lbl"><i class="ti ti-coin" style="font-size:11px;color:var(--gold)"></i> CA mensuel contrats</div><div class="kpi-val">230K</div><div class="kpi-d up">FCFA / mois</div></div>
+        <div class="kpi"><div class="kpi-lbl"><i class="ti ti-calendar" style="font-size:11px;color:var(--cyan)"></i> Prochaine échéance</div><div class="kpi-val">14 juin</div><div class="kpi-d" style="color:var(--hint)">Soleil Communication</div></div>
+      </div>
+
+      <div class="alert warn"><i class="ti ti-alert-triangle"></i> Le contrat de Soleil Communication arrive à échéance le 14 juin 2026. Prépare le renouvellement ou génère un avenant dès maintenant.</div>
+
+      <div style="background:var(--white);border:1px solid var(--bord);border-radius:var(--r);overflow:hidden;">
+        <div class="ct-head">
+          <div class="ct-th">Client</div>
+          <div class="ct-th">Forfait</div>
+          <div class="ct-th">Montant</div>
+          <div class="ct-th">Durée</div>
+          <div class="ct-th">Statut</div>
+          <div class="ct-th">Actions</div>
+        </div>
+
+        <div class="ct-row">
+          <div class="ct-cell ct-name">
+            <div class="ct-ava" style="background:linear-gradient(135deg,var(--cyan),var(--blue))">SC</div>
+            <div><div style="font-weight:600;font-size:12px;">Soleil Communication</div><div style="font-size:10px;color:var(--hint)">Téléphonie · Cocody</div></div>
+          </div>
+          <div class="ct-cell">Bronze</div>
+          <div class="ct-cell" style="font-weight:600;">50 000 FCFA</div>
+          <div class="ct-cell mut">14 mars → 14 juin 26</div>
+          <div class="ct-cell"><span class="badge b-signed">✓ Signé</span></div>
+          <div class="ct-cell ct-actions">
+            <button class="act-btn p" onclick="showTab('gen',document.getElementById('tab-gen'));preloadClient('Soleil Communication','Téléphonie & Électronique','Bronze','50 000','3')">Renouveler</button>
+            <button class="act-btn" onclick="downloadContract()">⬇</button>
+          </div>
+        </div>
+
+        <div class="ct-row">
+          <div class="ct-cell ct-name">
+            <div class="ct-ava" style="background:linear-gradient(135deg,var(--gold),#e6970f)">MF</div>
+            <div><div style="font-weight:600;font-size:12px;">Maquis Chez Fanta</div><div style="font-size:10px;color:var(--hint)">Restaurant · Cocody</div></div>
+          </div>
+          <div class="ct-cell">Platinum</div>
+          <div class="ct-cell" style="font-weight:600;">80 000 FCFA</div>
+          <div class="ct-cell mut">1 juin → 1 sept 26</div>
+          <div class="ct-cell"><span class="badge b-sent">Envoyé</span></div>
+          <div class="ct-cell ct-actions">
+            <button class="act-btn p">Relancer</button>
+            <button class="act-btn" onclick="downloadContract()">⬇</button>
+          </div>
+        </div>
+
+        <div class="ct-row">
+          <div class="ct-cell ct-name">
+            <div class="ct-ava" style="background:linear-gradient(135deg,#7B61FF,#5038d0)">BE</div>
+            <div><div style="font-weight:600;font-size:12px;">Boutique Élégance CI</div><div style="font-size:10px;color:var(--hint)">Mode & Retail · Plateau</div></div>
+          </div>
+          <div class="ct-cell">Gold</div>
+          <div class="ct-cell" style="font-weight:600;">150 000 FCFA</div>
+          <div class="ct-cell mut">15 juin → 15 déc 26</div>
+          <div class="ct-cell"><span class="badge b-draft">Brouillon</span></div>
+          <div class="ct-cell ct-actions">
+            <button class="act-btn g" onclick="showTab('gen',document.getElementById('tab-gen'));preloadClient('Boutique Élégance CI','Boutique / Mode','Gold','150 000','6')">Finaliser</button>
+            <button class="act-btn" onclick="downloadContract()">⬇</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PANEL GÉNÉRATEUR ════ -->
+    <div class="panel" id="panel-gen">
+      <div style="display:flex;gap:0;min-height:500px;">
+
+        <!-- STEPS NAV -->
+        <div class="gen-steps">
+          <div class="gen-step" onclick="goStep(1)">
+            <div class="gs-left"><div class="gs-num done" id="gsn1"><i class="ti ti-check" style="font-size:10px"></i></div><div class="gs-line done" id="gsl1"></div></div>
+            <div><div class="gs-title" id="gst1">Identité client</div><div class="gs-sub">Infos générales</div></div>
+          </div>
+          <div class="gen-step" onclick="goStep(2)">
+            <div class="gs-left"><div class="gs-num act" id="gsn2">2</div><div class="gs-line" id="gsl2"></div></div>
+            <div><div class="gs-title" id="gst2">Forfait & budget</div><div class="gs-sub">Tarif mensuel</div></div>
+          </div>
+          <div class="gen-step" onclick="goStep(3)">
+            <div class="gs-left"><div class="gs-num todo" id="gsn3">3</div><div class="gs-line" id="gsl3"></div></div>
+            <div><div class="gs-title todo" id="gst3">Missions</div><div class="gs-sub">Réseaux & livrables</div></div>
+          </div>
+          <div class="gen-step" onclick="goStep(4)">
+            <div class="gs-left"><div class="gs-num todo" id="gsn4">4</div><div class="gs-line" id="gsl4"></div></div>
+            <div><div class="gs-title todo" id="gst4">Durée & paiement</div><div class="gs-sub">Dates & conditions</div></div>
+          </div>
+          <div class="gen-step" onclick="goStep(5)">
+            <div class="gs-left"><div class="gs-num todo" id="gsn5">5</div></div>
+            <div><div class="gs-title todo" id="gst5">Aperçu & export</div><div class="gs-sub">Générer le Word</div></div>
+          </div>
+          <div class="gen-prog">
+            <div class="gen-prog-lbl"><span>Progression</span><span id="gpct">20%</span></div>
+            <div class="gen-prog-track"><div class="gen-prog-fill" id="gfill" style="width:20%"></div></div>
+          </div>
+        </div>
+
+        <!-- STEP CONTENT -->
+        <div class="gen-body">
+
+          <!-- STEP 1 -->
+          <div id="gs-1">
+            <div class="step-title">Identité du client</div>
+            <div class="step-sub">Ces informations apparaissent dans l'en-tête et les clauses d'identification du contrat.</div>
+            <div class="ai-box"><div class="ai-hd"><i class="ti ti-sparkles" style="font-size:12px"></i> Conseil Pure Motion</div><div class="ai-txt">Vérifie le nom légal exact de l'entreprise — c'est ce qui apparaîtra sur le contrat. Pour les maquis et petites boutiques, demande le registre de commerce ou la pièce d'identité du gérant.</div></div>
+            <div class="frow c2">
+              <div class="field"><div class="lbl">Nom entreprise</div><input type="text" id="f-nom" placeholder="Ex : Soleil Communication Multiservice" /></div>
+              <div class="field"><div class="lbl">Secteur</div>
+                <select id="f-secteur">
+                  <option>Téléphonie & Électronique</option><option>Parc automobile</option>
+                  <option>Restaurant / Maquis</option><option>Boutique / Mode</option>
+                  <option>Salon de beauté</option><option>Hôtel / Hébergement</option>
+                  <option>Épicerie / Alimentation</option><option>Santé / Pharmacie</option>
+                  <option>École / Formation</option><option>Événementiel</option><option>Autre</option>
+                </select>
+              </div>
+            </div>
+            <div class="frow c2">
+              <div class="field"><div class="lbl">Représentant légal</div><input type="text" id="f-rep" placeholder="Ex : M. Silué Karim" /></div>
+              <div class="field"><div class="lbl">Fonction</div><input type="text" id="f-fonc" placeholder="Ex : Gérant, Directeur..." /></div>
+            </div>
+            <div class="frow c2">
+              <div class="field"><div class="lbl">Adresse</div><input type="text" id="f-adr" placeholder="Ex : Abidjan, Cocody Angré" /></div>
+              <div class="field"><div class="lbl">Téléphone client <span class="opt">(optionnel)</span></div><input type="tel" id="f-tel" placeholder="+225 07 00 00 00" /></div>
+            </div>
+            <div class="frow">
+              <div class="field"><div class="lbl">Email client <span class="opt">(pour l'accès dashboard)</span></div><input type="email" id="f-email" placeholder="contact@entreprise.ci" /></div>
+            </div>
+          </div>
+
+          <!-- STEP 2 -->
+          <div id="gs-2" style="display:none;">
+            <div class="step-title">Forfait & rémunération</div>
+            <div class="step-sub">Sélectionne le forfait adapté. Le montant et les services inclus seront intégrés automatiquement dans les clauses du contrat.</div>
+            <div class="tarif-grid">
+              <div class="tarif-card" id="tc-bronze" onclick="selectTarif('Bronze','50 000','Cinquante mille')">
+                <div class="tarif-name">Bronze</div>
+                <div class="tarif-price">50 000 <small>FCFA/mois</small></div>
+                <div class="tf"><span class="tf-ok">✓</span>4 posts / semaine</div>
+                <div class="tf"><span class="tf-ok">✓</span>Image / Carrousel / Vidéo</div>
+                <div class="tf"><span class="tf-ok">✓</span>Gestion commentaires</div>
+                <div class="tf"><span class="tf-ok">✓</span>Rapport mensuel</div>
+                <div class="tf"><span class="tf-ok">✓</span>Stratégie hashtags</div>
+              </div>
+              <div class="tarif-card tarif-pop sel" id="tc-platinum" onclick="selectTarif('Platinum','80 000','Quatre-vingt mille')">
+                <div class="tarif-pop-badge">⭐ Recommandé</div>
+                <div class="tarif-name">Platinum</div>
+                <div class="tarif-price">80 000 <small>FCFA/mois</small></div>
+                <div class="tf"><span class="tf-ok">✓</span>7 posts / semaine</div>
+                <div class="tf"><span class="tf-ok">✓</span>3 Stories / semaine</div>
+                <div class="tf"><span class="tf-ok">✓</span>Gestion commentaires</div>
+                <div class="tf"><span class="tf-ok">✓</span>Rapport mensuel complet</div>
+                <div class="tf"><span class="tf-ok">✓</span>Dashboard client inclus</div>
+              </div>
+              <div class="tarif-card" id="tc-gold" onclick="selectTarif('Gold','150 000','Cent cinquante mille')">
+                <div class="tarif-name">Gold</div>
+                <div class="tarif-price">150 000 <small>FCFA/mois</small></div>
+                <div class="tf"><span class="tf-ok">✓</span>10 posts / semaine</div>
+                <div class="tf"><span class="tf-ok">✓</span>Stories quotidiennes</div>
+                <div class="tf"><span class="tf-ok">✓</span>Contenus spécifiques</div>
+                <div class="tf"><span class="tf-ok">✓</span>Gestion publicités (Ads)</div>
+                <div class="tf"><span class="tf-ok">✓</span>Tournage vidéo mensuel</div>
+              </div>
+            </div>
+            <div class="alert info"><i class="ti ti-info-circle"></i> Forfait sélectionné : <strong id="tarif-sel-lbl">Platinum — 80 000 FCFA/mois</strong>. Ce montant et les services associés seront intégrés dans les Articles 2 et 5 du contrat.</div>
+            <div class="frow c2">
+              <div class="field"><div class="lbl">Pénalité retard de paiement</div>
+                <select id="f-penalite"><option value="7">Suspension après 7 jours</option><option value="10">Suspension après 10 jours</option><option value="15">Suspension après 15 jours</option></select>
+              </div>
+              <div class="field"><div class="lbl">Moyen de paiement préféré</div>
+                <select id="f-paiement"><option>Orange Money / MTN Money / Wave</option><option>Virement bancaire</option><option>Espèces</option><option>Tous moyens</option></select>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3 -->
+          <div id="gs-3" style="display:none;">
+            <div class="step-title">Réseaux & missions</div>
+            <div class="step-sub">Sélectionne les plateformes concernées et les missions spécifiques à inclure dans l'Article 2 du contrat.</div>
+            <div class="field" style="margin-bottom:12px;"><div class="lbl">Réseaux sociaux couverts par le contrat</div>
+              <div class="chips">
+                <div class="chip sel" onclick="toggleChip(this)">TikTok</div>
+                <div class="chip sel" onclick="toggleChip(this)">Facebook</div>
+                <div class="chip sel" onclick="toggleChip(this)">Instagram</div>
+                <div class="chip sel" onclick="toggleChip(this)">WhatsApp Business</div>
+                <div class="chip" onclick="toggleChip(this)">YouTube</div>
+                <div class="chip" onclick="toggleChip(this)">LinkedIn</div>
+                <div class="chip" onclick="toggleChip(this)">X / Twitter</div>
+              </div>
+            </div>
+            <div class="field" style="margin-bottom:12px;"><div class="lbl">Missions incluses</div>
+              <div class="chips">
+                <div class="chip sel" onclick="toggleChip(this)">Création & publication contenu</div>
+                <div class="chip sel" onclick="toggleChip(this)">Calendrier éditorial mensuel</div>
+                <div class="chip sel" onclick="toggleChip(this)">Gestion commentaires</div>
+                <div class="chip sel" onclick="toggleChip(this)">Rapport mensuel</div>
+                <div class="chip sel" onclick="toggleChip(this)">Analyse statistiques</div>
+                <div class="chip sel" onclick="toggleChip(this)">Dashboard client</div>
+                <div class="chip" onclick="toggleChip(this)">Tournage vidéo</div>
+                <div class="chip" onclick="toggleChip(this)">Gestion publicités Meta Ads</div>
+                <div class="chip" onclick="toggleChip(this)">Community management live</div>
+              </div>
+            </div>
+            <div class="frow">
+              <div class="field"><div class="lbl">KPIs à suivre <span class="opt">(apparaissent dans l'Article 6)</span></div>
+                <div class="chips">
+                  <div class="chip sel" onclick="toggleChip(this)">Croissance abonnés</div>
+                  <div class="chip sel" onclick="toggleChip(this)">Taux d'engagement</div>
+                  <div class="chip sel" onclick="toggleChip(this)">Portée organique</div>
+                  <div class="chip sel" onclick="toggleChip(this)">Messages entrants (leads)</div>
+                  <div class="chip" onclick="toggleChip(this)">Taux de sauvegarde</div>
+                  <div class="chip" onclick="toggleChip(this)">Vues profil</div>
+                </div>
+              </div>
+            </div>
+            <div class="frow" style="margin-top:12px;">
+              <div class="field"><div class="lbl">Clause spécifique <span class="opt">(optionnel — s'ajoute à l'Article 13)</span></div>
+                <textarea rows="2" placeholder="Ex : Le client s'engage à fournir 1 séance photo par mois pour la création de contenu..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 4 -->
+          <div id="gs-4" style="display:none;">
+            <div class="step-title">Durée & conditions</div>
+            <div class="step-sub">Ces informations définissent la durée contractuelle, les dates clés et les conditions de résiliation.</div>
+            <div class="frow c3">
+              <div class="field"><div class="lbl">Durée du contrat</div>
+                <select id="f-duree">
+                  <option value="1">1 mois (test)</option>
+                  <option value="3" selected>3 mois</option>
+                  <option value="6">6 mois</option>
+                  <option value="12">12 mois</option>
+                </select>
+              </div>
+              <div class="field"><div class="lbl">Date de début</div><input type="date" id="f-debut" /></div>
+              <div class="field"><div class="lbl">Préavis de résiliation</div>
+                <select id="f-preavis"><option value="15">15 jours</option><option value="30" selected>30 jours</option><option value="60">60 jours</option></select>
+              </div>
+            </div>
+            <div class="frow c2">
+              <div class="field"><div class="lbl">Lieu de signature</div><input type="text" id="f-lieu" value="Abidjan" /></div>
+              <div class="field"><div class="lbl">Date de signature</div><input type="date" id="f-datesig" /></div>
+            </div>
+            <div class="alert warn" style="margin-top:4px;"><i class="ti ti-alert-triangle"></i> <span><strong>Rappel important :</strong> Ce contrat est un contrat de <strong>prestation de services</strong>, pas un contrat de travail. Le CM reste indépendant. Cette distinction te protège légalement.</span></div>
+            <div class="frow" style="margin-top:8px;">
+              <div class="field"><div class="lbl">Offre d'appel incluse dans ce contrat <span class="opt">(optionnel)</span></div>
+                <div class="chips">
+                  <div class="chip sel-gold" onclick="toggleChipGold(this)">Audit digital offert (48h)</div>
+                  <div class="chip" onclick="toggleChipGold(this)">1er mois à -50%</div>
+                  <div class="chip" onclick="toggleChipGold(this)">1 Reel offert avant démarrage</div>
+                  <div class="chip" onclick="toggleChipGold(this)">Aucune offre spéciale</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 5 — APERÇU -->
+          <div id="gs-5" style="display:none;">
+            <div class="step-title">Aperçu du contrat</div>
+            <div class="step-sub">Voici un résumé du contrat généré. Clique sur "Télécharger Word" pour obtenir le document complet avec toutes les clauses.</div>
+
+            <div class="alert success" style="margin-bottom:14px;"><i class="ti ti-check"></i> Contrat prêt — toutes les informations ont été intégrées dans les 13 articles.</div>
+
+            <div class="preview-wrap">
+              <div class="prev-header">
+                <div><div class="prev-logo">PURE MOTION CI</div><div class="prev-logo-sub">Social-First Video That Moves Your Audience.</div></div>
+                <div class="prev-client"><div class="prev-client-name" id="prev-nom">Soleil Communication</div><div class="prev-client-sub">Contrat de prestation · <span id="prev-forfait">Bronze</span></div></div>
+              </div>
+              <div class="prev-body">
+                <div class="prev-section">
+                  <div class="prev-section-title">Résumé du contrat</div>
+                  <div class="prev-kpi-row">
+                    <div class="prev-kpi"><div class="prev-kpi-val" id="prev-montant">50 000</div><div class="prev-kpi-lbl">FCFA / mois</div></div>
+                    <div class="prev-kpi"><div class="prev-kpi-val" id="prev-duree">3 mois</div><div class="prev-kpi-lbl">Durée contrat</div></div>
+                    <div class="prev-kpi"><div class="prev-kpi-val" id="prev-total">150 000</div><div class="prev-kpi-lbl">FCFA total</div></div>
+                  </div>
+                </div>
+                <div class="prev-section">
+                  <div class="prev-section-title">Les 13 articles inclus</div>
+                  <div class="prev-articles">
+                    <div class="prev-article"><div class="prev-art-num">Art. 1</div><div class="prev-art-title">Objet du contrat</div><div class="prev-art-txt">Prestation de services indépendante — pas de lien de subordination</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 2</div><div class="prev-art-title">Missions & livrables</div><div class="prev-art-txt">Réseaux, contenus, calendrier, rapport mensuel, dashboard</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 3</div><div class="prev-art-title">Modalités d'exécution</div><div class="prev-art-txt">Télétravail, délais de validation 48h, canaux de communication</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 4</div><div class="prev-art-title">Durée</div><div class="prev-art-txt">Dates de début et fin, renouvellement tacite, bilan à J-15</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 5</div><div class="prev-art-title">Rémunération</div><div class="prev-art-txt">Montant, échéance, pénalité de retard, moyens de paiement</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 6</div><div class="prev-art-title">KPIs <span style="color:var(--cyan)">★ Nouveau</span></div><div class="prev-art-txt">Indicateurs de performance suivis chaque mois</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 7</div><div class="prev-art-title">Obligations du CM</div><div class="prev-art-txt">Qualité, délais, confidentialité, pas de sous-traitance</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 8</div><div class="prev-art-title">Obligations du Client <span style="color:var(--cyan)">★ Nouveau</span></div><div class="prev-art-txt">Paiement, visuels 48h, accès pages, validation contenus</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 9</div><div class="prev-art-title">Confidentialité & PI</div><div class="prev-art-txt">Protection 2 ans post-contrat, propriété des contenus</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 10</div><div class="prev-art-title">Résiliation</div><div class="prev-art-txt">Préavis 30j, résiliation sans préavis, mois en cours dû</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 11</div><div class="prev-art-title">Responsabilité</div><div class="prev-art-txt">Partage de responsabilité CM / Client selon l'origine du contenu</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 12</div><div class="prev-art-title">Loi applicable <span style="color:var(--cyan)">★ Nouveau</span></div><div class="prev-art-txt">Droit ivoirien, résolution amiable 30j, Tribunal d'Abidjan</div></div>
+                    <div class="prev-article"><div class="prev-art-num">Art. 13</div><div class="prev-art-title">Dispositions diverses</div><div class="prev-art-txt">Annule accords antérieurs, avenants écrits requis</div></div>
+                  </div>
+                </div>
+                <div class="prev-sigs">
+                  <div class="prev-sig">
+                    <div class="prev-sig-title">Le Client</div>
+                    <div class="prev-sig-name" id="prev-client-sig">Soleil Communication</div>
+                    <div style="height:40px;"></div>
+                    <div class="prev-sig-line">Signature & cachet</div>
+                  </div>
+                  <div class="prev-sig" style="background:var(--surf);">
+                    <div class="prev-sig-title">Le Prestataire</div>
+                    <div class="prev-sig-name">PURE MOTION CI</div>
+                    <div style="height:40px;"></div>
+                    <div class="prev-sig-line">Signature CM</div>
+                  </div>
+                </div>
+                <div class="prev-cta">
+                  <div class="prev-cta-title">Document Word complet prêt</div>
+                  <div class="prev-cta-sub">13 articles · Page de garde · En-tête & pied de page Pure Motion · Prêt à imprimer ou envoyer</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:9px;margin-top:14px;justify-content:center;">
+              <button class="btn btn-navy" onclick="downloadContract()"><i class="ti ti-file-download" style="font-size:14px"></i> Télécharger Word (.docx)</button>
+              <button class="btn"><i class="ti ti-mail" style="font-size:14px"></i> Envoyer par email</button>
+              <button class="btn btn-gold" onclick="saveContract()"><i class="ti ti-device-floppy" style="font-size:14px"></i> Sauvegarder</button>
+            </div>
+          </div>
+
+        </div><!-- /gen-body -->
+      </div><!-- /gen-wrap -->
+    </div><!-- /panel-gen -->
+
+    <!-- ════ PANEL MODÈLES ════ -->
+    <div class="panel" id="panel-modeles">
+      <div class="g3">
+        <div class="card" style="cursor:pointer;" onclick="showTab('gen',document.getElementById('tab-gen'))">
+          <div style="font-size:24px;margin-bottom:10px;">🛍️</div>
+          <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:5px;">Boutique / Commerce</div>
+          <div style="font-size:11px;color:var(--mut);line-height:1.5;margin-bottom:10px;">Adapté aux boutiques de mode, épiceries, commerces de proximité à Abidjan.</div>
+          <span class="badge b-active">Prêt à utiliser</span>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="showTab('gen',document.getElementById('tab-gen'))">
+          <div style="font-size:24px;margin-bottom:10px;">🍽️</div>
+          <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:5px;">Restaurant / Maquis</div>
+          <div style="font-size:11px;color:var(--mut);line-height:1.5;margin-bottom:10px;">Contenu storytelling culinaire, focus TikTok & WhatsApp.</div>
+          <span class="badge b-active">Prêt à utiliser</span>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="showTab('gen',document.getElementById('tab-gen'))">
+          <div style="font-size:24px;margin-bottom:10px;">🚗</div>
+          <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:5px;">Parc automobile</div>
+          <div style="font-size:11px;color:var(--mut);line-height:1.5;margin-bottom:10px;">Basé sur ta proposition actuelle. TikTok + Facebook + WhatsApp.</div>
+          <span class="badge b-active">Prêt à utiliser</span>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="showTab('gen',document.getElementById('tab-gen'))">
+          <div style="font-size:24px;margin-bottom:10px;">💆</div>
+          <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:5px;">Salon de beauté</div>
+          <div style="font-size:11px;color:var(--mut);line-height:1.5;margin-bottom:10px;">Audience féminine, Instagram & TikTok, contenu transformations.</div>
+          <span class="badge b-active">Prêt à utiliser</span>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="showTab('gen',document.getElementById('tab-gen'))">
+          <div style="font-size:24px;margin-bottom:10px;">🏨</div>
+          <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:5px;">Hôtel / Guesthouse</div>
+          <div style="font-size:11px;color:var(--mut);line-height:1.5;margin-bottom:10px;">Instagram + Booking integration, audience voyageurs.</div>
+          <span class="badge b-sent">Bientôt</span>
+        </div>
+        <div class="card" style="cursor:pointer;border-style:dashed;" onclick="showTab('gen',document.getElementById('tab-gen'))">
+          <div style="font-size:24px;margin-bottom:10px;">➕</div>
+          <div style="font-size:13px;font-weight:700;color:var(--mut);margin-bottom:5px;">Secteur personnalisé</div>
+          <div style="font-size:11px;color:var(--hint);line-height:1.5;margin-bottom:10px;">Créer un modèle pour un nouveau secteur d'activité.</div>
+          <span class="badge b-draft">Créer</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUTRES PANELS PLACEHOLDER -->
+    <div class="panel" id="panel-dashboard">
+      <div class="alert info"><i class="ti ti-layout-dashboard"></i> Module Dashboard — navigue vers l'onglet Contrats pour accéder au générateur.</div>
+    </div>
+    <div class="panel" id="panel-propositions">
+      <div class="alert info"><i class="ti ti-file-plus"></i> Module Propositions commerciales — génération de propositions par secteur avec preuves sociales intégrées.</div>
+    </div>
+    <div class="panel" id="panel-preuves">
+      <div class="proof-grid">
+        <div class="proof-card"><div class="proof-client">Soleil Communication · TikTok</div><div class="proof-stat">137K vues</div><div class="proof-desc">Boutique téléphones, Abidjan. 3 mois.</div><div class="proof-delta">↑ +3 246% followers</div></div>
+        <div class="proof-card"><div class="proof-client">Soleil Communication · Post viral</div><div class="proof-stat">42K vues</div><div class="proof-desc">Un seul Reel organique — PS4</div><div class="proof-delta">↑ Meilleure portée de la page</div></div>
+        <div class="proof-card"><div class="proof-client">Soleil Communication · Audience</div><div class="proof-stat">93,9K</div><div class="proof-desc">Spectateurs uniques sans budget pub</div><div class="proof-delta">↑ +840% en 60 jours</div></div>
+      </div>
+    </div>
+    <div class="panel" id="panel-acces"><div class="alert info"><i class="ti ti-shield-lock"></i> Module Gestion des accès — création et révocation des identifiants clients.</div></div>
+    <div class="panel" id="panel-tarifs"><div class="alert info"><i class="ti ti-coin"></i> Module Grille tarifaire — Bronze 50K · Platinum 80K · Gold 150K FCFA.</div></div>
+    <div class="panel" id="panel-marche"><div class="alert info"><i class="ti ti-telescope"></i> Module Étude de marché — analyse concurrentielle par secteur.</div></div>
+    <div class="panel" id="panel-objectifs"><div class="alert info"><i class="ti ti-target"></i> Module Objectifs stratégiques — définition et suivi des KPIs par client.</div></div>
+    <div class="panel" id="panel-settings"><div class="alert info"><i class="ti ti-settings"></i> Paramètres Pure Motion — infos de l'agence, coordonnées, logo.</div></div>
+    <div class="panel" id="panel-calendrier"><div class="alert info"><i class="ti ti-calendar-event"></i> Module Calendrier éditorial — planification des posts par client.</div></div>
+    <div class="panel" id="panel-performance"><div class="alert info"><i class="ti ti-chart-line"></i> Module Performance — suivi statistiques tous réseaux sociaux.</div></div>
+
+  </div><!-- /body -->
+
+  <!-- GEN FOOTER (step nav) -->
+  <div class="gen-footer" id="gen-footer" style="display:none;">
+    <button class="btn" id="btn-back" onclick="prevStep()">← Retour</button>
+    <div class="step-dots">
+      <div class="sdot done" id="sd1"></div>
+      <div class="sdot act" id="sd2"></div>
+      <div class="sdot" id="sd3"></div>
+      <div class="sdot" id="sd4"></div>
+      <div class="sdot" id="sd5"></div>
+    </div>
+    <button class="btn btn-gold" id="btn-next" onclick="nextStep()">Continuer →</button>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+let currentStep = 2;
+let selectedTarif = {name:'Platinum', price:'80 000', lettres:'Quatre-vingt mille'};
+
+/* ── NAVIGATION PRINCIPALE ── */
+function showMain(section, el) {
+  // hide all panels
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('act'));
+  // nav items
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('act'));
+  if(el) el.classList.add('act');
+
+  const panelMap = {
+    dashboard:'panel-dashboard', contrats:'panel-list',
+    propositions:'panel-propositions', tarifs:'panel-tarifs',
+    preuves:'panel-preuves', marche:'panel-marche',
+    objectifs:'panel-objectifs', acces:'panel-acces',
+    settings:'panel-settings', calendrier:'panel-calendrier',
+    performance:'panel-performance'
+  };
+
+  const titleMap = {
+    dashboard:'Dashboard', contrats:'Contrats clients',
+    propositions:'Propositions commerciales', tarifs:'Grille tarifaire',
+    preuves:'Preuves sociales', marche:'Étude de marché',
+    objectifs:'Objectifs stratégiques', acces:'Gestion des accès',
+    settings:'Paramètres', calendrier:'Calendrier éditorial',
+    performance:'Performance réseaux'
+  };
+
+  const subMap = {
+    contrats:'Gestion et génération des contrats de prestation — accès Admin uniquement',
+    propositions:'Propositions commerciales IA par secteur — accès Admin uniquement',
+    tarifs:'Grille tarifaire Bronze / Platinum / Gold — confidentiel Admin',
+    preuves:'Résultats clients réels intégrés dans vos propositions',
+    marche:'Analyse concurrentielle et recommandations IA',
+    objectifs:'Définition des KPIs et objectifs par client',
+    acces:'Création et révocation des accès clients et collaborateurs',
+    calendrier:'Planification éditoriale par client',
+    performance:'Suivi des statistiques réseaux sociaux'
+  };
+
+  const panel = panelMap[section] || 'panel-dashboard';
+  document.getElementById(panel).classList.add('act');
+  document.getElementById('tb-title').textContent = titleMap[section] || section;
+  document.getElementById('tb-sub').textContent = subMap[section] || '';
+
+  // tabs & footer visibility
+  const showTabs = section === 'contrats';
+  document.getElementById('tabs').style.display = showTabs ? 'flex' : 'none';
+  document.getElementById('gen-footer').style.display = 'none';
+
+  // topbar actions
+  document.getElementById('tb-actions').innerHTML = section === 'contrats'
+    ? '<button class="btn btn-sm" onclick="showMain(\'propositions\')"><i class="ti ti-file-plus" style="font-size:13px"></i> Proposition</button><button class="btn btn-gold" onclick="startGen()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau contrat</button>'
+    : '<button class="btn btn-sm" onclick="showMain(\'contrats\')">← Retour contrats</button>';
+}
+
+/* ── TABS CONTRATS ── */
+function showTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('act'));
+  if(el) el.classList.add('act');
+  ['panel-list','panel-gen','panel-modeles'].forEach(p => {
+    const el2 = document.getElementById(p);
+    if(el2) el2.classList.remove('act');
+  });
+  const map = {list:'panel-list', gen:'panel-gen', modeles:'panel-modeles'};
+  const target = document.getElementById(map[tab]);
+  if(target) target.classList.add('act');
+  const showFoot = tab === 'gen';
+  document.getElementById('gen-footer').style.display = showFoot ? 'flex' : 'none';
+}
+
+function startGen() {
+  showTab('gen', document.getElementById('tab-gen'));
+  goStep(1);
+}
+
+/* ── STEPS GÉNÉRATEUR ── */
+function goStep(n) {
+  currentStep = n;
+  for(let i=1;i<=5;i++){
+    document.getElementById('gs-'+i).style.display = i===n ? 'block' : 'none';
+    const num = document.getElementById('gsn'+i);
+    const line = document.getElementById('gsl'+i);
+    const title = document.getElementById('gst'+i);
+    const dot = document.getElementById('sd'+i);
+    if(i < n){
+      num.className='gs-num done'; num.innerHTML='<i class="ti ti-check" style="font-size:10px"></i>';
+      if(line) line.className='gs-line done';
+      title.className='gs-title';
+      if(dot){dot.className='sdot done';}
+    } else if(i === n){
+      num.className='gs-num act'; num.textContent=i;
+      if(line) line.className='gs-line';
+      title.className='gs-title';
+      if(dot){dot.className='sdot act';}
+    } else {
+      num.className='gs-num todo'; num.textContent=i;
+      if(line) line.className='gs-line';
+      title.className='gs-title todo';
+      if(dot){dot.className='sdot';}
+    }
+  }
+  const pct = Math.round((n/5)*100);
+  document.getElementById('gpct').textContent = pct+'%';
+  document.getElementById('gfill').style.width = pct+'%';
+  document.getElementById('btn-back').style.visibility = n>1 ? 'visible' : 'hidden';
+  const nextBtn = document.getElementById('btn-next');
+  if(n===5){
+    nextBtn.innerHTML = '<i class="ti ti-file-download" style="font-size:13px"></i> Télécharger Word';
+    nextBtn.onclick = downloadContract;
+    nextBtn.className = 'btn btn-navy';
+  } else {
+    nextBtn.innerHTML = 'Continuer →';
+    nextBtn.onclick = nextStep;
+    nextBtn.className = 'btn btn-gold';
+  }
+  if(n===5) updatePreview();
+}
+
+function nextStep(){ if(currentStep<5) goStep(currentStep+1); }
+function prevStep(){ if(currentStep>1) goStep(currentStep-1); }
+
+function updatePreview(){
+  const nom = document.getElementById('f-nom').value || 'Nouveau Client';
+  document.getElementById('prev-nom').textContent = nom;
+  document.getElementById('prev-client-sig').textContent = nom;
+  document.getElementById('prev-forfait').textContent = selectedTarif.name;
+  document.getElementById('prev-montant').textContent = selectedTarif.price;
+  const dur = document.getElementById('f-duree').value || '3';
+  document.getElementById('prev-duree').textContent = dur+' mois';
+  const total = parseInt(selectedTarif.price.replace(/\s/g,'')) * parseInt(dur);
+  document.getElementById('prev-total').textContent = total.toLocaleString('fr-FR');
+}
+
+/* ── TARIFS ── */
+function selectTarif(name, price, lettres){
+  selectedTarif = {name, price, lettres};
+  ['bronze','platinum','gold'].forEach(t => {
+    document.getElementById('tc-'+t).classList.remove('sel');
+  });
+  document.getElementById('tc-'+name.toLowerCase()).classList.add('sel');
+  document.getElementById('tarif-sel-lbl').textContent = name+' — '+price+' FCFA/mois';
+}
+
+/* ── CHIPS ── */
+function toggleChip(el){ el.classList.toggle('sel'); }
+function toggleChipGold(el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel-gold'));
+  el.classList.add('sel-gold');
+}
+function toggleNet(el){ el.classList.toggle('sel'); }
+
+/* ── PRÉCHARGEMENT CLIENT ── */
+function preloadClient(nom, secteur, forfait, prix, duree){
+  showTab('gen', document.getElementById('tab-gen'));
+  setTimeout(()=>{
+    if(document.getElementById('f-nom')) document.getElementById('f-nom').value = nom;
+    if(forfait==='Bronze') selectTarif('Bronze','50 000','Cinquante mille');
+    else if(forfait==='Gold') selectTarif('Gold','150 000','Cent cinquante mille');
+    else selectTarif('Platinum','80 000','Quatre-vingt mille');
+    if(document.getElementById('f-duree')) document.getElementById('f-duree').value = duree;
+    goStep(1);
+  }, 100);
+}
+
+/* ── ACTIONS ── */
+function downloadContract(){
+  alert('✓ Le contrat Word (.docx) sera généré avec toutes les informations saisies et téléchargé automatiquement.\n\nDans la version complète : le fichier s\'ouvre directement dans Word avec la mise en page Pure Motion, la page de garde, les 13 articles et les zones de signature.');
+}
+
+function saveContract(){
+  const nom = document.getElementById('f-nom') ? document.getElementById('f-nom').value || 'Nouveau Client' : 'Nouveau Client';
+  alert('✓ Contrat sauvegardé pour '+nom+' — visible dans "Mes contrats".');
+}
+
+/* ── INIT ── */
+document.querySelectorAll('.ni').forEach(n => n.addEventListener('click', function(){
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));
+  this.classList.add('act');
+}));
+
+// Init dates
+const today = new Date().toISOString().split('T')[0];
+['f-debut','f-datesig'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.value = today;
+});
+
+// Show contrats by default
+document.getElementById('panel-list').classList.add('act');
+document.getElementById('tabs').style.display = 'flex';
+</script>
+</body>
+</html>
