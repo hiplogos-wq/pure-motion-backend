@@ -1,12 +1,550 @@
-PURE
-MOTION
-Social-First Video That Moves Your Audience.
-Bienvenue sur votre espace
-Connexion sécurisée en 2 étapes — vos identifiants puis un code unique envoyé sur votre email ou téléphone.
-👥
-Collaborateur
-Outils de production et calendriers éditoriaux
-🏪
-Client
-Vos statistiques et contenus Pure Motion
-Accès administrateur ? Connexion Admin →
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pure Motion — Connexion</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cyan:#00C6E0;--navy:#12205A;--gold:#F5B731;--gold-l:#FDD05A;
+  --blue:#0066CC;--txt:#1a1a2e;--mut:#5a6282;--hint:#9aa0bc;
+  --bord:#e2e6f0;--surf:#f5f6fa;--white:#fff;
+  --up:#0a6b4f;--dn:#a32d2d;--r:14px;--rs:10px;
+}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--surf);}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.act{display:flex;}
+.topbar{padding:13px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bord);background:var(--white);flex-shrink:0;}
+.logo-wrap{display:flex;align-items:center;gap:10px;}
+.logo-sq{width:38px;height:38px;flex-shrink:0;}
+.logo-name{font-size:15px;font-weight:800;color:var(--navy);letter-spacing:.4px;}
+.logo-tag{font-size:9px;color:var(--hint);margin-top:1px;}
+.topbar-link{font-size:11px;color:var(--hint);}
+.topbar-link a{color:var(--cyan);text-decoration:none;font-weight:600;cursor:pointer;}
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:28px 16px;}
+.card{background:var(--white);border:1px solid var(--bord);border-radius:var(--r);width:100%;max-width:420px;box-shadow:0 4px 24px rgba(18,32,90,.07);}
+.role-tabs{display:flex;border-bottom:1px solid var(--bord);}
+.rtab{flex:1;padding:13px 8px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--hint);border-bottom:2.5px solid transparent;margin-bottom:-1px;display:flex;flex-direction:column;align-items:center;gap:3px;user-select:none;}
+.rtab-icon{font-size:17px;}
+.rtab.act{color:var(--navy);border-bottom-color:var(--cyan);}
+.rtab.gold-act{color:#7a5800!important;border-bottom-color:var(--gold)!important;}
+.card-head{padding:20px 26px 0;}
+.sec-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:8px;}
+.sb-green{color:var(--up);background:#e1f5ee;}
+.sb-gold{color:#7a5800;background:#faeeda;}
+.card-title{font-size:19px;font-weight:800;color:var(--txt);margin-bottom:3px;}
+.card-sub{font-size:12px;color:var(--mut);line-height:1.6;}
+.card-body{padding:16px 26px 22px;}
+.field{margin-bottom:13px;}
+.lbl{font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;display:block;}
+.iw{position:relative;}
+.ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--hint);pointer-events:none;}
+.ico-r{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--hint);cursor:pointer;}
+input{width:100%;padding:10px 38px 10px 36px;font-size:13px;border:1px solid var(--bord);border-radius:var(--rs);background:var(--white);color:var(--txt);outline:none;font-family:inherit;transition:all .15s;}
+input.nop{padding-right:12px;}
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,198,224,.09);}
+input.err{border-color:var(--dn)!important;box-shadow:0 0 0 3px rgba(162,45,45,.08)!important;}
+.ferr{font-size:10px;color:var(--dn);margin-top:3px;display:none;}
+.ferr.show{display:block;}
+.fhint{font-size:10px;color:var(--hint);margin-top:3px;}
+.ph-row{display:flex;gap:7px;}
+select.csel{width:105px;min-width:105px;padding:10px 7px;font-size:12px;border:1px solid var(--bord);border-radius:var(--rs);background:var(--white);color:var(--txt);outline:none;cursor:pointer;font-family:inherit;}
+select.csel:focus{border-color:var(--cyan);}
+.otp-row{display:flex;gap:7px;justify-content:center;margin:8px 0 10px;}
+.otp-in{width:44px;height:50px;text-align:center;font-size:20px;font-weight:700;border:1.5px solid var(--bord);border-radius:10px;background:var(--white);color:var(--navy);outline:none;font-family:inherit;transition:all .15s;padding:0;}
+.otp-in:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,198,224,.09);}
+.otp-in.filled{border-color:var(--navy);background:#f0f4ff;}
+.otp-in.err-otp{border-color:var(--dn)!important;background:#fcebeb!important;}
+.otp-info{font-size:11px;color:var(--mut);text-align:center;margin-bottom:10px;line-height:1.5;}
+.otp-info strong{color:var(--navy);}
+.otp-res{font-size:11px;text-align:center;color:var(--hint);margin-top:10px;}
+.otp-res .lk{color:var(--cyan);cursor:pointer;font-weight:600;}
+.btn{width:100%;padding:12px;font-size:13px;font-weight:700;border:none;border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;transition:all .15s;}
+.btn-n{background:var(--navy);color:#fff;}.btn-n:hover{background:#1a2d80;}
+.btn-g{background:var(--gold);color:var(--navy);}.btn-g:hover{background:var(--gold-l);}
+.btn-o{background:var(--white);color:var(--txt);border:1.5px solid var(--bord);}.btn-o:hover{background:var(--surf);}
+.btn:disabled{opacity:.6;cursor:not-allowed;}
+.forgot{font-size:11px;color:var(--cyan);cursor:pointer;text-align:right;display:block;margin:-5px 0 11px;}
+.back{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--hint);cursor:pointer;margin-bottom:12px;}
+.info{background:var(--surf);border-radius:var(--rs);padding:9px 12px;font-size:11px;color:var(--mut);line-height:1.6;display:flex;gap:7px;align-items:flex-start;margin-top:12px;}
+.info i{font-size:14px;color:var(--hint);flex-shrink:0;margin-top:1px;}
+.alertb{border-radius:var(--rs);padding:9px 12px;font-size:11px;line-height:1.6;display:none;gap:7px;align-items:flex-start;margin-bottom:12px;}
+.alertb.show{display:flex;}
+.aerr{background:#fcebeb;border:1px solid rgba(226,75,74,.25);color:var(--dn);}
+.aok{background:#e1f5ee;border:1px solid rgba(29,158,117,.25);color:#085041;}
+.pw-hint-box{background:#e6f1fb;border:1px solid rgba(56,138,221,.2);border-radius:8px;padding:9px 12px;font-size:11px;color:#0c447c;line-height:1.6;margin-bottom:12px;display:flex;gap:7px;}
+.pw-hint-box i{font-size:14px;flex-shrink:0;margin-top:1px;}
+.card-foot{padding:11px 26px;border-top:1px solid var(--bord);display:flex;align-items:center;justify-content:space-between;}
+.flink{font-size:11px;color:var(--hint);cursor:pointer;}
+.sec-ft{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--up);}
+#sc-welcome{align-items:center;justify-content:center;}
+.wcard{background:var(--white);border:1px solid var(--bord);border-radius:16px;width:100%;max-width:460px;padding:36px 30px;text-align:center;box-shadow:0 4px 24px rgba(18,32,90,.06);margin:auto;}
+.wlogo{margin-bottom:22px;}
+.wtitle{font-size:21px;font-weight:800;color:var(--txt);margin-bottom:6px;}
+.wsub{font-size:12px;color:var(--mut);line-height:1.7;margin-bottom:24px;}
+.rgrid{display:flex;gap:12px;margin-bottom:20px;}
+.rcard{flex:1;border:1.5px solid var(--bord);border-radius:12px;padding:18px 12px;cursor:pointer;transition:all .2s;}
+.rcard:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(18,32,90,.1);}
+.rcard.rc-c:hover{border-color:var(--cyan);}
+.rcard.rc-cl:hover{border-color:var(--gold);}
+.rci{font-size:30px;margin-bottom:9px;}
+.rct{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px;}
+.rcs{font-size:10px;color:var(--hint);line-height:1.5;}
+.wadmin{font-size:11px;color:var(--hint);}
+.wadmin a{color:var(--cyan);text-decoration:none;font-weight:600;cursor:pointer;}
+#sc-success{align-items:center;justify-content:center;}
+.scard{background:var(--white);border:1px solid var(--bord);border-radius:var(--r);width:100%;max-width:380px;padding:36px 28px;text-align:center;box-shadow:0 4px 24px rgba(18,32,90,.06);margin:auto;}
+.sicon{width:64px;height:64px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;}
+.stitle{font-size:19px;font-weight:800;color:var(--txt);margin-bottom:5px;}
+.ssub{font-size:12px;color:var(--mut);line-height:1.6;margin-bottom:20px;}
+#sc-forgot{align-items:center;justify-content:center;}
+.spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0;}
+.spin-d{border-color:rgba(18,32,90,.15);border-top-color:var(--navy);}
+@keyframes sp{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<!-- ═══ WELCOME ═══ -->
+<div class="screen act" id="sc-welcome">
+  <div class="main">
+    <div class="wcard">
+      <div class="wlogo">
+        <svg width="200" height="82" viewBox="0 0 200 82" fill="none">
+          <line x1="5" y1="26" x2="28" y2="26" stroke="#00C6E0" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+          <line x1="10" y1="34" x2="28" y2="34" stroke="#00C6E0" stroke-width="3" stroke-linecap="round" opacity=".38"/>
+          <line x1="15" y1="42" x2="28" y2="42" stroke="#00C6E0" stroke-width="3" stroke-linecap="round" opacity=".22"/>
+          <line x1="30" y1="14" x2="30" y2="62" stroke="#12205A" stroke-width="7" stroke-linecap="round"/>
+          <path d="M30 14 Q60 14 60 30 Q60 46 30 46" stroke="url(#wg)" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <polygon points="42,23 42,38 56,30.5" fill="#F5B731"/>
+          <defs><linearGradient id="wg" x1="30" y1="14" x2="60" y2="62" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00C6E0"/><stop offset="100%" stop-color="#0066CC"/></linearGradient></defs>
+          <text x="72" y="38" font-family="-apple-system,sans-serif" font-size="22" font-weight="800" fill="#12205A" letter-spacing="0.5">PURE</text>
+          <text x="72" y="63" font-family="-apple-system,sans-serif" font-size="22" font-weight="800" fill="#12205A" letter-spacing="0.5">MOTION</text>
+          <text x="72" y="78" font-family="-apple-system,sans-serif" font-size="8.5" fill="#9aa0bc" letter-spacing="0.4">Social-First Video That Moves Your Audience.</text>
+        </svg>
+      </div>
+      <div class="wtitle">Bienvenue sur votre espace</div>
+      <div class="wsub">Accédez à votre tableau de bord Pure Motion. Choisissez votre profil pour continuer.</div>
+      <div class="rgrid">
+        <div class="rcard rc-c" onclick="openLogin('collaborateur')">
+          <div class="rci">👥</div>
+          <div class="rct">Collaborateur</div>
+          <div class="rcs">Outils de production et calendriers éditoriaux</div>
+        </div>
+        <div class="rcard rc-cl" onclick="openLogin('client')">
+          <div class="rci">🏪</div>
+          <div class="rct">Client</div>
+          <div class="rcs">Vos statistiques et contenus Pure Motion</div>
+        </div>
+      </div>
+      <div class="wadmin">Vous êtes l'administrateur ? <a onclick="openAdmin()">Connexion Admin →</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN CLIENT / COLLABORATEUR ═══ -->
+<div class="screen" id="sc-login">
+  <div class="topbar">
+    <div class="logo-wrap">
+      <svg class="logo-sq" viewBox="0 0 38 38" fill="none">
+        <rect width="38" height="38" rx="9" fill="#12205A"/>
+        <line x1="4" y1="13" x2="12" y2="13" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+        <line x1="6" y1="19" x2="12" y2="19" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+        <line x1="8" y1="25" x2="12" y2="25" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".25"/>
+        <line x1="13" y1="8" x2="13" y2="30" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M13 8 Q29 8 29 17 Q29 26 13 26" stroke="url(#lg)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <polygon points="19,13 19,22 27,17.5" fill="#F5B731"/>
+        <defs><linearGradient id="lg" x1="13" y1="8" x2="29" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00C6E0"/><stop offset="100%" stop-color="#0066CC"/></linearGradient></defs>
+      </svg>
+      <div><div class="logo-name">PURE MOTION</div><div class="logo-tag">Social-First Video That Moves Your Audience.</div></div>
+    </div>
+    <div class="topbar-link"><a onclick="goWelcome()">← Retour à l'accueil</a></div>
+  </div>
+
+  <div class="main">
+    <div class="card">
+      <div class="role-tabs">
+        <div class="rtab act" id="rt-co" onclick="setRole('collaborateur')"><span class="rtab-icon">👥</span>Collaborateur</div>
+        <div class="rtab" id="rt-cl" onclick="setRole('client')"><span class="rtab-icon">🏪</span>Client</div>
+      </div>
+
+      <div class="card-head">
+        <div style="height:16px;"></div>
+        <div class="sec-badge sb-green"><i class="ti ti-device-mobile"></i> Connexion par numéro</div>
+        <div class="card-title" id="ctitle">Connexion Collaborateur</div>
+        <div class="card-sub" id="csub">Entrez votre numéro et votre mot de passe.</div>
+        <div style="height:14px;"></div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- ÉTAPE 1 : NUMÉRO -->
+        <div id="st-phone">
+          <div class="alertb aerr" id="ph-err"><i class="ti ti-alert-circle"></i><span id="ph-err-txt">Numéro incorrect.</span></div>
+
+          <div class="field">
+            <label class="lbl">Numéro de téléphone</label>
+            <div class="ph-row">
+              <select class="csel" id="ph-country">
+                <option value="+225">🇨🇮 +225</option>
+                <option value="+33">🇫🇷 +33</option>
+                <option value="+221">🇸🇳 +221</option>
+                <option value="+229">🇧🇯 +229</option>
+                <option value="+226">🇧🇫 +226</option>
+                <option value="+223">🇲🇱 +223</option>
+                <option value="+228">🇹🇬 +228</option>
+                <option value="+237">🇨🇲 +237</option>
+              </select>
+              <div class="iw" style="flex:1;">
+                <i class="ti ti-phone ico"></i>
+                <input type="tel" id="ph-num" placeholder="07 05 82 88 10" class="nop" autocomplete="tel"/>
+              </div>
+            </div>
+            <div class="fhint">Le numéro communiqué à Pure Motion lors de votre inscription</div>
+          </div>
+
+          <button class="btn btn-n" id="btn-continue" onclick="checkPhone()">
+            <i class="ti ti-arrow-right" style="font-size:14px;"></i> Continuer
+          </button>
+
+          <div class="info"><i class="ti ti-info-circle"></i>Première connexion ? Vous créerez votre mot de passe à l'étape suivante.</div>
+        </div>
+
+        <!-- ÉTAPE 2A : CRÉER MOT DE PASSE (1ère connexion) -->
+        <div id="st-create" style="display:none;">
+          <div class="back" onclick="backToPhone()"><i class="ti ti-arrow-left" style="font-size:12px;"></i> Changer de numéro</div>
+
+          <div class="pw-hint-box"><i class="ti ti-confetti"></i><div>Bienvenue <strong id="create-name">!</strong> C'est votre première connexion. Créez le mot de passe qui protègera votre espace.</div></div>
+
+          <div class="alertb aerr" id="cr-err"><i class="ti ti-alert-circle"></i><span id="cr-err-txt">Erreur.</span></div>
+
+          <div class="field">
+            <label class="lbl">Choisissez un mot de passe</label>
+            <div class="iw">
+              <i class="ti ti-lock ico"></i>
+              <input type="password" id="cr-pass" placeholder="Au moins 6 caractères" autocomplete="new-password"/>
+              <i class="ti ti-eye ico-r" id="eye-cr" onclick="togglePw('cr-pass','eye-cr')"></i>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="lbl">Confirmez le mot de passe</label>
+            <div class="iw">
+              <i class="ti ti-lock-check ico"></i>
+              <input type="password" id="cr-pass2" placeholder="Retapez le mot de passe" class="nop" autocomplete="new-password"/>
+            </div>
+            <div class="ferr" id="cr-mismatch">Les mots de passe ne correspondent pas.</div>
+          </div>
+
+          <button class="btn btn-g" id="btn-create" onclick="createPassword()">
+            <i class="ti ti-check" style="font-size:14px;"></i> Créer mon mot de passe et me connecter
+          </button>
+
+          <div class="info"><i class="ti ti-shield-lock"></i>Votre mot de passe est chiffré. Personne chez Pure Motion ne peut le voir, même pas l'administrateur.</div>
+        </div>
+
+        <!-- ÉTAPE 2B : CONNEXION (compte déjà activé) -->
+        <div id="st-login" style="display:none;">
+          <div class="back" onclick="backToPhone()"><i class="ti ti-arrow-left" style="font-size:12px;"></i> Changer de numéro</div>
+
+          <div class="otp-info">Connexion pour <strong id="login-name"></strong></div>
+
+          <div class="alertb aerr" id="lg-err"><i class="ti ti-alert-circle"></i><span id="lg-err-txt">Mot de passe incorrect.</span></div>
+
+          <div class="field">
+            <label class="lbl">Mot de passe</label>
+            <div class="iw">
+              <i class="ti ti-lock ico"></i>
+              <input type="password" id="lg-pass" placeholder="Votre mot de passe" autocomplete="current-password"/>
+              <i class="ti ti-eye ico-r" id="eye-lg" onclick="togglePw('lg-pass','eye-lg')"></i>
+            </div>
+          </div>
+
+          <span class="forgot" onclick="showForgot()">Mot de passe oublié ?</span>
+
+          <button class="btn btn-n" id="btn-login" onclick="doLogin()">
+            <i class="ti ti-login" style="font-size:14px;"></i> Me connecter
+          </button>
+        </div>
+
+      </div>
+
+      <div class="card-foot">
+        <div style="display:flex;gap:12px;">
+          <span class="flink" onclick="showForgot()">Aide</span>
+          <span class="flink" onclick="goWelcome()">← Accueil</span>
+        </div>
+        <div class="sec-ft"><i class="ti ti-lock" style="font-size:12px;"></i> SSL sécurisé</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN ADMIN (2FA) ═══ -->
+<div class="screen" id="sc-admin">
+  <div class="topbar">
+    <div class="logo-wrap">
+      <svg class="logo-sq" viewBox="0 0 38 38" fill="none"><rect width="38" height="38" rx="9" fill="#12205A"/><line x1="13" y1="8" x2="13" y2="30" stroke="white" stroke-width="3.5" stroke-linecap="round"/><path d="M13 8 Q29 8 29 17 Q29 26 13 26" stroke="url(#ag)" stroke-width="3.5" stroke-linecap="round" fill="none"/><polygon points="19,13 19,22 27,17.5" fill="#F5B731"/><defs><linearGradient id="ag" x1="13" y1="8" x2="29" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00C6E0"/><stop offset="100%" stop-color="#0066CC"/></linearGradient></defs></svg>
+      <div><div class="logo-name">PURE MOTION</div><div class="logo-tag">Espace Administrateur</div></div>
+    </div>
+    <div class="topbar-link"><a onclick="goWelcome()">← Accueil</a></div>
+  </div>
+  <div class="main">
+    <div class="card">
+      <div class="card-head">
+        <div style="height:18px;"></div>
+        <div class="sec-badge sb-gold"><i class="ti ti-shield-lock"></i> Espace réservé</div>
+        <div class="card-title">Connexion Administrateur</div>
+        <div class="card-sub">Réservé au Community Manager Pure Motion.</div>
+        <div style="height:14px;"></div>
+      </div>
+      <div class="card-body">
+
+        <div id="ad-step1">
+          <div class="alertb aerr" id="ad-err"><i class="ti ti-alert-circle"></i><span id="ad-err-txt">Identifiants incorrects.</span></div>
+          <div class="field">
+            <label class="lbl">Email administrateur</label>
+            <div class="iw"><i class="ti ti-mail ico"></i><input type="email" id="ad-email" placeholder="admin@puremotion.ci" class="nop" autocomplete="email"/></div>
+          </div>
+          <div class="field">
+            <label class="lbl">Mot de passe</label>
+            <div class="iw"><i class="ti ti-lock ico"></i><input type="password" id="ad-pass" placeholder="Mot de passe admin" autocomplete="current-password"/><i class="ti ti-eye ico-r" id="eye-ad" onclick="togglePw('ad-pass','eye-ad')"></i></div>
+          </div>
+          <button class="btn btn-g" id="btn-ad-login" onclick="adminLogin()"><i class="ti ti-login" style="font-size:14px;"></i> Me connecter</button>
+          <div class="info"><i class="ti ti-shield-lock"></i>Connexion directe et sécurisée. Votre mot de passe est chiffré.</div>
+        </div>
+
+      </div>
+      <div class="card-foot">
+        <span class="flink" onclick="goWelcome()">← Accueil</span>
+        <div class="sec-ft"><i class="ti ti-lock" style="font-size:12px;"></i> SSL sécurisé</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SUCCESS ═══ -->
+<div class="screen" id="sc-success">
+  <div class="topbar">
+    <div class="logo-wrap">
+      <svg class="logo-sq" viewBox="0 0 38 38" fill="none"><rect width="38" height="38" rx="9" fill="#12205A"/><line x1="13" y1="8" x2="13" y2="30" stroke="white" stroke-width="3.5" stroke-linecap="round"/><path d="M13 8 Q29 8 29 17 Q29 26 13 26" stroke="url(#sg)" stroke-width="3.5" stroke-linecap="round" fill="none"/><polygon points="19,13 19,22 27,17.5" fill="#F5B731"/><defs><linearGradient id="sg" x1="13" y1="8" x2="29" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00C6E0"/><stop offset="100%" stop-color="#0066CC"/></linearGradient></defs></svg>
+      <div><div class="logo-name">PURE MOTION</div><div class="logo-tag">Social-First Video That Moves Your Audience.</div></div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="scard">
+      <div class="sicon" id="s-icon" style="background:linear-gradient(135deg,#00C6E0,#0066CC);">✓</div>
+      <div class="stitle" id="s-title">Connexion réussie</div>
+      <div class="ssub" id="s-sub">Bienvenue sur votre espace Pure Motion.</div>
+      <button class="btn btn-n" onclick="goWelcome()"><i class="ti ti-layout-dashboard" style="font-size:14px;"></i> Accéder à mon tableau de bord</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FORGOT ═══ -->
+<div class="screen" id="sc-forgot">
+  <div class="main">
+    <div class="card" style="max-width:390px;">
+      <div class="card-head"><div style="height:18px;"></div><div class="card-title">Mot de passe oublié ?</div><div class="card-sub">Pure Motion peut réinitialiser votre accès.</div><div style="height:14px;"></div></div>
+      <div class="card-body">
+        <div style="background:#e1f5ee;border:1px solid rgba(29,158,117,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:#085041;line-height:1.8;margin-bottom:14px;">
+          <strong>Contacter Pure Motion</strong><br>
+          📧 puremotionci@gmail.com<br>
+          📱 +225 07-05-82-88-10<br>
+          💬 WhatsApp disponible 7j/7
+        </div>
+        <button class="btn btn-o" onclick="showScreen('sc-login')"><i class="ti ti-arrow-left" style="font-size:14px;"></i> Retour</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// La page est servie par le backend → chemins relatifs
+const BACKEND_URL = '';
+let state = { role:'collaborateur', phone:'', name:'', timer:null, adminEmail:'' };
+
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('act')); document.getElementById(id).classList.add('act'); }
+function goWelcome(){ showScreen('sc-welcome'); resetLogin(); }
+function openLogin(role){ showScreen('sc-login'); setRole(role); resetLogin(); }
+function openAdmin(){ showScreen('sc-admin'); }
+function showForgot(){ showScreen('sc-forgot'); }
+
+function resetLogin(){
+  document.getElementById('st-phone').style.display='block';
+  document.getElementById('st-create').style.display='none';
+  document.getElementById('st-login').style.display='none';
+  ['ph-num','cr-pass','cr-pass2','lg-pass'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['ph-err','cr-err','lg-err'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('show');});
+}
+
+function setRole(r){
+  state.role=r;
+  const isCl=r==='client';
+  document.getElementById('rt-co').classList.toggle('act',!isCl);
+  document.getElementById('rt-cl').classList.toggle('act',isCl);
+  document.getElementById('rt-cl').classList.toggle('gold-act',isCl);
+  document.getElementById('ctitle').textContent=isCl?'Connexion Client':'Connexion Collaborateur';
+  document.getElementById('csub').textContent=isCl?'Entrez votre numéro pour accéder à vos statistiques.':'Entrez votre numéro pour accéder à vos outils.';
+}
+
+function togglePw(id,ico){
+  const i=document.getElementById(id); const ic=document.getElementById(ico);
+  if(i.type==='password'){i.type='text';ic.className='ti ti-eye-off ico-r';}
+  else{i.type='password';ic.className='ti ti-eye ico-r';}
+}
+
+function validPhone(p){ return p && p.replace(/[\s\-]/g,'').length>=8; }
+function showAlert(id,show,txt){ const el=document.getElementById(id); if(el){ if(txt){const s=el.querySelector('span');if(s)s.textContent=txt;} el.classList.toggle('show',show);} }
+
+// ── ÉTAPE 1 : vérifier le numéro ──
+async function checkPhone(){
+  const num=document.getElementById('ph-num').value.trim();
+  const country=document.getElementById('ph-country').value;
+  if(!validPhone(num)){ document.getElementById('ph-num').classList.add('err'); return; }
+  document.getElementById('ph-num').classList.remove('err');
+  showAlert('ph-err',false);
+
+  const e164 = country + num.replace(/[\s\-]/g,'');
+  state.phone = e164;
+
+  const btn=document.getElementById('btn-continue');
+  btn.innerHTML='<div class="spin"></div> Vérification...'; btn.disabled=true;
+
+  try {
+    const r = await fetch(BACKEND_URL+'/api/client/check', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ phone:e164 })
+    });
+    const data = await r.json();
+    btn.innerHTML='<i class="ti ti-arrow-right" style="font-size:14px;"></i> Continuer'; btn.disabled=false;
+
+    if(!data.success){ showAlert('ph-err',true,data.error||'Numéro non reconnu.'); return; }
+
+    state.name = data.name;
+    if(data.nextStep==='create-password'){
+      document.getElementById('create-name').textContent = data.name + ' !';
+      document.getElementById('st-phone').style.display='none';
+      document.getElementById('st-create').style.display='block';
+      document.getElementById('cr-pass').focus();
+    } else {
+      document.getElementById('login-name').textContent = data.name;
+      document.getElementById('st-phone').style.display='none';
+      document.getElementById('st-login').style.display='block';
+      document.getElementById('lg-pass').focus();
+    }
+  } catch(err){
+    btn.innerHTML='<i class="ti ti-arrow-right" style="font-size:14px;"></i> Continuer'; btn.disabled=false;
+    showAlert('ph-err',true,'Erreur de connexion au serveur.');
+  }
+}
+
+function backToPhone(){
+  document.getElementById('st-create').style.display='none';
+  document.getElementById('st-login').style.display='none';
+  document.getElementById('st-phone').style.display='block';
+}
+
+// ── ÉTAPE 2A : créer le mot de passe ──
+async function createPassword(){
+  const p1=document.getElementById('cr-pass').value;
+  const p2=document.getElementById('cr-pass2').value;
+  document.getElementById('cr-mismatch').classList.remove('show');
+  showAlert('cr-err',false);
+
+  if(p1.length<6){ showAlert('cr-err',true,'Le mot de passe doit faire au moins 6 caractères.'); return; }
+  if(p1!==p2){ document.getElementById('cr-mismatch').classList.add('show'); document.getElementById('cr-pass2').classList.add('err'); return; }
+  document.getElementById('cr-pass2').classList.remove('err');
+
+  const btn=document.getElementById('btn-create');
+  btn.innerHTML='<div class="spin"></div> Création...'; btn.disabled=true;
+
+  try {
+    const r = await fetch(BACKEND_URL+'/api/client/set-password', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ phone:state.phone, password:p1 })
+    });
+    const data = await r.json();
+    btn.innerHTML='<i class="ti ti-check" style="font-size:14px;"></i> Créer mon mot de passe et me connecter'; btn.disabled=false;
+    if(data.success){ showSuccess(); }
+    else { showAlert('cr-err',true,data.error||'Erreur.'); }
+  } catch(err){
+    btn.innerHTML='<i class="ti ti-check" style="font-size:14px;"></i> Créer mon mot de passe et me connecter'; btn.disabled=false;
+    showAlert('cr-err',true,'Erreur de connexion au serveur.');
+  }
+}
+
+// ── ÉTAPE 2B : connexion ──
+async function doLogin(){
+  const pass=document.getElementById('lg-pass').value;
+  showAlert('lg-err',false);
+  if(!pass){ document.getElementById('lg-pass').classList.add('err'); return; }
+  document.getElementById('lg-pass').classList.remove('err');
+
+  const btn=document.getElementById('btn-login');
+  btn.innerHTML='<div class="spin"></div> Connexion...'; btn.disabled=true;
+
+  try {
+    const r = await fetch(BACKEND_URL+'/api/client/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ phone:state.phone, password:pass })
+    });
+    const data = await r.json();
+    btn.innerHTML='<i class="ti ti-login" style="font-size:14px;"></i> Me connecter'; btn.disabled=false;
+    if(data.success){ showSuccess(); }
+    else { showAlert('lg-err',true,data.error||'Mot de passe incorrect.'); document.getElementById('lg-pass').classList.add('err'); }
+  } catch(err){
+    btn.innerHTML='<i class="ti ti-login" style="font-size:14px;"></i> Me connecter'; btn.disabled=false;
+    showAlert('lg-err',true,'Erreur de connexion au serveur.');
+  }
+}
+
+// ── ADMIN — connexion simple (email + mot de passe) ──
+async function adminLogin(){
+  const email=document.getElementById('ad-email').value.trim();
+  const pass=document.getElementById('ad-pass').value;
+  showAlert('ad-err',false);
+  if(!email||!pass){ showAlert('ad-err',true,'Email et mot de passe requis.'); return; }
+
+  const btn=document.getElementById('btn-ad-login');
+  btn.innerHTML='<div class="spin"></div> Connexion...'; btn.disabled=true;
+
+  try {
+    const r = await fetch(BACKEND_URL+'/api/admin/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ email, password:pass })
+    });
+    const data = await r.json();
+    btn.innerHTML='<i class="ti ti-login" style="font-size:14px;"></i> Me connecter'; btn.disabled=false;
+
+    if(data.success){
+      state.name = data.user ? data.user.name : 'Admin';
+      showSuccess(true);
+    } else {
+      showAlert('ad-err',true,data.error||'Identifiants incorrects.');
+    }
+  } catch(err){
+    btn.innerHTML='<i class="ti ti-login" style="font-size:14px;"></i> Me connecter'; btn.disabled=false;
+    showAlert('ad-err',true,'Erreur de connexion au serveur.');
+  }
+}
+
+function showSuccess(isAdmin){
+  const isCl=state.role==='client';
+  const icon=document.getElementById('s-icon');
+  if(isAdmin){
+    icon.style.background='linear-gradient(135deg,#F5B731,#e6970f)'; icon.style.color='#12205A';
+    document.getElementById('s-title').textContent='Connexion Admin réussie';
+    document.getElementById('s-sub').textContent='Authentification 2 facteurs confirmée. Bienvenue dans votre espace administrateur Pure Motion.';
+  } else {
+    icon.style.background=isCl?'linear-gradient(135deg,#F5B731,#e6970f)':'linear-gradient(135deg,#00C6E0,#0066CC)';
+    icon.style.color=isCl?'#12205A':'#fff';
+    document.getElementById('s-title').textContent='Connexion réussie — '+(isCl?'Client':'Collaborateur');
+    document.getElementById('s-sub').textContent='Bienvenue '+(state.name||'')+' ! Vous êtes connecté à votre espace Pure Motion.';
+  }
+  showScreen('sc-success');
+}
+</script>
+</body>
+</html>
