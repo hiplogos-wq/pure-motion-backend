@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pure Motion — Espace Client</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cyan:#00C6E0;--navy:#12205A;--gold:#F5B731;--gold-l:#FDD05A;
+  --blue:#0066CC;--bg:#f5f6fa;--white:#fff;--surf:#f0f2f8;
+  --txt:#1a1a2e;--mut:#5a6282;--hint:#9aa0bc;--bord:#e2e6f0;
+  --up:#0a6b4f;--dn:#a32d2d;--r:12px;--rs:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;}
+
+.topbar{background:var(--white);border-bottom:1px solid var(--bord);padding:13px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.tb-left{display:flex;align-items:center;gap:11px;}
+.logo-sq{width:38px;height:38px;flex-shrink:0;}
+.logo-name{font-size:15px;font-weight:800;color:var(--navy);letter-spacing:.4px;}
+.logo-tag{font-size:9px;color:var(--hint);margin-top:1px;}
+.tb-right{display:flex;align-items:center;gap:14px;}
+.client-badge{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mut);}
+.client-ava{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e6970f);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--navy);}
+.logout-btn{font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid var(--bord);}
+.logout-btn:hover{background:var(--surf);color:var(--dn);}
+
+.wrap{max-width:1000px;margin:0 auto;padding:22px 24px;}
+
+.hero{background:linear-gradient(135deg,var(--navy),#1a3a8a);border-radius:16px;padding:22px 26px;margin-bottom:20px;color:#fff;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:rgba(0,198,224,.12);}
+.hero-greet{font-size:13px;color:var(--cyan);margin-bottom:4px;}
+.hero-title{font-size:22px;font-weight:800;margin-bottom:6px;}
+.hero-sub{font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;max-width:540px;}
+
+.section-label{font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.8px;margin:22px 0 12px;}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:8px;}
+.kpi{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:14px 16px;}
+.kpi-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:9px;}
+.kpi-val{font-size:23px;font-weight:800;color:var(--txt);line-height:1.1;}
+.kpi-lbl{font-size:11px;color:var(--hint);margin-top:2px;}
+.kpi-delta{font-size:11px;font-weight:700;margin-top:5px;}
+.up{color:var(--up);}.dn{color:var(--dn);}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
+.card-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+
+.content-row{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--bord);align-items:center;}
+.content-row:last-child{border-bottom:none;}
+.content-thumb{width:42px;height:42px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--blue));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.content-info{flex:1;min-width:0;}
+.content-name{font-size:12px;font-weight:600;color:var(--txt);}
+.content-meta{font-size:10px;color:var(--hint);margin-top:2px;}
+.content-stat{text-align:right;}
+.content-views{font-size:13px;font-weight:700;color:var(--navy);}
+.content-views-lbl{font-size:9px;color:var(--hint);}
+
+.badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;}
+.b-pub{background:#e1f5ee;color:var(--up);}
+.b-prog{background:#faeeda;color:#7a5800;}
+
+.report-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:18px;display:flex;align-items:center;gap:14px;}
+.report-ico{width:46px;height:46px;border-radius:11px;background:#e6f1fb;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.report-info{flex:1;}
+.report-title{font-size:13px;font-weight:700;color:var(--txt);}
+.report-sub{font-size:11px;color:var(--mut);margin-top:2px;}
+.report-btn{padding:8px 16px;font-size:12px;font-weight:600;border-radius:8px;background:var(--navy);color:#fff;border:none;cursor:pointer;}
+.report-btn:hover{background:#1a2d80;}
+
+.contact-box{background:#e6f1fb;border:1px solid rgba(56,138,221,.2);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:12px;color:#0c447c;line-height:1.6;}
+.contact-box i{font-size:20px;}
+
+@media(max-width:760px){.kpi-grid{grid-template-columns:1fr 1fr;}.g2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<script>
+// ── Garde de session : vérifie qu'on est connecté en client ──
+(function(){
+  try {
+    var s = JSON.parse(sessionStorage.getItem('pm_session') || 'null');
+    if(!s || s.role !== 'client'){ window.location.href = '/'; return; }
+    window._pmUser = s;
+  } catch(e){ window.location.href = '/'; }
+})();
+function pmLogout(){
+  try { sessionStorage.removeItem('pm_session'); } catch(e){}
+  window.location.href = '/';
+}
+</script>
+
+<div class="topbar">
+  <div class="tb-left">
+    <svg class="logo-sq" viewBox="0 0 38 38" fill="none">
+      <rect width="38" height="38" rx="9" fill="#12205A"/>
+      <line x1="4" y1="13" x2="12" y2="13" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+      <line x1="6" y1="19" x2="12" y2="19" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+      <line x1="8" y1="25" x2="12" y2="25" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".25"/>
+      <line x1="13" y1="8" x2="13" y2="30" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M13 8 Q29 8 29 17 Q29 26 13 26" stroke="url(#g)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      <polygon points="19,13 19,22 27,17.5" fill="#F5B731"/>
+      <defs><linearGradient id="g" x1="13" y1="8" x2="29" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00C6E0"/><stop offset="100%" stop-color="#0066CC"/></linearGradient></defs>
+    </svg>
+    <div><div class="logo-name">PURE MOTION</div><div class="logo-tag">Espace Client</div></div>
+  </div>
+  <div class="tb-right">
+    <div class="client-badge">
+      <div class="client-ava" id="client-initial">C</div>
+      <span id="client-name">Client</span>
+    </div>
+    <div class="logout-btn" onclick="pmLogout()"><i class="ti ti-logout" style="font-size:14px;"></i> Déconnexion</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-greet">👋 Bonjour <span id="hero-name">cher client</span></div>
+    <div class="hero-title">Votre espace Pure Motion</div>
+    <div class="hero-sub">Suivez en temps réel les performances de vos réseaux sociaux et les contenus créés pour vous par votre Community Manager.</div>
+  </div>
+
+  <div class="section-label">📊 Vos performances ce mois-ci</div>
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-ico" style="background:#e6f1fb;">👁️</div>
+      <div class="kpi-val">137K</div>
+      <div class="kpi-lbl">Vues totales</div>
+      <div class="kpi-delta up">↑ +1 279%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-ico" style="background:#e1f5ee;">👥</div>
+      <div class="kpi-val">1 861</div>
+      <div class="kpi-lbl">Abonnés</div>
+      <div class="kpi-delta up">↑ +870 nets</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-ico" style="background:#faeeda;">❤️</div>
+      <div class="kpi-val">7 400</div>
+      <div class="kpi-lbl">J'aime</div>
+      <div class="kpi-delta up">↑ +312%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-ico" style="background:#f3e8ff;">💬</div>
+      <div class="kpi-val">289</div>
+      <div class="kpi-lbl">Commentaires</div>
+      <div class="kpi-delta up">↑ +156%</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div>
+      <div class="section-label">🎬 Vos derniers contenus publiés</div>
+      <div class="card">
+        <div class="content-row">
+          <div class="content-thumb">🎮</div>
+          <div class="content-info"><div class="content-name">Qu'attends-tu pour venir récupérer ta PS4</div><div class="content-meta">TikTok · Publié il y a 3 jours</div></div>
+          <div class="content-stat"><div class="content-views">42K</div><div class="content-views-lbl">vues</div></div>
+        </div>
+        <div class="content-row">
+          <div class="content-thumb" style="background:linear-gradient(135deg,#F5B731,#e6970f);">📱</div>
+          <div class="content-info"><div class="content-name">Nouveaux iPhone disponibles en boutique</div><div class="content-meta">Instagram · Publié il y a 5 jours</div></div>
+          <div class="content-stat"><div class="content-views">18K</div><div class="content-views-lbl">vues</div></div>
+        </div>
+        <div class="content-row">
+          <div class="content-thumb" style="background:linear-gradient(135deg,#7B61FF,#5038d0);">🎧</div>
+          <div class="content-info"><div class="content-name">Promo accessoires audio cette semaine</div><div class="content-meta">TikTok · Publié il y a 1 semaine</div></div>
+          <div class="content-stat"><div class="content-views">12K</div><div class="content-views-lbl">vues</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">📅 Prochaines publications prévues</div>
+      <div class="card">
+        <div class="content-row">
+          <div class="content-thumb" style="background:var(--surf);font-size:14px;color:var(--mut);">Lun</div>
+          <div class="content-info"><div class="content-name">Vidéo déballage nouveau stock</div><div class="content-meta">Prévu lundi · 20h00</div></div>
+          <span class="badge b-prog">En préparation</span>
+        </div>
+        <div class="content-row">
+          <div class="content-thumb" style="background:var(--surf);font-size:14px;color:var(--mut);">Mer</div>
+          <div class="content-info"><div class="content-name">Témoignage client satisfait</div><div class="content-meta">Prévu mercredi · 20h00</div></div>
+          <span class="badge b-prog">En préparation</span>
+        </div>
+        <div class="content-row">
+          <div class="content-thumb" style="background:var(--surf);font-size:14px;color:var(--mut);">Ven</div>
+          <div class="content-info"><div class="content-name">Promo week-end flash</div><div class="content-meta">Prévu vendredi · 19h00</div></div>
+          <span class="badge b-prog">En préparation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">📄 Votre rapport mensuel</div>
+  <div class="report-card" style="margin-bottom:14px;">
+    <div class="report-ico">📈</div>
+    <div class="report-info">
+      <div class="report-title">Rapport de performance — Juin 2026</div>
+      <div class="report-sub">Analyse complète de vos statistiques, recommandations et prochaines actions</div>
+    </div>
+    <button class="report-btn" onclick="alert('Le rapport PDF sera disponible au téléchargement dans la version complète.')">Télécharger</button>
+  </div>
+
+  <div class="contact-box">
+    <i class="ti ti-headset"></i>
+    <div><strong>Une question ?</strong> Votre Community Manager Pure Motion est disponible — 📧 puremotionci@gmail.com · 📱 +225 07-05-82-88-10 · 💬 WhatsApp 7j/7</div>
+  </div>
+
+</div>
+
+<script>
+// Personnalise avec le nom du client connecté
+(function(){
+  var u = window._pmUser;
+  if(u && u.name){
+    document.getElementById('client-name').textContent = u.name;
+    document.getElementById('hero-name').textContent = u.name;
+    document.getElementById('client-initial').textContent = u.name.charAt(0).toUpperCase();
+  }
+})();
+</script>
+</body>
+</html>
