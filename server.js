@@ -1,4 +1,3 @@
-
 /**
  * ╔══════════════════════════════════════════════════════╗
  * ║         PURE MOTION — Backend Sécurisé               ║
@@ -294,7 +293,24 @@ app.get('/api/admin/clients', (req, res) => {
 });
 
 // ══════════════════════════════════════════
-// FRONTEND (fallback)
+// PAGES TABLEAUX DE BORD
+// ══════════════════════════════════════════
+// Espace admin / collaborateur
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'), (err) => {
+    if (err) res.redirect('/');
+  });
+});
+
+// Espace client
+app.get('/espace-client', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'client.html'), (err) => {
+    if (err) res.redirect('/');
+  });
+});
+
+// ══════════════════════════════════════════
+// FRONTEND (fallback → page de connexion)
 // ══════════════════════════════════════════
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'), (err) => {
@@ -330,3 +346,4 @@ app.listen(PORT, () => {
   console.log('   GET  /api/health');
   console.log('');
 });
+
