@@ -337,7 +337,7 @@ select.csel:focus{border-color:var(--cyan);}
       <div class="sicon" id="s-icon" style="background:linear-gradient(135deg,#00C6E0,#0066CC);">✓</div>
       <div class="stitle" id="s-title">Connexion réussie</div>
       <div class="ssub" id="s-sub">Bienvenue sur votre espace Pure Motion.</div>
-      <button class="btn btn-n" onclick="goWelcome()"><i class="ti ti-layout-dashboard" style="font-size:14px;"></i> Accéder à mon tableau de bord</button>
+      <button class="btn btn-n" id="btn-goto-dash" onclick="gotoDashboard()"><i class="ti ti-layout-dashboard" style="font-size:14px;"></i> Accéder à mon tableau de bord</button>
     </div>
   </div>
 </div>
@@ -533,10 +533,23 @@ async function adminLogin(){
 function showSuccess(isAdmin){
   const isCl=state.role==='client';
   const icon=document.getElementById('s-icon');
+
+  // Mémorise la session pour la page tableau de bord
+  // (sessionStorage = effacé quand on ferme l'onglet, plus sûr)
+  try {
+    sessionStorage.setItem('pm_session', JSON.stringify({
+      role: isAdmin ? 'admin' : state.role,
+      name: state.name || (isAdmin ? 'Admin' : ''),
+      loggedAt: Date.now()
+    }));
+  } catch(e){}
+
+  state.isAdmin = isAdmin;
+
   if(isAdmin){
     icon.style.background='linear-gradient(135deg,#F5B731,#e6970f)'; icon.style.color='#12205A';
     document.getElementById('s-title').textContent='Connexion Admin réussie';
-    document.getElementById('s-sub').textContent='Authentification 2 facteurs confirmée. Bienvenue dans votre espace administrateur Pure Motion.';
+    document.getElementById('s-sub').textContent='Bienvenue dans votre espace administrateur Pure Motion.';
   } else {
     icon.style.background=isCl?'linear-gradient(135deg,#F5B731,#e6970f)':'linear-gradient(135deg,#00C6E0,#0066CC)';
     icon.style.color=isCl?'#12205A':'#fff';
@@ -544,6 +557,17 @@ function showSuccess(isAdmin){
     document.getElementById('s-sub').textContent='Bienvenue '+(state.name||'')+' ! Vous êtes connecté à votre espace Pure Motion.';
   }
   showScreen('sc-success');
+}
+
+// Redirige vers le bon tableau de bord selon le rôle
+function gotoDashboard(){
+  if(state.isAdmin){
+    window.location.href = '/admin';
+  } else if(state.role === 'client'){
+    window.location.href = '/espace-client';
+  } else {
+    window.location.href = '/admin'; // collaborateur → espace de travail
+  }
 }
 </script>
 </body>
