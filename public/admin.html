@@ -230,6 +230,70 @@ textarea{resize:none;line-height:1.5;}
 .success-title{font-size:18px;font-weight:700;color:var(--txt);margin-bottom:6px;}
 .success-sub{font-size:12px;color:var(--mut);line-height:1.6;max-width:380px;margin:0 auto 20px;}
 .success-actions{display:flex;gap:9px;justify-content:center;}
+/* ══ DASHBOARD "MA JOURNÉE" ══ */
+.dash-hero{background:linear-gradient(135deg,var(--navy),#1a3a8a);border-radius:14px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;color:#fff;position:relative;overflow:hidden;}
+.dash-hero::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(0,198,224,.1);}
+.dash-hero::before{content:'';position:absolute;right:60px;bottom:-60px;width:120px;height:120px;border-radius:50%;background:rgba(245,183,49,.08);}
+.dash-hero-txt{position:relative;z-index:1;}
+.dash-hero-date{font-size:11px;color:var(--cyan);text-transform:capitalize;margin-bottom:3px;}
+.dash-hero-title{font-size:22px;font-weight:800;margin-bottom:5px;}
+.dash-hero-sub{font-size:12px;color:rgba(255,255,255,.6);line-height:1.5;max-width:440px;}
+.dash-hero-stat{position:relative;z-index:1;text-align:center;background:rgba(255,255,255,.08);border-radius:12px;padding:12px 20px;min-width:96px;}
+.dhs-num{font-size:30px;font-weight:800;color:var(--gold);line-height:1;}
+.dhs-lbl{font-size:10px;color:rgba(255,255,255,.6);margin-top:4px;line-height:1.3;}
+
+.dash-quickstats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.dqs{background:var(--white);border:1px solid var(--bord);border-radius:11px;padding:13px 15px;display:flex;align-items:center;gap:11px;}
+.dqs-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.dqs-num{font-size:20px;font-weight:800;color:var(--txt);line-height:1;}
+.dqs-lbl{font-size:10px;color:var(--hint);margin-top:2px;}
+
+.dash-cols{display:grid;grid-template-columns:1.15fr 1fr;gap:16px;margin-bottom:6px;}
+.dash-block-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:11px;display:flex;align-items:center;justify-content:space-between;}
+.dash-block-title span{display:flex;align-items:center;gap:7px;}
+.dash-block-title a{font-size:11px;color:var(--cyan);cursor:pointer;font-weight:500;}
+.dash-block-title a:hover{text-decoration:underline;}
+
+/* Cartes publications */
+.pub-card{background:var(--white);border:1px solid var(--bord);border-radius:11px;padding:12px 14px;margin-bottom:9px;display:flex;gap:12px;align-items:center;transition:box-shadow .15s;}
+.pub-card:hover{box-shadow:0 4px 14px rgba(18,32,90,.07);}
+.pub-time{text-align:center;flex-shrink:0;}
+.pub-hour{font-size:15px;font-weight:800;color:var(--navy);}
+.pub-net{font-size:9px;font-weight:700;color:#fff;padding:2px 7px;border-radius:6px;margin-top:3px;}
+.pub-body{flex:1;min-width:0;}
+.pub-client{font-size:11px;font-weight:600;color:var(--mut);display:flex;align-items:center;gap:5px;margin-bottom:2px;}
+.pub-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.pub-desc{font-size:12px;font-weight:600;color:var(--txt);margin-bottom:5px;line-height:1.3;}
+.pub-tags{display:flex;gap:5px;}
+.pub-tag{font-size:9px;font-weight:600;padding:2px 7px;border-radius:8px;background:var(--surf);color:var(--mut);}
+.pub-tag.ready{background:#e1f5ee;color:var(--up);}
+.pub-tag.warn{background:#faeeda;color:#7a5800;}
+.pub-actions{flex-shrink:0;}
+.pub-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--bord);background:var(--white);color:var(--mut);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.pub-btn:hover{background:var(--surf);color:var(--cyan);}
+
+/* Tâches */
+.task-item{background:var(--white);border:1px solid var(--bord);border-radius:10px;padding:11px 13px;margin-bottom:8px;display:flex;gap:11px;align-items:center;cursor:pointer;transition:all .15s;}
+.task-item:hover{border-color:var(--cyan);}
+.task-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--bord);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;transition:all .15s;}
+.task-check.done{background:var(--up);border-color:var(--up);}
+.task-item.checked .task-check{background:var(--up);border-color:var(--up);}
+.task-item.checked .task-name{text-decoration:line-through;color:var(--hint);}
+.task-body{flex:1;min-width:0;}
+.task-name{font-size:12px;font-weight:600;color:var(--txt);line-height:1.3;}
+.task-meta{font-size:10px;color:var(--hint);margin-top:2px;}
+.task-done-item{background:var(--surf);border-radius:10px;padding:11px 13px;margin-bottom:8px;display:flex;gap:11px;align-items:center;opacity:.7;}
+
+/* Alertes */
+.dash-alerts{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.dash-alert{background:var(--white);border:1px solid var(--bord);border-radius:11px;padding:12px 14px;display:flex;gap:9px;align-items:flex-start;font-size:12px;color:var(--mut);line-height:1.5;}
+.dash-alert i{font-size:16px;flex-shrink:0;margin-top:1px;}
+.dash-alert strong{color:var(--txt);}
+.dash-alert a{color:var(--cyan);cursor:pointer;font-weight:600;}
+.dash-alert a:hover{text-decoration:underline;}
+
+@media(max-width:900px){.dash-quickstats{grid-template-columns:1fr 1fr;}.dash-cols{grid-template-columns:1fr;}.dash-alerts{grid-template-columns:1fr;}}
+
 </style>
 </head>
 <body>
@@ -261,11 +325,11 @@ function pmLogout(){
   </div>
   <div class="side-nav">
     <div class="ns">Workspace</div>
-    <div class="ni" onclick="showMain('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+    <div class="ni act" onclick="showMain('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
     <div class="ni" onclick="showMain('calendrier',this)"><i class="ti ti-calendar-event"></i> Calendrier éditorial</div>
     <div class="ni" onclick="showMain('performance',this)"><i class="ti ti-chart-line"></i> Performance réseaux</div>
     <div class="ns">Commercial — Admin uniquement</div>
-    <div class="ni act" onclick="showMain('contrats',this)"><i class="ti ti-file-text"></i> Contrats <span class="ni-badge">3</span></div>
+    <div class="ni" onclick="showMain('contrats',this)"><i class="ti ti-file-text"></i> Contrats <span class="ni-badge">3</span></div>
     <div class="ni" onclick="showMain('propositions',this)"><i class="ti ti-file-plus"></i> Propositions <span class="ni-badge gold">2</span></div>
     <div class="ni" onclick="showMain('tarifs',this)"><i class="ti ti-coin"></i> Grille tarifaire</div>
     <div class="ni" onclick="showMain('preuves',this)"><i class="ti ti-star"></i> Preuves sociales</div>
@@ -686,8 +750,140 @@ function pmLogout(){
 
     <!-- AUTRES PANELS PLACEHOLDER -->
     <div class="panel" id="panel-dashboard">
-      <div class="alert info"><i class="ti ti-layout-dashboard"></i> Module Dashboard — navigue vers l'onglet Contrats pour accéder au générateur.</div>
+
+      <!-- BANNIÈRE JOUR -->
+      <div class="dash-hero">
+        <div class="dash-hero-txt">
+          <div class="dash-hero-date" id="dash-date">Aujourd'hui</div>
+          <div class="dash-hero-title">Bonjour <span id="dash-user">👋</span></div>
+          <div class="dash-hero-sub">Voici ta journée en un coup d'œil — tes publications prévues et tes tâches à faire.</div>
+        </div>
+        <div class="dash-hero-stat">
+          <div class="dhs-num" id="dash-posts-today">3</div>
+          <div class="dhs-lbl">posts prévus<br>aujourd'hui</div>
+        </div>
+      </div>
+
+      <!-- LIGNE STAT RAPIDE -->
+      <div class="dash-quickstats">
+        <div class="dqs">
+          <div class="dqs-ico" style="background:#e6f1fb;">📅</div>
+          <div><div class="dqs-num">3</div><div class="dqs-lbl">Publications aujourd'hui</div></div>
+        </div>
+        <div class="dqs">
+          <div class="dqs-ico" style="background:#faeeda;">⏰</div>
+          <div><div class="dqs-num">5</div><div class="dqs-lbl">Tâches en attente</div></div>
+        </div>
+        <div class="dqs">
+          <div class="dqs-ico" style="background:#e1f5ee;">✅</div>
+          <div><div class="dqs-num">12</div><div class="dqs-lbl">Faites cette semaine</div></div>
+        </div>
+        <div class="dqs">
+          <div class="dqs-ico" style="background:#f3e8ff;">🏪</div>
+          <div><div class="dqs-num">3</div><div class="dqs-lbl">Clients actifs</div></div>
+        </div>
+      </div>
+
+      <!-- 2 COLONNES : PUBLICATIONS + TÂCHES -->
+      <div class="dash-cols">
+
+        <!-- PUBLICATIONS DU JOUR -->
+        <div class="dash-col">
+          <div class="dash-block-title">
+            <span><i class="ti ti-calendar-time" style="color:var(--cyan)"></i> Publications du jour</span>
+            <a onclick="showMain('calendrier')">Voir le calendrier →</a>
+          </div>
+
+          <div class="pub-card">
+            <div class="pub-time">
+              <div class="pub-hour">20:00</div>
+              <div class="pub-net" style="background:#000;">TikTok</div>
+            </div>
+            <div class="pub-body">
+              <div class="pub-client"><span class="pub-dot" style="background:var(--cyan)"></span> Soleil Communication</div>
+              <div class="pub-desc">Vidéo déballage nouveau stock iPhone</div>
+              <div class="pub-tags"><span class="pub-tag">🎬 Reel</span><span class="pub-tag ready">✓ Prêt</span></div>
+            </div>
+            <div class="pub-actions"><button class="pub-btn" onclick="alert('Aperçu du contenu')"><i class="ti ti-eye"></i></button></div>
+          </div>
+
+          <div class="pub-card">
+            <div class="pub-time">
+              <div class="pub-hour">13:00</div>
+              <div class="pub-net" style="background:#E1306C;">Insta</div>
+            </div>
+            <div class="pub-body">
+              <div class="pub-client"><span class="pub-dot" style="background:var(--gold)"></span> Maquis Chez Fanta</div>
+              <div class="pub-desc">Menu du jour + ambiance midi</div>
+              <div class="pub-tags"><span class="pub-tag">📸 Carrousel</span><span class="pub-tag warn">⏳ À finaliser</span></div>
+            </div>
+            <div class="pub-actions"><button class="pub-btn" onclick="alert('Aperçu du contenu')"><i class="ti ti-eye"></i></button></div>
+          </div>
+
+          <div class="pub-card">
+            <div class="pub-time">
+              <div class="pub-hour">18:30</div>
+              <div class="pub-net" style="background:#000;">TikTok</div>
+            </div>
+            <div class="pub-body">
+              <div class="pub-client"><span class="pub-dot" style="background:#7B61FF"></span> Boutique Élégance CI</div>
+              <div class="pub-desc">Nouvelle collection — try-on haul</div>
+              <div class="pub-tags"><span class="pub-tag">🎬 Reel</span><span class="pub-tag warn">⏳ À finaliser</span></div>
+            </div>
+            <div class="pub-actions"><button class="pub-btn" onclick="alert('Aperçu du contenu')"><i class="ti ti-eye"></i></button></div>
+          </div>
+        </div>
+
+        <!-- TÂCHES DU JOUR -->
+        <div class="dash-col">
+          <div class="dash-block-title">
+            <span><i class="ti ti-checklist" style="color:var(--gold)"></i> Mes tâches</span>
+            <a onclick="alert('Ajouter une tâche')">+ Ajouter</a>
+          </div>
+
+          <div class="task-item" onclick="toggleTask(this)">
+            <div class="task-check"></div>
+            <div class="task-body"><div class="task-name">Filmer le contenu déballage iPhone (Soleil)</div><div class="task-meta">🔴 Urgent · avant 18h</div></div>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)">
+            <div class="task-check"></div>
+            <div class="task-body"><div class="task-name">Répondre aux commentaires TikTok Soleil</div><div class="task-meta">🟠 Aujourd'hui</div></div>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)">
+            <div class="task-check"></div>
+            <div class="task-body"><div class="task-name">Monter le carrousel Maquis Chez Fanta</div><div class="task-meta">🟠 Aujourd'hui</div></div>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)">
+            <div class="task-check"></div>
+            <div class="task-body"><div class="task-name">Préparer le rapport mensuel Soleil</div><div class="task-meta">🟡 Cette semaine</div></div>
+          </div>
+          <div class="task-item" onclick="toggleTask(this)">
+            <div class="task-check"></div>
+            <div class="task-body"><div class="task-name">Relancer Maquis pour le paiement</div><div class="task-meta">🟡 Cette semaine</div></div>
+          </div>
+
+          <div class="task-done-item">
+            <div class="task-check done"><i class="ti ti-check"></i></div>
+            <div class="task-body"><div class="task-name" style="text-decoration:line-through;color:var(--hint)">Publier le Reel PS4 Soleil</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTES / RAPPELS -->
+      <div class="dash-block-title" style="margin-top:6px;"><span><i class="ti ti-bell" style="color:var(--dn)"></i> À ne pas oublier</span></div>
+      <div class="dash-alerts">
+        <div class="dash-alert">
+          <i class="ti ti-alert-triangle" style="color:#7a5800"></i>
+          <div><strong>Contrat Soleil Communication</strong> arrive à échéance le 14 juin. <a onclick="showMain('contrats')">Préparer le renouvellement →</a></div>
+        </div>
+        <div class="dash-alert">
+          <i class="ti ti-clock" style="color:#185fa5"></i>
+          <div><strong>Meilleur créneau ce soir :</strong> 20h-22h (mercredi = pic d'engagement pour Soleil selon les stats).</div>
+        </div>
+      </div>
+
     </div>
+
     <div class="panel" id="panel-propositions">
       <div class="alert info"><i class="ti ti-file-plus"></i> Module Propositions commerciales — génération de propositions par secteur avec preuves sociales intégrées.</div>
     </div>
@@ -746,7 +942,7 @@ function showMain(section, el) {
   };
 
   const titleMap = {
-    dashboard:'Dashboard', contrats:'Contrats clients',
+    dashboard:'Ma journée', contrats:'Contrats clients',
     propositions:'Propositions commerciales', tarifs:'Grille tarifaire',
     preuves:'Preuves sociales', marche:'Étude de marché',
     objectifs:'Objectifs stratégiques', acces:'Gestion des accès',
@@ -755,6 +951,7 @@ function showMain(section, el) {
   };
 
   const subMap = {
+    dashboard:'Vue d\'ensemble de ta journée — publications et tâches',
     contrats:'Gestion et génération des contrats de prestation — accès Admin uniquement',
     propositions:'Propositions commerciales IA par secteur — accès Admin uniquement',
     tarifs:'Grille tarifaire Bronze / Platinum / Gold — confidentiel Admin',
@@ -776,10 +973,16 @@ function showMain(section, el) {
   document.getElementById('tabs').style.display = showTabs ? 'flex' : 'none';
   document.getElementById('gen-footer').style.display = 'none';
 
-  // topbar actions
-  document.getElementById('tb-actions').innerHTML = section === 'contrats'
-    ? '<button class="btn btn-sm" onclick="showMain(\'propositions\')"><i class="ti ti-file-plus" style="font-size:13px"></i> Proposition</button><button class="btn btn-gold" onclick="startGen()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau contrat</button>'
-    : '<button class="btn btn-sm" onclick="showMain(\'contrats\')">← Retour contrats</button>';
+  // topbar actions selon la section
+  let actions = '';
+  if(section === 'contrats'){
+    actions = '<button class="btn btn-sm" onclick="showMain(\'propositions\')"><i class="ti ti-file-plus" style="font-size:13px"></i> Proposition</button><button class="btn btn-gold" onclick="startGen()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau contrat</button>';
+  } else if(section === 'dashboard'){
+    actions = '<button class="btn btn-sm" onclick="showMain(\'calendrier\')"><i class="ti ti-calendar" style="font-size:13px"></i> Calendrier</button><button class="btn btn-gold" onclick="showMain(\'contrats\')"><i class="ti ti-file-text" style="font-size:13px"></i> Contrats</button>';
+  } else {
+    actions = '<button class="btn btn-sm" onclick="showMain(\'dashboard\')">← Accueil</button>';
+  }
+  document.getElementById('tb-actions').innerHTML = actions;
 }
 
 /* ── TABS CONTRATS ── */
@@ -901,6 +1104,17 @@ function saveContract(){
   alert('✓ Contrat sauvegardé pour '+nom+' — visible dans "Mes contrats".');
 }
 
+/* ── TÂCHES : cocher/décocher ── */
+function toggleTask(el){
+  el.classList.toggle('checked');
+  const chk = el.querySelector('.task-check');
+  if(el.classList.contains('checked')){
+    chk.innerHTML = '<i class="ti ti-check"></i>';
+  } else {
+    chk.innerHTML = '';
+  }
+}
+
 /* ── INIT ── */
 document.querySelectorAll('.ni').forEach(n => n.addEventListener('click', function(){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));
@@ -914,9 +1128,26 @@ const today = new Date().toISOString().split('T')[0];
   if(el) el.value = today;
 });
 
-// Show contrats by default
-document.getElementById('panel-list').classList.add('act');
-document.getElementById('tabs').style.display = 'flex';
+// Date du jour en français dans le hero
+(function(){
+  const jours = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  const mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const d = new Date();
+  const dateEl = document.getElementById('dash-date');
+  if(dateEl) dateEl.textContent = jours[d.getDay()] + ' ' + d.getDate() + ' ' + mois[d.getMonth()] + ' ' + d.getFullYear();
+
+  // Nom de l'utilisateur connecté (depuis la session)
+  try {
+    const s = JSON.parse(sessionStorage.getItem('pm_session') || 'null');
+    const name = (s && s.name) ? s.name : 'Ange-Emmanuel';
+    const first = name.split(' ')[0];
+    const uEl = document.getElementById('dash-user');
+    if(uEl) uEl.textContent = first + ' 👋';
+  } catch(e){}
+})();
+
+// Afficher le Dashboard "Ma journée" par défaut à la connexion
+showMain('dashboard', document.querySelector('.ni'));
 </script>
 </body>
 </html>
