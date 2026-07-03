@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pure Motion — Espace Admin</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.2.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -393,6 +395,79 @@ textarea{resize:none;line-height:1.5;}
   .cal-toolbar{flex-direction:column;align-items:stretch;}
   .cal-day{min-height:70px;}
   .cal-post{font-size:9px;}
+}
+
+/* ══ PERFORMANCE RÉSEAUX ══ */
+.perf-toolbar{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;}
+.perf-client-select,.perf-period-select{display:flex;align-items:center;gap:8px;}
+.perf-client-select label,.perf-period-select label{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;}
+.perf-client-select select,.perf-period-select select{padding:8px 12px;font-size:13px;font-weight:600;border:1px solid var(--bord);border-radius:8px;background:var(--white);color:var(--navy);outline:none;cursor:pointer;}
+.perf-client-select select{min-width:200px;}
+.perf-client-select select:focus,.perf-period-select select:focus{border-color:var(--cyan);}
+
+/* KPIs avec évolution */
+.perf-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px;}
+.perf-kpi{background:var(--white);border:1px solid var(--bord);border-radius:11px;padding:13px 14px;}
+.perf-kpi-ico{font-size:16px;margin-bottom:6px;}
+.perf-kpi-val{font-size:19px;font-weight:800;color:var(--txt);line-height:1.1;}
+.perf-kpi-lbl{font-size:10px;color:var(--hint);margin-top:2px;}
+.perf-kpi-delta{font-size:11px;font-weight:700;margin-top:5px;display:flex;align-items:center;gap:3px;}
+.perf-kpi-delta.up{color:var(--up);}
+.perf-kpi-delta.dn{color:var(--dn);}
+.perf-kpi-delta.flat{color:var(--hint);}
+
+/* Résumé situation */
+.perf-summary{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+.perf-sum-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.perf-sum-badge{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.perf-sum-title{font-size:15px;font-weight:800;color:var(--txt);}
+.perf-sum-sub{font-size:12px;color:var(--mut);margin-top:1px;}
+.perf-sum-verdict{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;margin-left:auto;}
+.perf-sum-body{font-size:13px;color:var(--txt);line-height:1.7;}
+.perf-sum-body strong{color:var(--navy);}
+.perf-sum-points{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.perf-sum-point{background:var(--surf);border-radius:9px;padding:10px 13px;font-size:12px;color:var(--mut);line-height:1.5;display:flex;gap:8px;align-items:flex-start;}
+.perf-sum-point i{font-size:15px;flex-shrink:0;margin-top:1px;}
+.perf-sum-advice{margin-top:14px;padding:13px 15px;background:#e6f1fb;border:1px solid rgba(56,138,221,.2);border-radius:10px;font-size:12px;color:#0c447c;line-height:1.7;}
+.perf-sum-advice strong{color:#083056;}
+.perf-sum-advice ul{margin:6px 0 0;padding-left:18px;}
+.perf-sum-advice li{margin-bottom:3px;}
+
+/* Graphiques */
+.perf-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.perf-chart-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;}
+.perf-chart-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.perf-chart-wrap{height:200px;position:relative;}
+
+/* Historique */
+.perf-history-title{font-size:13px;font-weight:700;color:var(--txt);margin:20px 0 12px;display:flex;align-items:center;justify-content:space-between;}
+.perf-history-title span:first-child{display:flex;align-items:center;gap:7px;}
+.perf-history-hint{font-size:11px;color:var(--hint);font-weight:400;}
+.perf-history{display:flex;flex-direction:column;gap:8px;}
+.perf-hrow{background:var(--white);border:1px solid var(--bord);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;}
+.perf-hrow:hover{border-color:var(--cyan);}
+.perf-hrow-date{width:88px;flex-shrink:0;}
+.perf-hrow-day{font-size:13px;font-weight:700;color:var(--navy);}
+.perf-hrow-net{font-size:10px;color:var(--hint);}
+.perf-hrow-net-badge{font-size:9px;font-weight:700;color:#fff;padding:2px 7px;border-radius:6px;display:inline-block;margin-top:2px;}
+.perf-hrow-stats{flex:1;display:flex;gap:18px;flex-wrap:wrap;}
+.perf-hrow-stat{font-size:11px;color:var(--mut);}
+.perf-hrow-stat b{color:var(--txt);font-size:13px;display:block;}
+.perf-hrow-edit{color:var(--hint);font-size:15px;flex-shrink:0;}
+
+.perf-empty{background:var(--surf);border-radius:12px;padding:32px;text-align:center;color:var(--hint);}
+.perf-empty i{font-size:32px;display:block;margin-bottom:10px;opacity:.5;}
+.perf-empty-title{font-size:14px;font-weight:600;color:var(--mut);margin-bottom:4px;}
+
+.perf-hint-box{background:#e6f1fb;border:1px solid rgba(56,138,221,.2);border-radius:9px;padding:9px 12px;font-size:11px;color:#0c447c;line-height:1.5;margin-bottom:14px;display:flex;gap:7px;}
+.perf-hint-box i{font-size:14px;flex-shrink:0;margin-top:1px;}
+.perf-rate-preview{background:var(--surf);border-radius:9px;padding:10px 13px;font-size:12px;color:var(--mut);text-align:center;}
+.perf-rate-preview b{color:var(--up);font-size:15px;}
+
+@media(max-width:900px){
+  .perf-kpis{grid-template-columns:repeat(3,1fr);}
+  .perf-charts{grid-template-columns:1fr;}
+  .perf-sum-points{grid-template-columns:1fr;}
 }
 
 </style>
@@ -1062,7 +1137,69 @@ function pmLogout(){
 
     </div>
 
-    <div class="panel" id="panel-performance"><div class="alert info"><i class="ti ti-chart-line"></i> Module Performance — suivi statistiques tous réseaux sociaux.</div></div>
+    <div class="panel" id="panel-performance">
+
+      <!-- BARRE OUTILS PERFORMANCE -->
+      <div class="perf-toolbar">
+        <div class="perf-client-select">
+          <label>Client</label>
+          <select id="perf-client" onchange="perfChangeClient()">
+            <option value="soleil">Soleil Communication</option>
+            <option value="fanta">Maquis Chez Fanta</option>
+            <option value="elegance">Boutique Élégance CI</option>
+          </select>
+        </div>
+        <div class="perf-period-select">
+          <label>Réseau</label>
+          <select id="perf-net" onchange="perfRender()">
+            <option value="all">Tous réseaux (cumulé)</option>
+            <option value="TikTok">TikTok</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Facebook">Facebook</option>
+            <option value="YouTube">YouTube</option>
+          </select>
+        </div>
+        <div style="flex:1"></div>
+        <button class="btn btn-gold" onclick="perfOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau relevé</button>
+      </div>
+
+      <!-- RÉSUMÉ RAPIDE (cartes KPI avec évolution) -->
+      <div class="perf-kpis" id="perf-kpis"></div>
+
+      <!-- SITUATION DU COMPTE (résumé intelligent) -->
+      <div class="perf-summary" id="perf-summary"></div>
+
+      <!-- GRAPHIQUES -->
+      <div class="perf-charts">
+        <div class="perf-chart-card">
+          <div class="perf-chart-title"><i class="ti ti-eye" style="color:var(--cyan)"></i> Évolution des vues</div>
+          <div class="perf-chart-wrap"><canvas id="perf-chart-views"></canvas></div>
+        </div>
+        <div class="perf-chart-card">
+          <div class="perf-chart-title"><i class="ti ti-users" style="color:var(--gold)"></i> Croissance des abonnés</div>
+          <div class="perf-chart-wrap"><canvas id="perf-chart-followers"></canvas></div>
+        </div>
+      </div>
+      <div class="perf-charts">
+        <div class="perf-chart-card">
+          <div class="perf-chart-title"><i class="ti ti-heart" style="color:#E1306C"></i> Engagement (likes + commentaires)</div>
+          <div class="perf-chart-wrap"><canvas id="perf-chart-engage"></canvas></div>
+        </div>
+        <div class="perf-chart-card">
+          <div class="perf-chart-title"><i class="ti ti-percentage" style="color:var(--up)"></i> Taux d'engagement (%)</div>
+          <div class="perf-chart-wrap"><canvas id="perf-chart-rate"></canvas></div>
+        </div>
+      </div>
+
+      <!-- HISTORIQUE DES RELEVÉS -->
+      <div class="perf-history-title">
+        <span><i class="ti ti-history"></i> Historique des relevés</span>
+        <span class="perf-history-hint" id="perf-history-count"></span>
+      </div>
+      <div class="perf-history" id="perf-history"></div>
+
+    </div>
+
 
   </div><!-- /body -->
 
@@ -1149,6 +1286,10 @@ function showMain(section, el) {
   // Rendu spécial du calendrier
   if(section === 'calendrier'){
     calChangeClient();
+  }
+  // Rendu spécial de la performance
+  if(section === 'performance'){
+    perfRender();
   }
 }
 
@@ -1588,6 +1729,298 @@ function calDeletePub(){
 // Initialiser le calendrier au chargement
 calLoad();
 
+/* ══════════════════════════════════════════
+   PERFORMANCE RÉSEAUX
+   ══════════════════════════════════════════ */
+const PERF_NETS = { 'TikTok':'#000000','Instagram':'#E1306C','Facebook':'#1877F2','YouTube':'#FF0000' };
+const PERF_CLIENTS = { soleil:'Soleil Communication', fanta:'Maquis Chez Fanta', elegance:'Boutique Élégance CI' };
+
+let perfState = { client:'soleil', data:{}, charts:{} };
+
+function perfLoad(){
+  try {
+    const raw = localStorage.getItem('pm_performance');
+    if(raw) perfState.data = JSON.parse(raw);
+  } catch(e){ perfState.data = {}; }
+  // Données de démo pour Soleil (basées sur les vraies stats TikTok analysées)
+  if(!perfState.data.soleil){
+    perfState.data.soleil = [
+      { id:'pd1', date:'2026-03-31', net:'TikTok', views:9500, followers:991, likes:1800, comments:45, reach:12000, shares:60, note:'Début de campagne' },
+      { id:'pd2', date:'2026-04-30', net:'TikTok', views:48000, followers:1320, likes:3900, comments:120, reach:38000, shares:180, note:'Montée en puissance' },
+      { id:'pd3', date:'2026-05-31', net:'TikTok', views:98000, followers:1650, likes:5800, comments:210, reach:71000, shares:310, note:'Vidéo PS4 virale' },
+      { id:'pd4', date:'2026-06-23', net:'TikTok', views:137000, followers:1861, likes:7400, comments:289, reach:93900, shares:420, note:'Pic d\'engagement' }
+    ];
+    perfSave();
+  }
+}
+function perfSave(){ try{ localStorage.setItem('pm_performance', JSON.stringify(perfState.data)); }catch(e){} }
+
+function perfGetData(){
+  let d = perfState.data[perfState.client] || [];
+  const net = document.getElementById('perf-net') ? document.getElementById('perf-net').value : 'all';
+  if(net!=='all') d = d.filter(x=>x.net===net);
+  return d.slice().sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+function perfChangeClient(){
+  perfState.client = document.getElementById('perf-client').value;
+  perfRender();
+}
+
+// Calcul du taux d'engagement : (likes + comments + shares) / views * 100
+function perfRate(e){
+  const v = Number(e.views)||0;
+  if(v===0) return 0;
+  return ((Number(e.likes||0)+Number(e.comments||0)+Number(e.shares||0)) / v * 100);
+}
+
+function perfFmt(n){
+  n = Number(n)||0;
+  if(n>=1000000) return (n/1000000).toFixed(1).replace('.0','')+'M';
+  if(n>=1000) return (n/1000).toFixed(1).replace('.0','')+'K';
+  return String(n);
+}
+
+function perfRender(){
+  const data = perfGetData();
+  perfRenderKpis(data);
+  perfRenderSummary(data);
+  perfRenderCharts(data);
+  perfRenderHistory(data);
+}
+
+// ── KPIs avec évolution vs relevé précédent ──
+function perfRenderKpis(data){
+  const el = document.getElementById('perf-kpis');
+  if(data.length===0){ el.innerHTML=''; return; }
+  const last = data[data.length-1];
+  const prev = data.length>1 ? data[data.length-2] : null;
+
+  const metrics = [
+    { ico:'👁️', lbl:'Vues', key:'views', fmt:true },
+    { ico:'👥', lbl:'Abonnés', key:'followers', fmt:true },
+    { ico:'❤️', lbl:'Likes', key:'likes', fmt:true },
+    { ico:'💬', lbl:'Commentaires', key:'comments', fmt:false },
+    { ico:'📢', lbl:'Portée', key:'reach', fmt:true },
+    { ico:'📊', lbl:'Engagement', key:'rate', fmt:false, isRate:true }
+  ];
+
+  el.innerHTML = metrics.map(m=>{
+    let val, prevVal;
+    if(m.isRate){ val=perfRate(last); prevVal=prev?perfRate(prev):null; }
+    else { val=Number(last[m.key])||0; prevVal=prev?(Number(prev[m.key])||0):null; }
+
+    let deltaHtml='';
+    if(prevVal!==null && prevVal!==0){
+      const pct = ((val-prevVal)/prevVal*100);
+      const cls = pct>0.5?'up':(pct<-0.5?'dn':'flat');
+      const arrow = pct>0.5?'↑':(pct<-0.5?'↓':'→');
+      deltaHtml = '<div class="perf-kpi-delta '+cls+'">'+arrow+' '+Math.abs(pct).toFixed(0)+'%</div>';
+    } else {
+      deltaHtml = '<div class="perf-kpi-delta flat">—</div>';
+    }
+
+    const displayVal = m.isRate ? val.toFixed(1)+'%' : (m.fmt?perfFmt(val):val.toLocaleString('fr-FR'));
+    return '<div class="perf-kpi"><div class="perf-kpi-ico">'+m.ico+'</div><div class="perf-kpi-val">'+displayVal+'</div><div class="perf-kpi-lbl">'+m.lbl+'</div>'+deltaHtml+'</div>';
+  }).join('');
+}
+
+// ── Résumé intelligent : situation du compte ──
+function perfRenderSummary(data){
+  const el = document.getElementById('perf-summary');
+  if(data.length===0){ el.innerHTML=''; return; }
+  if(data.length===1){
+    el.innerHTML = '<div class="perf-sum-head"><div class="perf-sum-badge" style="background:#e6f1fb">📊</div><div><div class="perf-sum-title">Premier relevé enregistré</div><div class="perf-sum-sub">Ajoute un 2ème relevé pour voir l\'évolution et l\'analyse détaillée.</div></div></div>';
+    return;
+  }
+
+  const last = data[data.length-1];
+  const first = data[0];
+  const prev = data[data.length-2];
+
+  // Calcul des évolutions globales (premier → dernier)
+  const growth = (k)=>{ const a=Number(first[k])||0, b=Number(last[k])||0; return a===0?(b>0?100:0):((b-a)/a*100); };
+  const gViews = growth('views'), gFoll = growth('followers'), gLikes = growth('likes'), gEng = growth('comments');
+  const rateNow = perfRate(last), ratePrev = perfRate(prev);
+  const rateChange = rateNow - ratePrev;
+
+  // Score global de santé
+  const avgGrowth = (gViews+gFoll+gLikes)/3;
+  let verdict, vColor, vBg, vIco, vTitle;
+  if(avgGrowth > 30){ verdict='Excellente dynamique'; vColor='#085041'; vBg='#e1f5ee'; vIco='🚀'; vTitle='Le compte est en forte croissance'; }
+  else if(avgGrowth > 5){ verdict='En progression'; vColor='#185fa5'; vBg='#e6f1fb'; vIco='📈'; vTitle='Le compte progresse bien'; }
+  else if(avgGrowth > -5){ verdict='Stable'; vColor='#7a5800'; vBg='#faeeda'; vIco='➡️'; vTitle='Le compte est stable'; }
+  else { verdict='À surveiller'; vColor='#a32d2d'; vBg='#fcebeb'; vIco='⚠️'; vTitle='Le compte est en baisse'; }
+
+  const period = first.date+' → '+last.date;
+  const fmtDate = d=>{ const p=d.split('-'); return p[2]+'/'+p[1]; };
+
+  // Points forts / faibles
+  let points = [];
+  if(gViews>20) points.push({i:'ti-trending-up',c:'var(--up)',t:'<strong>Vues en forte hausse</strong> (+'+gViews.toFixed(0)+'%) — ta visibilité explose.'});
+  else if(gViews<-5) points.push({i:'ti-trending-down',c:'var(--dn)',t:'<strong>Vues en baisse</strong> ('+gViews.toFixed(0)+'%) — à relancer.'});
+
+  if(gFoll>20) points.push({i:'ti-user-plus',c:'var(--up)',t:'<strong>Abonnés en forte croissance</strong> (+'+gFoll.toFixed(0)+'%) — ta communauté grandit.'});
+  else if(gFoll<0) points.push({i:'ti-user-minus',c:'var(--dn)',t:'<strong>Perte d\'abonnés</strong> — vérifie ta ligne éditoriale.'});
+
+  if(rateChange>0.3) points.push({i:'ti-heart',c:'var(--up)',t:'<strong>Engagement en hausse</strong> — ton audience interagit davantage.'});
+  else if(rateChange<-0.3) points.push({i:'ti-heart-broken',c:'#7a5800',t:'<strong>Engagement en léger recul</strong> — varie tes formats.'});
+
+  if(last.note) points.push({i:'ti-note',c:'var(--mut)',t:'<strong>Note :</strong> '+last.note});
+
+  // Conseils selon situation
+  let advice = [];
+  if(gViews>20){ advice.push('Capitalise sur ta lancée : garde le rythme de publication qui fonctionne.'); advice.push('Analyse tes 3 meilleurs posts pour reproduire la recette gagnante.'); }
+  if(gFoll<10 && gViews>20){ advice.push('Tu as des vues mais peu d\'abonnés gagnés : ajoute des appels à l\'abonnement dans tes vidéos.'); }
+  if(rateChange<0){ advice.push('Relance l\'engagement : pose des questions, lance des sondages, réponds aux commentaires.'); }
+  if(rateNow<2){ advice.push('Taux d\'engagement faible (<2%) : privilégie du contenu plus interactif et des formats courts.'); }
+  if(advice.length===0){ advice.push('Continue sur cette lancée et teste de nouveaux formats pour maintenir la croissance.'); }
+
+  const rateArrow = rateChange>0.3?'↑':(rateChange<-0.3?'↓':'→');
+  const rateCls = rateChange>0.3?'up':(rateChange<-0.3?'dn':'flat');
+
+  el.innerHTML =
+    '<div class="perf-sum-head">'
+    + '<div class="perf-sum-badge" style="background:'+vBg+'">'+vIco+'</div>'
+    + '<div><div class="perf-sum-title">'+vTitle+'</div><div class="perf-sum-sub">Analyse sur '+data.length+' relevés · période '+fmtDate(first.date)+' → '+fmtDate(last.date)+'</div></div>'
+    + '<div class="perf-sum-verdict" style="background:'+vBg+';color:'+vColor+'">'+verdict+'</div>'
+    + '</div>'
+    + '<div class="perf-sum-body">Depuis le premier relevé, le compte est passé de <strong>'+perfFmt(first.views)+' à '+perfFmt(last.views)+' vues</strong> ('+(gViews>=0?'+':'')+gViews.toFixed(0)+'%) et de <strong>'+perfFmt(first.followers)+' à '+perfFmt(last.followers)+' abonnés</strong> ('+(gFoll>=0?'+':'')+gFoll.toFixed(0)+'%). Le taux d\'engagement actuel est de <strong>'+rateNow.toFixed(1)+'%</strong> ('+rateArrow+' '+Math.abs(rateChange).toFixed(1)+' pt vs relevé précédent).</div>'
+    + '<div class="perf-sum-points">'+points.map(p=>'<div class="perf-sum-point"><i class="ti '+p.i+'" style="color:'+p.c+'"></i><div>'+p.t+'</div></div>').join('')+'</div>'
+    + '<div class="perf-sum-advice"><strong>💡 Recommandations :</strong><ul>'+advice.map(a=>'<li>'+a+'</li>').join('')+'</ul></div>';
+}
+
+// ── Graphiques (Chart.js) ──
+function perfChart(canvasId, labels, dataset, color, fill){
+  const ctx = document.getElementById(canvasId);
+  if(!ctx) return;
+  if(perfState.charts[canvasId]) perfState.charts[canvasId].destroy();
+  perfState.charts[canvasId] = new Chart(ctx, {
+    type:'line',
+    data:{ labels:labels, datasets:[{ data:dataset, borderColor:color, backgroundColor:fill||(color+'22'), fill:true, tension:.35, borderWidth:2.5, pointRadius:4, pointBackgroundColor:color, pointBorderColor:'#fff', pointBorderWidth:2 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#12205A', padding:10, cornerRadius:8, titleFont:{size:11}, bodyFont:{size:13,weight:'bold'} } },
+      scales:{
+        y:{ beginAtZero:false, grid:{color:'#eef0f7'}, ticks:{font:{size:10}, color:'#9aa0bc', callback:v=>perfFmt(v)} },
+        x:{ grid:{display:false}, ticks:{font:{size:10}, color:'#9aa0bc'} }
+      }
+    }
+  });
+}
+
+function perfRenderCharts(data){
+  if(typeof Chart==='undefined') return;
+  const labels = data.map(e=>{ const p=e.date.split('-'); return p[2]+'/'+p[1]; });
+  perfChart('perf-chart-views', labels, data.map(e=>Number(e.views)||0), '#00C6E0');
+  perfChart('perf-chart-followers', labels, data.map(e=>Number(e.followers)||0), '#F5B731');
+  perfChart('perf-chart-engage', labels, data.map(e=>(Number(e.likes)||0)+(Number(e.comments)||0)), '#E1306C');
+  perfChart('perf-chart-rate', labels, data.map(e=>Number(perfRate(e).toFixed(2))), '#0a6b4f');
+}
+
+// ── Historique ──
+function perfRenderHistory(data){
+  const el = document.getElementById('perf-history');
+  const countEl = document.getElementById('perf-history-count');
+  if(data.length===0){
+    el.innerHTML = '<div class="perf-empty"><i class="ti ti-chart-line"></i><div class="perf-empty-title">Aucun relevé pour ce client</div><div>Clique sur "Nouveau relevé" pour saisir tes premières statistiques.</div></div>';
+    countEl.textContent='';
+    return;
+  }
+  countEl.textContent = data.length+' relevé'+(data.length>1?'s':'');
+  const sorted = data.slice().reverse();
+  el.innerHTML = sorted.map(e=>{
+    const p = e.date.split('-');
+    const color = PERF_NETS[e.net]||'#888';
+    return '<div class="perf-hrow" onclick="perfEditEntry(\''+e.id+'\')">'
+      + '<div class="perf-hrow-date"><div class="perf-hrow-day">'+p[2]+'/'+p[1]+'/'+p[0].slice(2)+'</div><div class="perf-hrow-net-badge" style="background:'+color+'">'+e.net+'</div></div>'
+      + '<div class="perf-hrow-stats">'
+      + '<div class="perf-hrow-stat">Vues<b>'+perfFmt(e.views)+'</b></div>'
+      + '<div class="perf-hrow-stat">Abonnés<b>'+perfFmt(e.followers)+'</b></div>'
+      + '<div class="perf-hrow-stat">Likes<b>'+perfFmt(e.likes)+'</b></div>'
+      + '<div class="perf-hrow-stat">Comm.<b>'+(e.comments||0)+'</b></div>'
+      + '<div class="perf-hrow-stat">Portée<b>'+perfFmt(e.reach)+'</b></div>'
+      + '<div class="perf-hrow-stat">Engag.<b>'+perfRate(e).toFixed(1)+'%</b></div>'
+      + '</div>'
+      + '<i class="ti ti-edit perf-hrow-edit"></i>'
+      + '</div>';
+  }).join('');
+}
+
+// ── Modal ──
+function perfOpenModal(){
+  document.getElementById('perf-modal-title').textContent='Nouveau relevé de performance';
+  document.getElementById('perf-id').value='';
+  document.getElementById('perf-date').value = calDateStr(new Date());
+  document.getElementById('perf-net-in').selectedIndex=0;
+  ['perf-views','perf-followers','perf-likes','perf-comments','perf-reach','perf-shares','perf-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('perf-delete-btn').style.display='none';
+  document.getElementById('perf-rate-preview').innerHTML='';
+  document.getElementById('perf-modal').classList.add('show');
+}
+
+function perfEditEntry(id){
+  const e = (perfState.data[perfState.client]||[]).find(x=>x.id===id);
+  if(!e) return;
+  document.getElementById('perf-modal-title').textContent='Modifier le relevé';
+  document.getElementById('perf-id').value=e.id;
+  document.getElementById('perf-date').value=e.date;
+  document.getElementById('perf-net-in').value=e.net;
+  document.getElementById('perf-views').value=e.views||'';
+  document.getElementById('perf-followers').value=e.followers||'';
+  document.getElementById('perf-likes').value=e.likes||'';
+  document.getElementById('perf-comments').value=e.comments||'';
+  document.getElementById('perf-reach').value=e.reach||'';
+  document.getElementById('perf-shares').value=e.shares||'';
+  document.getElementById('perf-note').value=e.note||'';
+  document.getElementById('perf-delete-btn').style.display='inline-flex';
+  document.getElementById('perf-rate-preview').innerHTML='';
+  document.getElementById('perf-modal').classList.add('show');
+}
+
+function perfCloseModal(){ document.getElementById('perf-modal').classList.remove('show'); }
+function perfModalBgClose(ev){ if(ev.target.id==='perf-modal') perfCloseModal(); }
+
+function perfSaveEntry(){
+  const date = document.getElementById('perf-date').value;
+  if(!date){ alert('Choisis une date.'); return; }
+  const id = document.getElementById('perf-id').value;
+  const entry = {
+    id: id || 'p'+Date.now(),
+    date: date,
+    net: document.getElementById('perf-net-in').value,
+    views: Number(document.getElementById('perf-views').value)||0,
+    followers: Number(document.getElementById('perf-followers').value)||0,
+    likes: Number(document.getElementById('perf-likes').value)||0,
+    comments: Number(document.getElementById('perf-comments').value)||0,
+    reach: Number(document.getElementById('perf-reach').value)||0,
+    shares: Number(document.getElementById('perf-shares').value)||0,
+    note: document.getElementById('perf-note').value.trim()
+  };
+  if(!perfState.data[perfState.client]) perfState.data[perfState.client]=[];
+  if(id){
+    const idx = perfState.data[perfState.client].findIndex(x=>x.id===id);
+    if(idx>=0) perfState.data[perfState.client][idx]=entry;
+  } else {
+    perfState.data[perfState.client].push(entry);
+  }
+  perfSave();
+  perfCloseModal();
+  perfRender();
+}
+
+function perfDeleteEntry(){
+  const id = document.getElementById('perf-id').value;
+  if(!id) return;
+  if(!confirm('Supprimer ce relevé ?')) return;
+  perfState.data[perfState.client] = perfState.data[perfState.client].filter(x=>x.id!==id);
+  perfSave();
+  perfCloseModal();
+  perfRender();
+}
+
+perfLoad();
+
 /* ── INIT ── */
 document.querySelectorAll('.ni').forEach(n => n.addEventListener('click', function(){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));
@@ -1691,6 +2124,83 @@ showMain('dashboard', document.querySelector('.ni'));
       <div style="flex:1"></div>
       <button class="btn" onclick="calCloseModal()">Annuler</button>
       <button class="btn btn-navy" onclick="calSavePub()"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL RELEVÉ PERFORMANCE ══ -->
+<div class="cal-modal-overlay" id="perf-modal" onclick="perfModalBgClose(event)">
+  <div class="cal-modal">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title" id="perf-modal-title">Nouveau relevé de performance</div>
+      <button class="cal-modal-close" onclick="perfCloseModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body">
+      <input type="hidden" id="perf-id"/>
+
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Date du relevé</label>
+          <input type="date" id="perf-date"/>
+        </div>
+        <div class="cal-field">
+          <label>Réseau social</label>
+          <select id="perf-net-in">
+            <option>TikTok</option>
+            <option>Instagram</option>
+            <option>Facebook</option>
+            <option>YouTube</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="perf-hint-box"><i class="ti ti-info-circle"></i> Saisis les chiffres que tu vois dans les statistiques de l'application. Ce sont les totaux du compte à cette date.</div>
+
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>👁️ Vues totales</label>
+          <input type="number" id="perf-views" placeholder="Ex: 137000" min="0"/>
+        </div>
+        <div class="cal-field">
+          <label>👥 Abonnés</label>
+          <input type="number" id="perf-followers" placeholder="Ex: 1861" min="0"/>
+        </div>
+      </div>
+
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>❤️ J'aime (likes)</label>
+          <input type="number" id="perf-likes" placeholder="Ex: 7400" min="0"/>
+        </div>
+        <div class="cal-field">
+          <label>💬 Commentaires</label>
+          <input type="number" id="perf-comments" placeholder="Ex: 289" min="0"/>
+        </div>
+      </div>
+
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>📢 Portée / Impressions</label>
+          <input type="number" id="perf-reach" placeholder="Ex: 93900" min="0"/>
+        </div>
+        <div class="cal-field">
+          <label>🔄 Partages</label>
+          <input type="number" id="perf-shares" placeholder="Ex: 420" min="0"/>
+        </div>
+      </div>
+
+      <div class="cal-field">
+        <label>📝 Note du relevé <span style="font-weight:400;color:var(--hint)">(optionnel)</span></label>
+        <input type="text" id="perf-note" placeholder="Ex: pic après la vidéo PS4, campagne en cours..."/>
+      </div>
+
+      <div class="perf-rate-preview" id="perf-rate-preview"></div>
+    </div>
+    <div class="cal-modal-foot">
+      <button class="btn" id="perf-delete-btn" onclick="perfDeleteEntry()" style="color:var(--dn);border-color:rgba(162,45,45,.2);display:none;"><i class="ti ti-trash" style="font-size:13px"></i> Supprimer</button>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="perfCloseModal()">Annuler</button>
+      <button class="btn btn-navy" onclick="perfSaveEntry()"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer le relevé</button>
     </div>
   </div>
 </div>
