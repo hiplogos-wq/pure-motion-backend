@@ -176,7 +176,7 @@ function pmLogout(){ try{ sessionStorage.removeItem('pm_session'); }catch(e){} w
 
 <script>
 const CLI_NETS={'TikTok':'#000000','Instagram':'#E1306C','Facebook':'#1877F2','YouTube':'#FF0000'};
-let cliState={ clientKey:'soleil', filter:'all', charts:{} };
+let cliState={ clientKey:'soleil', filter:'all', charts:{}, data:[] };
 
 // Récupère le clientKey depuis la session
 (function(){
@@ -191,11 +191,18 @@ function cliFmt(n){n=Number(n)||0;if(n>=1000000)return(n/1000000).toFixed(1).rep
 function cliRate(e){const v=Number(e.views)||0;if(v===0)return 0;return((Number(e.likes||0)+Number(e.comments||0)+Number(e.shares||0))/v*100);}
 
 function cliLoadData(){
+  return cliState.data || [];
+}
+
+// Charge les stats depuis le serveur (uniquement les stats publiées par l'admin)
+async function cliFetchData(){
   try{
-    const raw=localStorage.getItem('pm_performance');
-    if(raw){ const all=JSON.parse(raw); return all[cliState.clientKey]||[]; }
-  }catch(e){}
-  return [];
+    const r = await fetch('/api/client/stats/'+encodeURIComponent(cliState.clientKey));
+    const data = await r.json();
+    if(data.success && data.published){ cliState.data = data.entries||[]; }
+    else { cliState.data = []; }
+  }catch(e){ cliState.data = []; }
+  cliRender();
 }
 
 function cliFilterData(data){
@@ -346,8 +353,7 @@ function cliSheet(period){
   window.print();
 }
 
-cliRender();
+cliFetchData();
 </script>
 </body>
 </html>
-
