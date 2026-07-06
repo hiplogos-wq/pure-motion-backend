@@ -354,18 +354,22 @@ app.get('/api/admin/clients', (req, res) => {
 // ══════════════════════════════════════════
 // PAGES TABLEAUX DE BORD
 // ══════════════════════════════════════════
+const fs = require('fs');
+
 // Espace admin / collaborateur
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'), (err) => {
-    if (err) res.redirect('/');
-  });
+  const f = path.join(__dirname, 'public', 'admin.html');
+  if (fs.existsSync(f)) return res.sendFile(f);
+  log('ERROR', 'admin.html introuvable', { path: f });
+  return res.redirect('/');
 });
 
 // Espace client
 app.get('/espace-client', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'client.html'), (err) => {
-    if (err) res.redirect('/');
-  });
+  const f = path.join(__dirname, 'public', 'client.html');
+  if (fs.existsSync(f)) return res.sendFile(f);
+  log('ERROR', 'client.html introuvable', { path: f });
+  return res.redirect('/');
 });
 
 // ══════════════════════════════════════════
