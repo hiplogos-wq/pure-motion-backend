@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -469,6 +470,46 @@ textarea{resize:none;line-height:1.5;}
   .perf-charts{grid-template-columns:1fr;}
   .perf-sum-points{grid-template-columns:1fr;}
 }
+
+/* ══ GESTION DES ACCÈS ══ */
+.acces-intro{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.acces-intro-ico{font-size:28px;flex-shrink:0;}
+.acces-intro-title{font-size:15px;font-weight:800;color:var(--txt);}
+.acces-intro-sub{font-size:12px;color:var(--mut);line-height:1.5;margin-top:2px;}
+.acces-intro .btn{flex-shrink:0;margin-left:auto;}
+
+.acces-token-box{background:#fffbf0;border:1px solid rgba(245,183,49,.35);border-radius:12px;padding:15px 18px;margin-bottom:18px;}
+.acces-token-head{font-size:13px;font-weight:700;color:#7a5800;display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.acces-token-txt{font-size:11px;color:#8a6d2a;line-height:1.5;margin-bottom:10px;}
+.acces-token-txt code{background:#faeeda;padding:1px 5px;border-radius:4px;font-size:10px;}
+.acces-token-row{display:flex;gap:8px;}
+.acces-token-input{flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--bord);border-radius:8px;outline:none;font-family:inherit;}
+.acces-token-input:focus{border-color:var(--gold);}
+.acces-token-status{font-size:11px;margin-top:8px;}
+.acces-token-status.ok{color:var(--up);}
+.acces-token-status.err{color:var(--dn);}
+
+.acces-list-title{font-size:13px;font-weight:700;color:var(--txt);margin:20px 0 12px;display:flex;align-items:center;justify-content:space-between;}
+.acces-list-title span:first-child{display:flex;align-items:center;gap:7px;}
+.acces-list-hint{font-size:11px;color:var(--hint);font-weight:400;}
+.acces-list{display:flex;flex-direction:column;gap:8px;}
+.acc-card{background:var(--white);border:1px solid var(--bord);border-radius:11px;padding:13px 16px;display:flex;align-items:center;gap:14px;}
+.acc-ava{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--cyan),var(--blue));color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;}
+.acc-info{flex:1;min-width:0;}
+.acc-name{font-size:13px;font-weight:700;color:var(--txt);}
+.acc-contact{font-size:11px;color:var(--mut);margin-top:2px;display:flex;gap:12px;flex-wrap:wrap;}
+.acc-contact span{display:flex;align-items:center;gap:4px;}
+.acc-status{font-size:10px;font-weight:600;padding:3px 10px;border-radius:12px;flex-shrink:0;}
+.acc-status.active{background:#e1f5ee;color:var(--up);}
+.acc-status.pending{background:#faeeda;color:#7a5800;}
+.acc-actions{display:flex;gap:6px;flex-shrink:0;}
+.acc-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--bord);background:var(--white);color:var(--mut);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.acc-btn:hover{background:var(--surf);color:var(--cyan);}
+
+.acc-pw-choice{display:flex;flex-direction:column;gap:8px;}
+.acc-radio{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--txt);cursor:pointer;padding:8px 11px;border:1px solid var(--bord);border-radius:8px;}
+.acc-radio input{width:auto;margin:0;}
+.acc-radio:has(input:checked){border-color:var(--cyan);background:rgba(0,198,224,.04);}
 
 </style>
 </head>
@@ -1070,7 +1111,34 @@ function pmLogout(){
         <div class="proof-card"><div class="proof-client">Soleil Communication · Audience</div><div class="proof-stat">93,9K</div><div class="proof-desc">Spectateurs uniques sans budget pub</div><div class="proof-delta">↑ +840% en 60 jours</div></div>
       </div>
     </div>
-    <div class="panel" id="panel-acces"><div class="alert info"><i class="ti ti-shield-lock"></i> Module Gestion des accès — création et révocation des identifiants clients.</div></div>
+    <div class="panel" id="panel-acces">
+
+      <div class="acces-intro">
+        <div class="acces-intro-ico">🔐</div>
+        <div>
+          <div class="acces-intro-title">Gestion des accès clients</div>
+          <div class="acces-intro-sub">Crée les comptes de tes clients pour qu'ils accèdent à leur espace. Ils se connectent par email ou numéro, avec un mot de passe que tu définis ou qu'ils créent eux-mêmes.</div>
+        </div>
+        <button class="btn btn-gold" onclick="accOpenModal()"><i class="ti ti-user-plus" style="font-size:13px"></i> Nouveau client</button>
+      </div>
+
+      <div class="acces-token-box" id="acces-token-box">
+        <div class="acces-token-head"><i class="ti ti-key"></i> Clé administrateur</div>
+        <div class="acces-token-txt">Pour créer ou modifier des comptes, entre ta clé admin (le <code>ADMIN_TOKEN</code> défini sur Render). Elle reste sur cet appareil.</div>
+        <div class="acces-token-row">
+          <input type="password" id="acc-token" placeholder="Ta clé ADMIN_TOKEN" class="acces-token-input"/>
+          <button class="btn btn-navy btn-sm" onclick="accSaveToken()"><i class="ti ti-check" style="font-size:13px"></i> Valider</button>
+        </div>
+        <div class="acces-token-status" id="acc-token-status"></div>
+      </div>
+
+      <div class="acces-list-title"><span><i class="ti ti-users"></i> Comptes clients</span> <span class="acces-list-hint" id="acc-count"></span></div>
+      <div class="acces-list" id="acc-list">
+        <div class="perf-empty"><i class="ti ti-users"></i><div class="perf-empty-title">Charge la liste</div><div>Valide ta clé admin ci-dessus pour voir et gérer tes clients.</div></div>
+      </div>
+
+    </div>
+
     <div class="panel" id="panel-tarifs"><div class="alert info"><i class="ti ti-coin"></i> Module Grille tarifaire — Bronze 50K · Platinum 80K · Gold 150K FCFA.</div></div>
     <div class="panel" id="panel-marche"><div class="alert info"><i class="ti ti-telescope"></i> Module Étude de marché — analyse concurrentielle par secteur.</div></div>
     <div class="panel" id="panel-objectifs"><div class="alert info"><i class="ti ti-target"></i> Module Objectifs stratégiques — définition et suivi des KPIs par client.</div></div>
@@ -1290,6 +1358,10 @@ function showMain(section, el) {
   // Rendu spécial de la performance
   if(section === 'performance'){
     perfRender();
+  }
+  // Rendu spécial de la gestion des accès
+  if(section === 'acces'){
+    if(accToken) accLoadClients();
   }
 }
 
@@ -2021,6 +2093,143 @@ function perfDeleteEntry(){
 
 perfLoad();
 
+/* ══════════════════════════════════════════
+   GESTION DES ACCÈS CLIENTS
+   ══════════════════════════════════════════ */
+let accToken = '';
+
+function accSaveToken(){
+  accToken = document.getElementById('acc-token').value.trim();
+  const st = document.getElementById('acc-token-status');
+  if(!accToken){ st.className='acces-token-status err'; st.textContent='Entre ta clé admin.'; return; }
+  try { sessionStorage.setItem('pm_admin_token', accToken); } catch(e){}
+  st.className='acces-token-status ok'; st.textContent='✓ Clé enregistrée. Chargement des clients...';
+  accLoadClients();
+}
+
+async function accLoadClients(){
+  if(!accToken) return;
+  const list = document.getElementById('acc-list');
+  try {
+    const r = await fetch('/api/admin/clients', { headers:{ 'x-admin-token': accToken } });
+    const data = await r.json();
+    if(!data.success){
+      document.getElementById('acc-token-status').className='acces-token-status err';
+      document.getElementById('acc-token-status').textContent='✗ Clé incorrecte.';
+      return;
+    }
+    document.getElementById('acc-token-status').className='acces-token-status ok';
+    document.getElementById('acc-token-status').textContent='✓ Connecté ('+data.count+' compte'+(data.count>1?'s':'')+')';
+    document.getElementById('acc-count').textContent = data.count+' compte'+(data.count>1?'s':'');
+    accRenderClients(data.clients);
+  } catch(e){
+    list.innerHTML='<div class="perf-empty"><i class="ti ti-wifi-off"></i><div class="perf-empty-title">Erreur de connexion</div><div>Impossible de joindre le serveur.</div></div>';
+  }
+}
+
+function accRenderClients(clients){
+  const list = document.getElementById('acc-list');
+  if(!clients.length){
+    list.innerHTML='<div class="perf-empty"><i class="ti ti-user-plus"></i><div class="perf-empty-title">Aucun client</div><div>Clique sur "Nouveau client" pour créer le premier compte.</div></div>';
+    return;
+  }
+  list.innerHTML = clients.map(c=>{
+    const initial = c.name.charAt(0).toUpperCase();
+    const contacts = [];
+    if(c.email) contacts.push('<span><i class="ti ti-mail" style="font-size:12px"></i> '+c.email+'</span>');
+    if(c.phone) contacts.push('<span><i class="ti ti-phone" style="font-size:12px"></i> '+c.phone+'</span>');
+    const status = c.activated
+      ? '<span class="acc-status active">✓ Actif</span>'
+      : '<span class="acc-status pending">⏳ En attente</span>';
+    const idr = c.email || c.phone || c.name;
+    return '<div class="acc-card">'
+      + '<div class="acc-ava">'+initial+'</div>'
+      + '<div class="acc-info"><div class="acc-name">'+c.name+'</div><div class="acc-contact">'+(contacts.join('')||'<span>Aucun contact</span>')+'</div></div>'
+      + status
+      + '<div class="acc-actions">'
+      + '<button class="acc-btn" title="Réinitialiser le mot de passe" onclick="accQuickReset(\''+idr.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')"><i class="ti ti-refresh"></i></button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function accPwMode(){
+  const mode = document.querySelector('input[name="acc-pwmode"]:checked').value;
+  document.getElementById('acc-password').style.display = mode==='admin' ? 'block' : 'none';
+}
+
+function accOpenModal(){
+  if(!accToken){ alert('Valide d\'abord ta clé administrateur en haut de la page.'); return; }
+  document.getElementById('acc-modal-title').textContent='Nouveau compte client';
+  document.getElementById('acc-edit-id').value='';
+  ['acc-name','acc-email','acc-phone','acc-password'].forEach(id=>document.getElementById(id).value='');
+  document.querySelector('input[name="acc-pwmode"][value="self"]').checked=true;
+  document.getElementById('acc-password').style.display='none';
+  document.getElementById('acc-clientkey').value='';
+  document.getElementById('acc-reset-btn').style.display='none';
+  document.getElementById('acc-modal').classList.add('show');
+}
+
+function accCloseModal(){ document.getElementById('acc-modal').classList.remove('show'); }
+function accModalBgClose(ev){ if(ev.target.id==='acc-modal') accCloseModal(); }
+
+async function accSaveClient(){
+  const name = document.getElementById('acc-name').value.trim();
+  const email = document.getElementById('acc-email').value.trim();
+  const phone = document.getElementById('acc-phone').value.trim();
+  const pwMode = document.querySelector('input[name="acc-pwmode"]:checked').value;
+  const password = pwMode==='admin' ? document.getElementById('acc-password').value : '';
+  const clientKey = document.getElementById('acc-clientkey').value;
+
+  if(!name){ alert('Le nom est requis.'); return; }
+  if(!email && !phone){ alert('Renseigne au moins un email ou un numéro.'); return; }
+  if(pwMode==='admin' && password.length<6){ alert('Le mot de passe doit faire au moins 6 caractères.'); return; }
+
+  const body = { adminToken: accToken, name };
+  if(email) body.email = email;
+  if(phone) body.phone = phone;
+  if(password) body.password = password;
+  if(clientKey) body.clientKey = clientKey;
+
+  try {
+    const r = await fetch('/api/admin/clients/create', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+    });
+    const data = await r.json();
+    if(data.success){
+      accCloseModal();
+      alert('✓ '+data.message);
+      accLoadClients();
+    } else {
+      alert('✗ '+(data.error||'Erreur lors de la création.'));
+    }
+  } catch(e){ alert('✗ Erreur de connexion au serveur.'); }
+}
+
+async function accQuickReset(identifier, name){
+  const choice = confirm('Réinitialiser le mot de passe de '+name+' ?\n\nOK = le client recréera son mot de passe à sa prochaine connexion.\nAnnuler = ne rien faire.');
+  if(!choice) return;
+  try {
+    const r = await fetch('/api/admin/clients/reset', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: accToken, identifier })
+    });
+    const data = await r.json();
+    if(data.success){ alert('✓ '+data.message); accLoadClients(); }
+    else alert('✗ '+(data.error||'Erreur.'));
+  } catch(e){ alert('✗ Erreur de connexion.'); }
+}
+
+function accResetPw(){} // placeholder (reset se fait via accQuickReset)
+
+// Charge le token depuis la session au démarrage
+(function(){
+  try {
+    const t = sessionStorage.getItem('pm_admin_token');
+    if(t){ accToken = t; const el=document.getElementById('acc-token'); if(el) el.value=t; }
+  } catch(e){}
+})();
+
 /* ── INIT ── */
 document.querySelectorAll('.ni').forEach(n => n.addEventListener('click', function(){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));
@@ -2201,6 +2410,63 @@ showMain('dashboard', document.querySelector('.ni'));
       <div style="flex:1"></div>
       <button class="btn" onclick="perfCloseModal()">Annuler</button>
       <button class="btn btn-navy" onclick="perfSaveEntry()"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer le relevé</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL GESTION ACCÈS CLIENT ══ -->
+<div class="cal-modal-overlay" id="acc-modal" onclick="accModalBgClose(event)">
+  <div class="cal-modal">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title" id="acc-modal-title">Nouveau compte client</div>
+      <button class="cal-modal-close" onclick="accCloseModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body">
+      <input type="hidden" id="acc-edit-id"/>
+
+      <div class="cal-field">
+        <label>Nom du client / de l'entreprise</label>
+        <input type="text" id="acc-name" placeholder="Ex: Soleil Communication"/>
+      </div>
+
+      <div class="perf-hint-box"><i class="ti ti-info-circle"></i> Renseigne au moins un email OU un numéro. Le client pourra se connecter avec l'un ou l'autre.</div>
+
+      <div class="cal-field">
+        <label>📧 Email <span style="font-weight:400;color:var(--hint)">(optionnel si numéro)</span></label>
+        <input type="email" id="acc-email" placeholder="client@exemple.com"/>
+      </div>
+
+      <div class="cal-field">
+        <label>📱 Numéro <span style="font-weight:400;color:var(--hint)">(optionnel si email)</span></label>
+        <input type="tel" id="acc-phone" placeholder="+22507000000"/>
+        <div style="font-size:10px;color:var(--hint);margin-top:4px;">Format international avec l'indicatif, ex: +225...</div>
+      </div>
+
+      <div class="cal-field">
+        <label>Mot de passe</label>
+        <div class="acc-pw-choice">
+          <label class="acc-radio"><input type="radio" name="acc-pwmode" value="self" checked onchange="accPwMode()"> <span>Le client le crée à sa 1ère connexion</span></label>
+          <label class="acc-radio"><input type="radio" name="acc-pwmode" value="admin" onchange="accPwMode()"> <span>Je définis le mot de passe maintenant</span></label>
+        </div>
+        <input type="text" id="acc-password" placeholder="Mot de passe de départ (min 6 caractères)" style="display:none;margin-top:8px;"/>
+      </div>
+
+      <div class="cal-field" id="acc-key-field">
+        <label>Clé de liaison données <span style="font-weight:400;color:var(--hint)">(avancé)</span></label>
+        <select id="acc-clientkey">
+          <option value="">— Nouveau (données vierges) —</option>
+          <option value="soleil">soleil (Soleil Communication)</option>
+          <option value="fanta">fanta (Maquis Chez Fanta)</option>
+          <option value="elegance">elegance (Boutique Élégance CI)</option>
+        </select>
+        <div style="font-size:10px;color:var(--hint);margin-top:4px;">Relie ce compte aux stats/calendrier existants. Laisse vide pour un nouveau client.</div>
+      </div>
+    </div>
+    <div class="cal-modal-foot">
+      <button class="btn" id="acc-reset-btn" onclick="accResetPw()" style="color:var(--dn);border-color:rgba(162,45,45,.2);display:none;"><i class="ti ti-refresh" style="font-size:13px"></i> Réinitialiser mdp</button>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="accCloseModal()">Annuler</button>
+      <button class="btn btn-navy" onclick="accSaveClient()"><i class="ti ti-check" style="font-size:13px"></i> Créer le compte</button>
     </div>
   </div>
 </div>
