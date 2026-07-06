@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -511,6 +510,13 @@ textarea{resize:none;line-height:1.5;}
 .acc-radio input{width:auto;margin:0;}
 .acc-radio:has(input:checked){border-color:var(--cyan);background:rgba(0,198,224,.04);}
 
+.perf-sync-status{font-size:11px;font-weight:600;margin-right:4px;max-width:280px;text-align:right;}
+.preview-banner{margin-bottom:14px;}
+.pv-status{border-radius:9px;padding:10px 13px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:7px;line-height:1.4;}
+.pv-status i{font-size:15px;flex-shrink:0;}
+.pv-pub{background:#e1f5ee;color:#085041;}
+.pv-draft{background:#faeeda;color:#7a5800;}
+.pv-empty{background:#e6f1fb;color:#185fa5;}
 </style>
 </head>
 <body>
@@ -1228,6 +1234,8 @@ function pmLogout(){
           </select>
         </div>
         <div style="flex:1"></div>
+        <div class="perf-sync-status" id="perf-sync-status"></div>
+        <button class="btn" onclick="perfPublish()" id="perf-publish-btn" style="border-color:var(--up);color:var(--up);"><i class="ti ti-send" style="font-size:13px"></i> Publier au client</button>
         <button class="btn btn-gold" onclick="perfOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau relevé</button>
       </div>
 
@@ -1825,7 +1833,53 @@ function perfLoad(){
     perfSave();
   }
 }
-function perfSave(){ try{ localStorage.setItem('pm_performance', JSON.stringify(perfState.data)); }catch(e){} }
+function perfSave(){
+  try{ localStorage.setItem('pm_performance', JSON.stringify(perfState.data)); }catch(e){}
+  // Sauvegarde aussi sur le serveur (brouillon, non publié) si on a le token
+  perfSyncToServer(false);
+}
+
+// Synchronise les stats du client courant vers le serveur
+async function perfSyncToServer(publish){
+  const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+  if(!token){ perfShowSync('⚠️ Valide ta clé admin (Gestion des accès) pour synchroniser', 'warn'); return false; }
+  const entries = perfState.data[perfState.client] || [];
+  try {
+    const r = await fetch('/api/admin/stats/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, clientKey: perfState.client, entries, published: publish })
+    });
+    const data = await r.json();
+    if(data.success){
+      if(publish) perfShowSync('✓ Publié — le client voit maintenant ces stats', 'ok');
+      else perfShowSync('✓ Enregistré sur le serveur', 'ok');
+      return true;
+    } else {
+      perfShowSync('✗ '+(data.error||'Erreur'), 'err');
+      return false;
+    }
+  } catch(e){ perfShowSync('✗ Erreur de connexion', 'err'); return false; }
+}
+
+function perfShowSync(msg, type){
+  const el = document.getElementById('perf-sync-status');
+  if(!el) return;
+  const colors = { ok:'var(--up)', err:'var(--dn)', warn:'#7a5800' };
+  el.textContent = msg;
+  el.style.color = colors[type] || 'var(--mut)';
+  if(type==='ok'){ setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; }, 4000); }
+}
+
+// Publier au client (rend les stats visibles dans son espace)
+async function perfPublish(){
+  const client = document.getElementById('perf-client');
+  const name = client.options[client.selectedIndex].text;
+  const entries = perfState.data[perfState.client] || [];
+  if(entries.length===0){ alert('Aucune statistique à publier pour ce client.'); return; }
+  if(!confirm('Publier '+entries.length+' relevé(s) pour '+name+' ?\n\nLe client verra ces statistiques dans son espace dès maintenant.')) return;
+  const ok = await perfSyncToServer(true);
+  if(ok) alert('✓ Statistiques publiées ! '+name+' peut maintenant les voir dans son espace.');
+}
 
 function perfGetData(){
   let d = perfState.data[perfState.client] || [];
@@ -2142,11 +2196,13 @@ function accRenderClients(clients){
       ? '<span class="acc-status active">✓ Actif</span>'
       : '<span class="acc-status pending">⏳ En attente</span>';
     const idr = c.email || c.phone || c.name;
+    const ckey = c.clientKey || '';
     return '<div class="acc-card">'
       + '<div class="acc-ava">'+initial+'</div>'
       + '<div class="acc-info"><div class="acc-name">'+c.name+'</div><div class="acc-contact">'+(contacts.join('')||'<span>Aucun contact</span>')+'</div></div>'
       + status
       + '<div class="acc-actions">'
+      + '<button class="acc-btn" title="Voir son tableau de bord" onclick="accPreview(\''+ckey.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')" style="color:var(--cyan);border-color:rgba(0,198,224,.3);"><i class="ti ti-eye"></i></button>'
       + '<button class="acc-btn" title="Réinitialiser le mot de passe" onclick="accQuickReset(\''+idr.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')"><i class="ti ti-refresh"></i></button>'
       + '</div>'
       + '</div>';
@@ -2221,6 +2277,110 @@ async function accQuickReset(identifier, name){
 }
 
 function accResetPw(){} // placeholder (reset se fait via accQuickReset)
+
+/* ── APERÇU DASHBOARD CLIENT ── */
+let previewClientKey = '';
+
+async function accPreview(clientKey, name){
+  if(!clientKey){ alert('Ce client n\'a pas de clé de données associée.'); return; }
+  previewClientKey = clientKey;
+  document.getElementById('preview-title').textContent = 'Tableau de bord — '+name;
+  document.getElementById('preview-content').innerHTML = '<div style="text-align:center;padding:30px;color:var(--hint);">Chargement...</div>';
+  document.getElementById('preview-modal').classList.add('show');
+
+  // Récupère les stats du serveur (version admin = voit tout, publié ou non)
+  const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+  let entries = [], published = false;
+  try {
+    const r = await fetch('/api/admin/stats/'+encodeURIComponent(clientKey), { headers:{ 'x-admin-token': token } });
+    const data = await r.json();
+    if(data.success){ entries = data.entries||[]; published = data.published; }
+  } catch(e){}
+
+  // Bannière statut publication
+  const banner = document.getElementById('preview-status-banner');
+  if(entries.length===0){
+    banner.innerHTML = '<div class="pv-status pv-empty"><i class="ti ti-info-circle"></i> Aucune statistique enregistrée pour ce client sur le serveur. Va dans Performance, saisis ses relevés, puis publie-les.</div>';
+    document.getElementById('preview-publish-btn').style.display='none';
+  } else if(published){
+    banner.innerHTML = '<div class="pv-status pv-pub"><i class="ti ti-circle-check"></i> Publié — le client voit actuellement ces '+entries.length+' relevé(s)</div>';
+    document.getElementById('preview-publish-btn').style.display='none';
+  } else {
+    banner.innerHTML = '<div class="pv-status pv-draft"><i class="ti ti-clock"></i> Brouillon — '+entries.length+' relevé(s) enregistré(s) mais PAS encore visibles par le client</div>';
+    document.getElementById('preview-publish-btn').style.display='inline-flex';
+  }
+
+  accRenderPreview(entries);
+}
+
+function accRenderPreview(data){
+  const box = document.getElementById('preview-content');
+  if(data.length===0){
+    box.innerHTML = '<div style="background:#fff;border-radius:12px;padding:30px;text-align:center;color:var(--hint);"><i class="ti ti-chart-line" style="font-size:32px;opacity:.4;display:block;margin-bottom:10px;"></i>Le client verra ici ses statistiques une fois que tu les auras saisies et publiées.</div>';
+    return;
+  }
+  const sorted = data.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const last = sorted[sorted.length-1];
+  const first = sorted[0];
+  const fmt=(n)=>{n=Number(n)||0;if(n>=1000000)return(n/1000000).toFixed(1).replace('.0','')+'M';if(n>=1000)return(n/1000).toFixed(1).replace('.0','')+'K';return String(n);};
+  const rate=(e)=>{const v=Number(e.views)||0;if(v===0)return 0;return((Number(e.likes||0)+Number(e.comments||0)+Number(e.shares||0))/v*100);};
+  const g=(k)=>{const a=Number(first[k])||0,b=Number(last[k])||0;return a===0?(b>0?100:0):((b-a)/a*100);};
+
+  // KPIs
+  const kpis=[
+    {i:'👁️',l:'Vues',v:fmt(last.views),d:g('views')},
+    {i:'👥',l:'Abonnés',v:fmt(last.followers),d:g('followers')},
+    {i:'❤️',l:'Likes',v:fmt(last.likes),d:g('likes')},
+    {i:'📊',l:'Engagement',v:rate(last).toFixed(1)+'%',d:null}
+  ];
+  let html='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">';
+  kpis.forEach(k=>{
+    let delta='';
+    if(k.d!==null){ const cls=k.d>0.5?'var(--up)':(k.d<-0.5?'var(--dn)':'var(--hint)'); const ar=k.d>0.5?'↑':(k.d<-0.5?'↓':'→'); delta='<div style="font-size:11px;font-weight:700;color:'+cls+';margin-top:4px;">'+ar+' '+Math.abs(k.d).toFixed(0)+'%</div>'; }
+    html+='<div style="background:#fff;border:1px solid var(--bord);border-radius:10px;padding:12px;"><div style="font-size:15px;margin-bottom:5px;">'+k.i+'</div><div style="font-size:19px;font-weight:800;">'+k.v+'</div><div style="font-size:10px;color:var(--hint);">'+k.l+'</div>'+delta+'</div>';
+  });
+  html+='</div>';
+
+  // Résumé
+  const avgG=(g('views')+g('followers')+g('likes'))/3;
+  let vi,vt,vb,vc;
+  if(avgG>30){vi='🚀';vt='Vos comptes sont en forte croissance';vb='#e1f5ee';vc='#085041';}
+  else if(avgG>5){vi='📈';vt='Vos comptes progressent bien';vb='#e6f1fb';vc='#185fa5';}
+  else if(avgG>-5){vi='➡️';vt='Vos comptes sont stables';vb='#faeeda';vc='#7a5800';}
+  else{vi='⚠️';vt='Vos comptes méritent un coup de boost';vb='#fcebeb';vc='#a32d2d';}
+  html+='<div style="background:#fff;border:1px solid var(--bord);border-radius:12px;padding:16px;margin-bottom:14px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><div style="width:40px;height:40px;border-radius:10px;background:'+vb+';display:flex;align-items:center;justify-content:center;font-size:20px;">'+vi+'</div><div style="font-size:14px;font-weight:800;">'+vt+'</div></div><div style="font-size:12px;color:var(--txt);line-height:1.6;">Vues passées de <strong>'+fmt(first.views)+' à '+fmt(last.views)+'</strong> ('+(g('views')>=0?'+':'')+g('views').toFixed(0)+'%), abonnés de <strong>'+fmt(first.followers)+' à '+fmt(last.followers)+'</strong>. Engagement : <strong>'+rate(last).toFixed(1)+'%</strong>.</div></div>';
+
+  // Mini tableau
+  html+='<div style="background:#fff;border:1px solid var(--bord);border-radius:12px;padding:14px;"><div style="font-size:12px;font-weight:700;margin-bottom:10px;">Historique ('+sorted.length+' relevés)</div><table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="color:var(--hint);text-align:left;"><th style="padding:4px;">Date</th><th style="padding:4px;">Réseau</th><th style="padding:4px;">Vues</th><th style="padding:4px;">Abonnés</th><th style="padding:4px;">Engag.</th></tr></thead><tbody>';
+  sorted.slice().reverse().forEach(e=>{
+    html+='<tr style="border-top:1px solid var(--bord);"><td style="padding:5px 4px;">'+e.date.split('-').reverse().join('/')+'</td><td style="padding:5px 4px;">'+e.net+'</td><td style="padding:5px 4px;font-weight:600;">'+fmt(e.views)+'</td><td style="padding:5px 4px;font-weight:600;">'+fmt(e.followers)+'</td><td style="padding:5px 4px;">'+rate(e).toFixed(1)+'%</td></tr>';
+  });
+  html+='</tbody></table></div>';
+
+  box.innerHTML=html;
+}
+
+function accPreviewClose(){ document.getElementById('preview-modal').classList.remove('show'); }
+function accPreviewBgClose(ev){ if(ev.target.id==='preview-modal') accPreviewClose(); }
+
+async function accPreviewPublish(){
+  if(!previewClientKey) return;
+  const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+  // Récupère les entries actuelles puis republie en "published:true"
+  try {
+    const r = await fetch('/api/admin/stats/'+encodeURIComponent(previewClientKey), { headers:{ 'x-admin-token': token } });
+    const data = await r.json();
+    const entries = (data.success && data.entries) ? data.entries : [];
+    if(entries.length===0){ alert('Aucune stat à publier.'); return; }
+    const r2 = await fetch('/api/admin/stats/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, clientKey: previewClientKey, entries, published:true })
+    });
+    const d2 = await r2.json();
+    if(d2.success){ alert('✓ Statistiques publiées ! Le client peut maintenant les voir.'); accPreview(previewClientKey, document.getElementById('preview-title').textContent.replace('Tableau de bord — ','')); }
+    else alert('✗ '+(d2.error||'Erreur'));
+  } catch(e){ alert('✗ Erreur de connexion.'); }
+}
 
 // Charge le token depuis la session au démarrage
 (function(){
@@ -2471,5 +2631,25 @@ showMain('dashboard', document.querySelector('.ni'));
   </div>
 </div>
 
+<!-- ══ MODAL APERÇU DASHBOARD CLIENT ══ -->
+<div class="cal-modal-overlay" id="preview-modal" onclick="accPreviewBgClose(event)">
+  <div class="cal-modal" style="max-width:720px;">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title"><i class="ti ti-eye" style="color:var(--cyan)"></i> <span id="preview-title">Aperçu client</span></div>
+      <button class="cal-modal-close" onclick="accPreviewClose()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body" style="background:var(--surf);">
+      <div class="preview-banner" id="preview-status-banner"></div>
+      <div id="preview-content"></div>
+    </div>
+    <div class="cal-modal-foot">
+      <div style="font-size:11px;color:var(--hint);flex:1;">👁️ Voici exactement ce que voit le client dans son espace</div>
+      <button class="btn" onclick="accPreviewClose()">Fermer</button>
+      <button class="btn btn-navy" id="preview-publish-btn" onclick="accPreviewPublish()"><i class="ti ti-send" style="font-size:13px"></i> Publier au client</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
+
