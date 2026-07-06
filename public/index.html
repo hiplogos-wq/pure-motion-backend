@@ -605,14 +605,21 @@ function showSuccess(isAdmin){
   showScreen('sc-success');
 }
 
-// Redirige vers le bon tableau de bord selon le rôle
+// Redirige vers le bon tableau de bord selon le rôle réel (depuis la session)
 function gotoDashboard(){
-  if(state.isAdmin){
+  var role = 'client';
+  try {
+    var s = JSON.parse(sessionStorage.getItem('pm_session') || 'null');
+    if(s && s.role) role = s.role;
+  } catch(e){}
+
+  if(role === 'admin'){
     window.location.href = '/admin';
-  } else if(state.role === 'client'){
+  } else if(role === 'client'){
     window.location.href = '/espace-client';
   } else {
-    window.location.href = '/admin'; // collaborateur → espace de travail
+    // collaborateur → espace de travail admin
+    window.location.href = '/admin';
   }
 }
 </script>
