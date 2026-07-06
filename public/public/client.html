@@ -85,11 +85,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <body>
 <script>
 (function(){
-  try {
-    var s = JSON.parse(sessionStorage.getItem('pm_session') || 'null');
-    if(!s || s.role !== 'client'){ window.location.href = '/'; return; }
-    window._pmUser = s;
-  } catch(e){ window.location.href = '/'; }
+  var s = null;
+  try { s = JSON.parse(sessionStorage.getItem('pm_session') || 'null'); } catch(e){}
+
+  // Diagnostic (visible dans la console F12)
+  console.log('[Espace Client] Session trouvée :', s);
+
+  if(!s){
+    console.warn('[Espace Client] Aucune session → redirection connexion');
+    window.location.href = '/';
+    return;
+  }
+  // Accepte les rôles client ET collaborateur (les deux vont vers l'espace)
+  if(s.role !== 'client' && s.role !== 'collaborateur'){
+    console.warn('[Espace Client] Rôle non autorisé ('+s.role+') → redirection');
+    window.location.href = '/';
+    return;
+  }
+  window._pmUser = s;
 })();
 function pmLogout(){ try{ sessionStorage.removeItem('pm_session'); }catch(e){} window.location.href='/'; }
 </script>
