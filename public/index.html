@@ -102,6 +102,10 @@ select.csel:focus{border-color:var(--cyan);}
 .spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0;}
 .spin-d{border-color:rgba(18,32,90,.15);border-top-color:var(--navy);}
 @keyframes sp{to{transform:rotate(360deg);}}
+.id-toggle{display:flex;gap:6px;background:var(--surf);border-radius:10px;padding:4px;margin-bottom:14px;}
+.id-tog-btn{flex:1;padding:8px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--hint);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;}
+.id-tog-btn.act{background:var(--white);color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.id-tog-btn i{font-size:14px;}
 </style>
 </head>
 <body>
@@ -181,9 +185,15 @@ select.csel:focus{border-color:var(--cyan);}
 
         <!-- ÉTAPE 1 : NUMÉRO -->
         <div id="st-phone">
-          <div class="alertb aerr" id="ph-err"><i class="ti ti-alert-circle"></i><span id="ph-err-txt">Numéro incorrect.</span></div>
+          <div class="alertb aerr" id="ph-err"><i class="ti ti-alert-circle"></i><span id="ph-err-txt">Identifiant incorrect.</span></div>
 
-          <div class="field">
+          <div class="id-toggle">
+            <button type="button" class="id-tog-btn act" id="idtog-phone" onclick="setIdMode('phone')"><i class="ti ti-phone"></i> Numéro</button>
+            <button type="button" class="id-tog-btn" id="idtog-email" onclick="setIdMode('email')"><i class="ti ti-mail"></i> Email</button>
+          </div>
+
+          <!-- Mode téléphone -->
+          <div class="field" id="id-phone-field">
             <label class="lbl">Numéro de téléphone</label>
             <div class="ph-row">
               <select class="csel" id="ph-country">
@@ -204,7 +214,17 @@ select.csel:focus{border-color:var(--cyan);}
             <div class="fhint">Le numéro communiqué à Pure Motion lors de votre inscription</div>
           </div>
 
-          <button class="btn btn-n" id="btn-continue" onclick="checkPhone()">
+          <!-- Mode email -->
+          <div class="field" id="id-email-field" style="display:none;">
+            <label class="lbl">Adresse email</label>
+            <div class="iw">
+              <i class="ti ti-mail ico"></i>
+              <input type="email" id="id-email" placeholder="vous@exemple.com" class="nop" autocomplete="email"/>
+            </div>
+            <div class="fhint">L'email communiqué à Pure Motion lors de votre inscription</div>
+          </div>
+
+          <button class="btn btn-n" id="btn-continue" onclick="checkIdentifier()">
             <i class="ti ti-arrow-right" style="font-size:14px;"></i> Continuer
           </button>
 
@@ -213,7 +233,7 @@ select.csel:focus{border-color:var(--cyan);}
 
         <!-- ÉTAPE 2A : CRÉER MOT DE PASSE (1ère connexion) -->
         <div id="st-create" style="display:none;">
-          <div class="back" onclick="backToPhone()"><i class="ti ti-arrow-left" style="font-size:12px;"></i> Changer de numéro</div>
+          <div class="back" onclick="backToPhone()"><i class="ti ti-arrow-left" style="font-size:12px;"></i> Changer d'identifiant</div>
 
           <div class="pw-hint-box"><i class="ti ti-confetti"></i><div>Bienvenue <strong id="create-name">!</strong> C'est votre première connexion. Créez le mot de passe qui protègera votre espace.</div></div>
 
@@ -246,7 +266,7 @@ select.csel:focus{border-color:var(--cyan);}
 
         <!-- ÉTAPE 2B : CONNEXION (compte déjà activé) -->
         <div id="st-login" style="display:none;">
-          <div class="back" onclick="backToPhone()"><i class="ti ti-arrow-left" style="font-size:12px;"></i> Changer de numéro</div>
+          <div class="back" onclick="backToPhone()"><i class="ti ti-arrow-left" style="font-size:12px;"></i> Changer d'identifiant</div>
 
           <div class="otp-info">Connexion pour <strong id="login-name"></strong></div>
 
@@ -363,7 +383,7 @@ select.csel:focus{border-color:var(--cyan);}
 <script>
 // La page est servie par le backend → chemins relatifs
 const BACKEND_URL = '';
-let state = { role:'collaborateur', phone:'', name:'', timer:null, adminEmail:'' };
+let state = { role:'collaborateur', idMode:'phone', identifier:'', name:'', timer:null, adminEmail:'' };
 
 function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('act')); document.getElementById(id).classList.add('act'); }
 function goWelcome(){ showScreen('sc-welcome'); resetLogin(); }
@@ -375,8 +395,9 @@ function resetLogin(){
   document.getElementById('st-phone').style.display='block';
   document.getElementById('st-create').style.display='none';
   document.getElementById('st-login').style.display='none';
-  ['ph-num','cr-pass','cr-pass2','lg-pass'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['ph-num','id-email','cr-pass','cr-pass2','lg-pass'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   ['ph-err','cr-err','lg-err'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('show');});
+  setIdMode('phone');
 }
 
 function setRole(r){
@@ -396,18 +417,37 @@ function togglePw(id,ico){
 }
 
 function validPhone(p){ return p && p.replace(/[\s\-]/g,'').length>=8; }
+function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 function showAlert(id,show,txt){ const el=document.getElementById(id); if(el){ if(txt){const s=el.querySelector('span');if(s)s.textContent=txt;} el.classList.toggle('show',show);} }
 
-// ── ÉTAPE 1 : vérifier le numéro ──
-async function checkPhone(){
-  const num=document.getElementById('ph-num').value.trim();
-  const country=document.getElementById('ph-country').value;
-  if(!validPhone(num)){ document.getElementById('ph-num').classList.add('err'); return; }
-  document.getElementById('ph-num').classList.remove('err');
+// Mode identifiant : téléphone ou email
+function setIdMode(mode){
+  state.idMode = mode;
+  const isPhone = mode==='phone';
+  document.getElementById('idtog-phone').classList.toggle('act', isPhone);
+  document.getElementById('idtog-email').classList.toggle('act', !isPhone);
+  document.getElementById('id-phone-field').style.display = isPhone ? 'block' : 'none';
+  document.getElementById('id-email-field').style.display = isPhone ? 'none' : 'block';
   showAlert('ph-err',false);
+}
 
-  const e164 = country + num.replace(/[\s\-]/g,'');
-  state.phone = e164;
+// ── ÉTAPE 1 : vérifier l'identifiant (email ou téléphone) ──
+async function checkIdentifier(){
+  let identifier;
+  if(state.idMode==='email'){
+    const email = document.getElementById('id-email').value.trim();
+    if(!validEmail(email)){ document.getElementById('id-email').classList.add('err'); return; }
+    document.getElementById('id-email').classList.remove('err');
+    identifier = email;
+  } else {
+    const num=document.getElementById('ph-num').value.trim();
+    const country=document.getElementById('ph-country').value;
+    if(!validPhone(num)){ document.getElementById('ph-num').classList.add('err'); return; }
+    document.getElementById('ph-num').classList.remove('err');
+    identifier = country + num.replace(/[\s\-]/g,'');
+  }
+  showAlert('ph-err',false);
+  state.identifier = identifier;
 
   const btn=document.getElementById('btn-continue');
   btn.innerHTML='<div class="spin"></div> Vérification...'; btn.disabled=true;
@@ -415,12 +455,12 @@ async function checkPhone(){
   try {
     const r = await fetch(BACKEND_URL+'/api/client/check', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ phone:e164 })
+      body:JSON.stringify({ identifier })
     });
     const data = await r.json();
     btn.innerHTML='<i class="ti ti-arrow-right" style="font-size:14px;"></i> Continuer'; btn.disabled=false;
 
-    if(!data.success){ showAlert('ph-err',true,data.error||'Numéro non reconnu.'); return; }
+    if(!data.success){ showAlert('ph-err',true,data.error||'Compte non reconnu.'); return; }
 
     state.name = data.name;
     if(data.nextStep==='create-password'){
@@ -463,7 +503,7 @@ async function createPassword(){
   try {
     const r = await fetch(BACKEND_URL+'/api/client/set-password', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ phone:state.phone, password:p1 })
+      body:JSON.stringify({ identifier:state.identifier, password:p1 })
     });
     const data = await r.json();
     btn.innerHTML='<i class="ti ti-check" style="font-size:14px;"></i> Créer mon mot de passe et me connecter'; btn.disabled=false;
@@ -488,7 +528,7 @@ async function doLogin(){
   try {
     const r = await fetch(BACKEND_URL+'/api/client/login', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ phone:state.phone, password:pass })
+      body:JSON.stringify({ identifier:state.identifier, password:pass })
     });
     const data = await r.json();
     btn.innerHTML='<i class="ti ti-login" style="font-size:14px;"></i> Me connecter'; btn.disabled=false;
