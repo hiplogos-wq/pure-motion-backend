@@ -85,21 +85,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <body>
 <script>
 (function(){
-  var s = null;
-  try { s = JSON.parse(sessionStorage.getItem('pm_session') || 'null'); } catch(e){}
+  var s = null, raw = null;
+  try { raw = sessionStorage.getItem('pm_session'); s = JSON.parse(raw || 'null'); } catch(e){}
 
-  // Diagnostic (visible dans la console F12)
   console.log('[Espace Client] Session trouvée :', s);
 
+  var probleme = null;
   if(!s){
-    console.warn('[Espace Client] Aucune session → redirection connexion');
-    window.location.href = '/';
-    return;
+    probleme = "Aucune session n'a été trouvée. La connexion n'a pas enregistré vos informations.";
+  } else if(s.role !== 'client' && s.role !== 'collaborateur'){
+    probleme = "Le rôle enregistré est « " + s.role + " » au lieu de « client ».";
   }
-  // Accepte les rôles client ET collaborateur (les deux vont vers l'espace)
-  if(s.role !== 'client' && s.role !== 'collaborateur'){
-    console.warn('[Espace Client] Rôle non autorisé ('+s.role+') → redirection');
-    window.location.href = '/';
+
+  if(probleme){
+    // Affiche un message visible à l'écran au lieu de rediriger tout de suite
+    document.addEventListener('DOMContentLoaded', function(){
+      document.body.innerHTML =
+        '<div style="max-width:520px;margin:60px auto;padding:30px;font-family:sans-serif;text-align:center;">'
+        + '<div style="font-size:40px;margin-bottom:16px;">🔍</div>'
+        + '<div style="font-size:19px;font-weight:800;color:#12205A;margin-bottom:10px;">Diagnostic de connexion</div>'
+        + '<div style="background:#fcebeb;border:1px solid #f0c0c0;border-radius:10px;padding:14px;font-size:13px;color:#a32d2d;line-height:1.6;margin-bottom:16px;">'
+        + probleme + '</div>'
+        + '<div style="background:#f5f6fa;border-radius:10px;padding:14px;font-size:11px;color:#5a6282;text-align:left;font-family:monospace;word-break:break-all;margin-bottom:16px;">'
+        + '<strong>Détail technique :</strong><br>pm_session = ' + (raw || '(vide)') + '</div>'
+        + '<a href="/" style="display:inline-block;background:#12205A;color:#fff;padding:11px 22px;border-radius:9px;text-decoration:none;font-size:13px;font-weight:600;">← Retour à la connexion</a>'
+        + '<div style="font-size:11px;color:#9aa0bc;margin-top:14px;">Fais une capture de cet écran et envoie-la à ton développeur.</div>'
+        + '</div>';
+    });
     return;
   }
   window._pmUser = s;
@@ -338,3 +350,4 @@ cliRender();
 </script>
 </body>
 </html>
+
