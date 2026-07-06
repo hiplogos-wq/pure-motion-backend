@@ -14,6 +14,7 @@ const helmet     = require('helmet');
 const rateLimit  = require('express-rate-limit');
 const crypto     = require('crypto');
 const path       = require('path');
+const fs         = require('fs');
 
 const app = express();
 
@@ -26,6 +27,48 @@ const {
   NODE_ENV = 'development',
   ADMIN_TOKEN = 'change_me',
 } = process.env;
+
+// ══════════════════════════════════════════
+// STOCKAGE FICHIER JSON (persistance simple)
+// ⚠️ Sur Render gratuit, effacé à chaque redéploiement.
+//    Pour la production durable → migrer vers PostgreSQL.
+// ══════════════════════════════════════════
+const DATA_DIR = path.join(__dirname, 'data');
+const DATA_FILE = path.join(DATA_DIR, 'pm_data.json');
+
+// Structure : { clients:{...}, stats:{clientKey:[...]}, calendar:{clientKey:[...]} }
+let STORE = { clients: {}, stats: {}, calendar: {} };
+
+function loadStore() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      STORE = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+      if (!STORE.clients) STORE.clients = {};
+      if (!STORE.stats) STORE.stats = {};
+      if (!STORE.calendar) STORE.calendar = {};
+      console.log('✅ Données chargées depuis le fichier');
+    }
+  } catch (e) {
+    console.warn('⚠️ Impossible de charger les données, démarrage à vide :', e.message);
+    STORE = { clients: {}, stats: {}, calendar: {} };
+  }
+}
+
+let saveTimer = null;
+function saveStore() {
+  // Sauvegarde différée (évite d'écrire trop souvent)
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+      fs.writeFileSync(DATA_FILE, JSON.stringify(STORE, null, 2), 'utf8');
+    } catch (e) {
+      console.error('❌ Erreur sauvegarde données :', e.message);
+    }
+  }, 400);
+}
+
+loadStore();
 
 // ══════════════════════════════════════════
 // HACHAGE DES MOTS DE PASSE (sans dépendance externe)
@@ -88,6 +131,24 @@ function makeClient({ name, clientKey, email, phone, password }) {
 makeClient({ name:'Soleil Communication', clientKey:'soleil', phone:'+22507000001', email:'soleil@client.ci' });
 makeClient({ name:'Maquis Chez Fanta', clientKey:'fanta', phone:'+22507000002', email:'fanta@client.ci' });
 makeClient({ name:'Boutique Élégance CI', clientKey:'elegance', phone:'+22507000003', email:'elegance@client.ci' });
+
+// Restaure les clients créés précédemment (persistés dans le fichier)
+// Ils écrasent les clients de démo s'ils ont le même identifiant (données à jour)
+if (STORE.clients && typeof STORE.clients === 'object') {
+  Object.entries(STORE.clients).forEach(([id, u]) => {
+    USERS[id] = u;
+  });
+  console.log(`✅ ${Object.keys(STORE.clients).length} compte(s) client restauré(s)`);
+}
+
+// Persiste l'état actuel des clients (hors admin) dans STORE
+function persistClients() {
+  STORE.clients = {};
+  Object.entries(USERS).forEach(([id, u]) => {
+    if (u.role !== 'admin') STORE.clients[id] = u;
+  });
+  saveStore();
+}
 
 // Index par téléphone ET par email (les clients se connectent par l'un ou l'autre)
 const USERS_BY_PHONE = {};
@@ -197,6 +258,7 @@ app.post('/api/client/set-password', loginLimiter, (req, res) => {
 
   found.user.passwordHash = hashPassword(password);
   found.user.activated = true;
+  persistClients();
 
   log('INFO', 'Client a créé son mot de passe', { name: found.user.name });
 
@@ -295,6 +357,7 @@ app.post('/api/admin/clients/create', (req, res) => {
     activated: !!password,
   };
   reindexAll();
+  persistClients();
 
   log('INFO', 'Client créé', { name, activated: !!password });
 
@@ -327,11 +390,13 @@ app.post('/api/admin/clients/reset', (req, res) => {
     if (!validPw(newPassword)) return res.status(400).json({ success:false, error:'Mot de passe trop court (min 6).' });
     found.user.passwordHash = hashPassword(newPassword);
     found.user.activated = true;
+    persistClients();
     log('INFO', 'Mot de passe client réinitialisé (défini par admin)', { name: found.user.name });
     return res.json({ success:true, message:`Nouveau mot de passe défini pour ${found.user.name}.` });
   } else {
     found.user.passwordHash = null;
     found.user.activated = false;
+    persistClients();
     log('INFO', 'Mot de passe client réinitialisé (à recréer)', { name: found.user.name });
     return res.json({ success:true, message:`${found.user.name} devra recréer son mot de passe à la prochaine connexion.` });
   }
@@ -352,9 +417,51 @@ app.get('/api/admin/clients', (req, res) => {
 });
 
 // ══════════════════════════════════════════
+// STATS — SAUVEGARDE (admin) & RÉCUPÉRATION
+// ══════════════════════════════════════════
+
+// Admin enregistre/remplace les stats d'un client
+// POST /api/admin/stats/save
+// Body : { adminToken, clientKey, entries:[...], published:bool }
+app.post('/api/admin/stats/save', (req, res) => {
+  const { adminToken, clientKey, entries, published } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!clientKey) return res.status(400).json({ success:false, error:'clientKey requis.' });
+  if (!Array.isArray(entries)) return res.status(400).json({ success:false, error:'entries doit être une liste.' });
+
+  STORE.stats[clientKey] = {
+    entries: entries,
+    published: !!published,
+    updatedAt: Date.now()
+  };
+  saveStore();
+  log('INFO', 'Stats sauvegardées', { clientKey, count: entries.length, published: !!published });
+  return res.json({ success:true, message:'Statistiques enregistrées.', count: entries.length, published: !!published });
+});
+
+// Admin récupère les stats d'un client (même non publiées)
+// GET /api/admin/stats/:clientKey  (header x-admin-token)
+app.get('/api/admin/stats/:clientKey', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+  const s = STORE.stats[req.params.clientKey] || { entries:[], published:false };
+  return res.json({ success:true, entries: s.entries || [], published: !!s.published, updatedAt: s.updatedAt || null });
+});
+
+// Client récupère SES stats (uniquement si publiées)
+// GET /api/client/stats/:clientKey
+app.get('/api/client/stats/:clientKey', (req, res) => {
+  const s = STORE.stats[req.params.clientKey];
+  if (!s || !s.published) {
+    return res.json({ success:true, entries:[], published:false });
+  }
+  return res.json({ success:true, entries: s.entries || [], published:true, updatedAt: s.updatedAt || null });
+});
+
+// ══════════════════════════════════════════
 // PAGES TABLEAUX DE BORD
 // ══════════════════════════════════════════
-const fs = require('fs');
 
 // Espace admin / collaborateur
 app.get('/admin', (req, res) => {
@@ -409,4 +516,3 @@ app.listen(PORT, () => {
   console.log('   GET  /api/health');
   console.log('');
 });
-
