@@ -65,21 +65,57 @@ const USERS = {
   },
 };
 
-// Index par téléphone (les clients se connectent par numéro)
-const USERS_BY_PHONE = {};
+// ══════════════════════════════════════════
+// CLIENTS RÉELS
+// clientKey = identifiant qui relie le compte à ses données (stats, calendrier)
+// activated: false → le client crée son mot de passe à la 1ère connexion
+// activated: true + passwordHash → mot de passe défini par l'admin
+// ══════════════════════════════════════════
+function makeClient({ name, clientKey, email, phone, password }) {
+  const internalId = email ? email.toLowerCase() : `${phone.replace('+','')}@client.puremotion.ci`;
+  USERS[internalId] = {
+    role: 'client',
+    name,
+    clientKey,
+    email: email ? email.toLowerCase() : null,
+    phone: phone || null,
+    passwordHash: password ? hashPassword(password) : null,
+    activated: !!password,
+  };
+}
 
-function reindexPhones() {
-  for (const key in USERS_BY_PHONE) delete USERS_BY_PHONE[key];
-  Object.entries(USERS).forEach(([email, u]) => {
-    if (u.phone) USERS_BY_PHONE[u.phone] = email;
+// Les 3 clients de démarrage — MODIFIE ces infos avec les vraies coordonnées
+makeClient({ name:'Soleil Communication', clientKey:'soleil', phone:'+22507000001', email:'soleil@client.ci' });
+makeClient({ name:'Maquis Chez Fanta', clientKey:'fanta', phone:'+22507000002', email:'fanta@client.ci' });
+makeClient({ name:'Boutique Élégance CI', clientKey:'elegance', phone:'+22507000003', email:'elegance@client.ci' });
+
+// Index par téléphone ET par email (les clients se connectent par l'un ou l'autre)
+const USERS_BY_PHONE = {};
+const USERS_BY_EMAIL = {};
+
+function reindexAll() {
+  for (const k in USERS_BY_PHONE) delete USERS_BY_PHONE[k];
+  for (const k in USERS_BY_EMAIL) delete USERS_BY_EMAIL[k];
+  Object.entries(USERS).forEach(([id, u]) => {
+    if (u.phone) USERS_BY_PHONE[u.phone] = id;
+    if (u.email) USERS_BY_EMAIL[u.email.toLowerCase()] = id;
   });
 }
 
-// Codes d'invitation temporaires pour la 1ère connexion client
-// { code: { phone, name, expiresAt } }
-const INVITES = {};
+// Retrouve un utilisateur par email OU téléphone
+function findUser(identifier) {
+  if (!identifier) return null;
+  const id = identifier.trim().toLowerCase();
+  if (USERS_BY_EMAIL[id]) return { key: USERS_BY_EMAIL[id], user: USERS[USERS_BY_EMAIL[id]] };
+  if (USERS_BY_PHONE[identifier.trim()]) return { key: USERS_BY_PHONE[identifier.trim()], user: USERS[USERS_BY_PHONE[identifier.trim()]] };
+  if (USERS[id]) return { key: id, user: USERS[id] };
+  return null;
+}
 
-reindexPhones();
+reindexAll();
+
+// Codes d'invitation temporaires pour la 1ère connexion client
+const INVITES = {};
 
 // ══════════════════════════════════════════
 // MIDDLEWARES
@@ -124,95 +160,83 @@ app.get('/api/health', (req, res) => {
 });
 
 // ══════════════════════════════════════════
-// CLIENT — VÉRIFIER LE STATUT D'UN NUMÉRO
+// CLIENT — VÉRIFIER LE STATUT (email OU téléphone)
 // POST /api/client/check
-// Body : { phone }
-// Dit au frontend si le client doit créer son mot de passe ou se connecter
+// Body : { identifier }   (email ou numéro)
 // ══════════════════════════════════════════
 app.post('/api/client/check', loginLimiter, (req, res) => {
-  const { phone } = req.body;
-  if (!phone || !validPhone(phone)) {
-    return res.status(400).json({ success:false, error:'Numéro invalide. Format : +225XXXXXXXXXX' });
+  const { identifier } = req.body;
+  if (!identifier) {
+    return res.status(400).json({ success:false, error:'Entre ton email ou ton numéro.' });
   }
-  const email = USERS_BY_PHONE[phone];
-  const user = email ? USERS[email] : null;
-
-  if (!user) {
-    return res.status(404).json({ success:false, error:'Ce numéro n\'est pas enregistré. Contactez Pure Motion.' });
+  const found = findUser(identifier);
+  if (!found || found.user.role === 'admin') {
+    return res.status(404).json({ success:false, error:'Compte introuvable. Contactez Pure Motion.' });
   }
-  // Le compte existe : doit-il créer son mot de passe ?
   return res.json({
     success: true,
-    activated: user.activated,
-    name: user.name,
-    nextStep: user.activated ? 'login' : 'create-password'
+    activated: found.user.activated,
+    name: found.user.name,
+    nextStep: found.user.activated ? 'login' : 'create-password'
   });
 });
 
 // ══════════════════════════════════════════
 // CLIENT — CRÉER SON MOT DE PASSE (1ère connexion)
 // POST /api/client/set-password
-// Body : { phone, password }
+// Body : { identifier, password }
 // ══════════════════════════════════════════
 app.post('/api/client/set-password', loginLimiter, (req, res) => {
-  const { phone, password } = req.body;
-  if (!phone || !validPhone(phone)) return res.status(400).json({ success:false, error:'Numéro invalide.' });
+  const { identifier, password } = req.body;
+  if (!identifier) return res.status(400).json({ success:false, error:'Identifiant requis.' });
   if (!validPw(password)) return res.status(400).json({ success:false, error:'Le mot de passe doit faire au moins 6 caractères.' });
 
-  const email = USERS_BY_PHONE[phone];
-  const user = email ? USERS[email] : null;
-  if (!user) return res.status(404).json({ success:false, error:'Numéro introuvable.' });
-  if (user.activated) return res.status(409).json({ success:false, error:'Ce compte a déjà un mot de passe. Connectez-vous.' });
+  const found = findUser(identifier);
+  if (!found || found.user.role === 'admin') return res.status(404).json({ success:false, error:'Compte introuvable.' });
+  if (found.user.activated) return res.status(409).json({ success:false, error:'Ce compte a déjà un mot de passe. Connectez-vous.' });
 
-  // Enregistre le mot de passe haché et active le compte
-  user.passwordHash = hashPassword(password);
-  user.activated = true;
+  found.user.passwordHash = hashPassword(password);
+  found.user.activated = true;
 
-  log('INFO', 'Client a créé son mot de passe', { phone: maskPhone(phone), name: user.name });
+  log('INFO', 'Client a créé son mot de passe', { name: found.user.name });
 
-  const sessionToken = makeToken(phone);
   return res.json({
     success: true,
     activated: true,
-    user: { name: user.name, role: user.role, phone: maskPhone(phone) },
-    sessionToken,
+    user: { name: found.user.name, role: found.user.role, clientKey: found.user.clientKey },
+    sessionToken: makeToken(found.key),
     message: 'Mot de passe créé. Bienvenue !'
   });
 });
 
 // ══════════════════════════════════════════
-// CLIENT — CONNEXION (numéro + mot de passe, SANS code)
+// CLIENT — CONNEXION (email OU téléphone + mot de passe)
 // POST /api/client/login
-// Body : { phone, password }
+// Body : { identifier, password }
 // ══════════════════════════════════════════
 app.post('/api/client/login', loginLimiter, (req, res) => {
-  const { phone, password } = req.body;
-  if (!phone || !validPhone(phone)) return res.status(400).json({ success:false, error:'Numéro invalide.' });
+  const { identifier, password } = req.body;
+  if (!identifier) return res.status(400).json({ success:false, error:'Identifiant requis.' });
   if (!password) return res.status(400).json({ success:false, error:'Mot de passe requis.' });
 
-  const email = USERS_BY_PHONE[phone];
-  const user = email ? USERS[email] : null;
-
-  if (!user || !user.activated) {
-    return res.status(401).json({ success:false, error:'Numéro ou mot de passe incorrect.' });
+  const found = findUser(identifier);
+  if (!found || !found.user.activated) {
+    return res.status(401).json({ success:false, error:'Identifiant ou mot de passe incorrect.' });
   }
-  if (!verifyPassword(password, user.passwordHash)) {
-    log('WARN', 'Échec connexion client', { phone: maskPhone(phone) });
-    return res.status(401).json({ success:false, error:'Numéro ou mot de passe incorrect.' });
+  if (!verifyPassword(password, found.user.passwordHash)) {
+    log('WARN', 'Échec connexion client', { name: found.user.name });
+    return res.status(401).json({ success:false, error:'Identifiant ou mot de passe incorrect.' });
   }
-
-  // Si c'est un admin, on le redirige vers la route admin dédiée
-  if (user.role === 'admin') {
+  if (found.user.role === 'admin') {
     return res.status(403).json({ success:false, error:'Ce compte nécessite la connexion administrateur.' });
   }
 
-  log('INFO', 'Connexion client réussie', { phone: maskPhone(phone), name: user.name, role: user.role });
+  log('INFO', 'Connexion client réussie', { name: found.user.name, role: found.user.role });
 
-  const sessionToken = makeToken(phone);
   return res.json({
     success: true,
-    user: { name: user.name, role: user.role, phone: maskPhone(phone) },
-    sessionToken,
+    user: { name: found.user.name, role: found.user.role, clientKey: found.user.clientKey },
+    sessionToken: makeToken(found.key),
     message: 'Connexion réussie !'
   });
 });
@@ -244,38 +268,73 @@ app.post('/api/admin/login', loginLimiter, (req, res) => {
 // ══════════════════════════════════════════
 // ADMIN — CRÉER / INVITER UN CLIENT
 // POST /api/admin/clients/create
-// Body : { adminToken, name, phone, role }
-// Le client pourra ensuite créer son mot de passe à la 1ère connexion
+// Body : { adminToken, name, clientKey, email, phone, password (optionnel), role }
 // ══════════════════════════════════════════
 app.post('/api/admin/clients/create', (req, res) => {
-  const { adminToken, name, phone, role = 'client' } = req.body;
+  const { adminToken, name, clientKey, email, phone, password, role = 'client' } = req.body;
   if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  if (!name || !phone || !validPhone(phone)) {
-    return res.status(400).json({ success:false, error:'Nom et numéro valides requis. Format numéro : +225XXXXXXXXXX' });
-  }
-  if (USERS_BY_PHONE[phone]) {
-    return res.status(409).json({ success:false, error:'Ce numéro existe déjà.' });
-  }
+  if (!name) return res.status(400).json({ success:false, error:'Le nom est requis.' });
+  if (!email && !phone) return res.status(400).json({ success:false, error:'Renseigne au moins un email ou un numéro.' });
+  if (phone && !validPhone(phone)) return res.status(400).json({ success:false, error:'Numéro invalide. Format : +225XXXXXXXXXX' });
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ success:false, error:'Email invalide.' });
+  if (password && !validPw(password)) return res.status(400).json({ success:false, error:'Le mot de passe doit faire au moins 6 caractères.' });
 
-  // Crée un identifiant interne basé sur le téléphone
-  const internalEmail = `${phone.replace('+','')}@client.puremotion.ci`;
-  USERS[internalEmail] = {
+  if (phone && USERS_BY_PHONE[phone]) return res.status(409).json({ success:false, error:'Ce numéro existe déjà.' });
+  if (email && USERS_BY_EMAIL[email.toLowerCase()]) return res.status(409).json({ success:false, error:'Cet email existe déjà.' });
+
+  const internalId = email ? email.toLowerCase() : `${phone.replace('+','')}@client.puremotion.ci`;
+  const key = clientKey || (name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12) + Date.now().toString().slice(-4));
+
+  USERS[internalId] = {
     role: role === 'collaborateur' ? 'collaborateur' : 'client',
     name,
-    phone,
-    passwordHash: null,    // pas encore de mot de passe
-    activated: false,      // le client doit l'activer
-    isAdmin: false,
+    clientKey: key,
+    email: email ? email.toLowerCase() : null,
+    phone: phone || null,
+    passwordHash: password ? hashPassword(password) : null,
+    activated: !!password,
   };
-  reindexPhones();
+  reindexAll();
 
-  log('INFO', 'Client créé (en attente d\'activation)', { name, phone: maskPhone(phone), role });
+  log('INFO', 'Client créé', { name, activated: !!password });
+
+  const how = password
+    ? 'Le mot de passe a été défini. Le client peut se connecter immédiatement.'
+    : 'Le client créera son mot de passe à sa première connexion.';
 
   return res.json({
     success: true,
-    message: `${name} ajouté. Il pourra créer son mot de passe à sa première connexion avec son numéro.`,
-    client: { name, phone, role, activated: false }
+    message: `${name} ajouté. ${how}`,
+    client: { name, clientKey:key, email:email||null, phone:phone||null, role, activated: !!password }
   });
+});
+
+// ══════════════════════════════════════════
+// ADMIN — RÉINITIALISER LE MOT DE PASSE D'UN CLIENT
+// POST /api/admin/clients/reset
+// Body : { adminToken, identifier, newPassword (optionnel) }
+// Sans newPassword → le compte redevient "à activer" (le client recrée son mdp)
+// ══════════════════════════════════════════
+app.post('/api/admin/clients/reset', (req, res) => {
+  const { adminToken, identifier, newPassword } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!identifier) return res.status(400).json({ success:false, error:'Identifiant du client requis.' });
+
+  const found = findUser(identifier);
+  if (!found || found.user.role === 'admin') return res.status(404).json({ success:false, error:'Client introuvable.' });
+
+  if (newPassword) {
+    if (!validPw(newPassword)) return res.status(400).json({ success:false, error:'Mot de passe trop court (min 6).' });
+    found.user.passwordHash = hashPassword(newPassword);
+    found.user.activated = true;
+    log('INFO', 'Mot de passe client réinitialisé (défini par admin)', { name: found.user.name });
+    return res.json({ success:true, message:`Nouveau mot de passe défini pour ${found.user.name}.` });
+  } else {
+    found.user.passwordHash = null;
+    found.user.activated = false;
+    log('INFO', 'Mot de passe client réinitialisé (à recréer)', { name: found.user.name });
+    return res.json({ success:true, message:`${found.user.name} devra recréer son mot de passe à la prochaine connexion.` });
+  }
 });
 
 // ══════════════════════════════════════════
@@ -288,7 +347,7 @@ app.get('/api/admin/clients', (req, res) => {
   }
   const clients = Object.values(USERS)
     .filter(u => u.role !== 'admin')
-    .map(u => ({ name: u.name, phone: maskPhone(u.phone), role: u.role, activated: u.activated }));
+    .map(u => ({ name: u.name, clientKey: u.clientKey, email: u.email, phone: maskPhone(u.phone), role: u.role, activated: u.activated }));
   return res.json({ success:true, count: clients.length, clients });
 });
 
