@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pure Motion — Espace Client</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.2.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cyan:#00C6E0;--navy:#12205A;--gold:#F5B731;--blue:#0066CC;
+  --bg:#f5f6fa;--white:#fff;--surf:#f0f2f8;
+  --txt:#1a1a2e;--mut:#5a6282;--hint:#9aa0bc;--bord:#e2e6f0;
+  --up:#0a6b4f;--dn:#a32d2d;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;}
+.topbar{background:var(--white);border-bottom:1px solid var(--bord);padding:13px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.tb-left{display:flex;align-items:center;gap:11px;}
+.logo-sq{width:38px;height:38px;flex-shrink:0;}
+.logo-name{font-size:15px;font-weight:800;color:var(--navy);letter-spacing:.4px;}
+.logo-tag{font-size:9px;color:var(--hint);margin-top:1px;}
+.tb-right{display:flex;align-items:center;gap:14px;}
+.client-badge{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mut);}
+.client-ava{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e6970f);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--navy);}
+.logout-btn{font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid var(--bord);}
+.logout-btn:hover{background:var(--surf);color:var(--dn);}
+.wrap{max-width:1000px;margin:0 auto;padding:22px 24px;}
+.hero{background:linear-gradient(135deg,var(--navy),#1a3a8a);border-radius:16px;padding:22px 26px;margin-bottom:20px;color:#fff;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:rgba(0,198,224,.12);}
+.hero-greet{font-size:13px;color:var(--cyan);margin-bottom:4px;position:relative;}
+.hero-title{font-size:22px;font-weight:800;margin-bottom:6px;position:relative;}
+.hero-sub{font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;max-width:540px;position:relative;}
+.section-label{font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.8px;margin:22px 0 12px;display:flex;align-items:center;justify-content:space-between;}
+.section-label .filt{display:flex;gap:6px;}
+.filt-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:7px;border:1px solid var(--bord);background:var(--white);color:var(--mut);cursor:pointer;}
+.filt-btn.act{background:var(--navy);color:#fff;border-color:var(--navy);}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:8px;}
+.kpi{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:14px 16px;}
+.kpi-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:9px;}
+.kpi-val{font-size:23px;font-weight:800;color:var(--txt);line-height:1.1;}
+.kpi-lbl{font-size:11px;color:var(--hint);margin-top:2px;}
+.kpi-delta{font-size:11px;font-weight:700;margin-top:5px;}
+.up{color:var(--up);}.dn{color:var(--dn);}.flat{color:var(--hint);}
+.summary{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+.sum-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sum-badge{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.sum-title{font-size:15px;font-weight:800;color:var(--txt);}
+.sum-sub{font-size:12px;color:var(--mut);margin-top:1px;}
+.sum-verdict{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;margin-left:auto;}
+.sum-body{font-size:13px;color:var(--txt);line-height:1.7;}
+.sum-body strong{color:var(--navy);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.chart-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;}
+.chart-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.chart-wrap{height:180px;position:relative;}
+.report-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:18px;display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.report-ico{width:46px;height:46px;border-radius:11px;background:#e6f1fb;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.report-info{flex:1;}
+.report-title{font-size:13px;font-weight:700;color:var(--txt);}
+.report-sub{font-size:11px;color:var(--mut);margin-top:2px;}
+.report-btns{display:flex;gap:8px;}
+.report-btn{padding:8px 15px;font-size:12px;font-weight:600;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.report-btn.week{background:var(--white);color:var(--navy);border:1px solid var(--bord);}
+.report-btn.week:hover{background:var(--surf);}
+.report-btn.month{background:var(--navy);color:#fff;}
+.report-btn.month:hover{background:#1a2d80;}
+.contact-box{background:#e6f1fb;border:1px solid rgba(56,138,221,.2);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:12px;color:#0c447c;line-height:1.6;}
+.contact-box i{font-size:20px;}
+.empty{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:40px;text-align:center;color:var(--hint);}
+.empty i{font-size:36px;display:block;margin-bottom:12px;opacity:.4;}
+.empty-t{font-size:15px;font-weight:600;color:var(--mut);margin-bottom:5px;}
+@media(max-width:760px){.kpi-grid{grid-template-columns:1fr 1fr;}.g2{grid-template-columns:1fr;}}
+
+/* Fiche imprimable */
+@media print{
+  body *{visibility:hidden;}
+  #print-sheet, #print-sheet *{visibility:visible;}
+  #print-sheet{position:absolute;left:0;top:0;width:100%;padding:30px;}
+  .no-print{display:none!important;}
+}
+#print-sheet{display:none;}
+</style>
+</head>
+<body>
+<script>
+(function(){
+  var s = null, raw = null;
+  try { raw = sessionStorage.getItem('pm_session'); s = JSON.parse(raw || 'null'); } catch(e){}
+
+  console.log('[Espace Client] Session trouvée :', s);
+
+  var probleme = null;
+  if(!s){
+    probleme = "Aucune session n'a été trouvée. La connexion n'a pas enregistré vos informations.";
+  } else if(s.role !== 'client' && s.role !== 'collaborateur'){
+    probleme = "Le rôle enregistré est « " + s.role + " » au lieu de « client ».";
+  }
+
+  if(probleme){
+    // Affiche un message visible à l'écran au lieu de rediriger tout de suite
+    document.addEventListener('DOMContentLoaded', function(){
+      document.body.innerHTML =
+        '<div style="max-width:520px;margin:60px auto;padding:30px;font-family:sans-serif;text-align:center;">'
+        + '<div style="font-size:40px;margin-bottom:16px;">🔍</div>'
+        + '<div style="font-size:19px;font-weight:800;color:#12205A;margin-bottom:10px;">Diagnostic de connexion</div>'
+        + '<div style="background:#fcebeb;border:1px solid #f0c0c0;border-radius:10px;padding:14px;font-size:13px;color:#a32d2d;line-height:1.6;margin-bottom:16px;">'
+        + probleme + '</div>'
+        + '<div style="background:#f5f6fa;border-radius:10px;padding:14px;font-size:11px;color:#5a6282;text-align:left;font-family:monospace;word-break:break-all;margin-bottom:16px;">'
+        + '<strong>Détail technique :</strong><br>pm_session = ' + (raw || '(vide)') + '</div>'
+        + '<a href="/" style="display:inline-block;background:#12205A;color:#fff;padding:11px 22px;border-radius:9px;text-decoration:none;font-size:13px;font-weight:600;">← Retour à la connexion</a>'
+        + '<div style="font-size:11px;color:#9aa0bc;margin-top:14px;">Fais une capture de cet écran et envoie-la à ton développeur.</div>'
+        + '</div>';
+    });
+    return;
+  }
+  window._pmUser = s;
+})();
+function pmLogout(){ try{ sessionStorage.removeItem('pm_session'); }catch(e){} window.location.href='/'; }
+</script>
+
+<div class="topbar no-print">
+  <div class="tb-left">
+    <svg class="logo-sq" viewBox="0 0 38 38" fill="none">
+      <rect width="38" height="38" rx="9" fill="#12205A"/>
+      <line x1="13" y1="8" x2="13" y2="30" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M13 8 Q29 8 29 17 Q29 26 13 26" stroke="#00C6E0" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      <polygon points="19,13 19,22 27,17.5" fill="#F5B731"/>
+    </svg>
+    <div><div class="logo-name">PURE MOTION</div><div class="logo-tag">Espace Client</div></div>
+  </div>
+  <div class="tb-right">
+    <div class="client-badge"><div class="client-ava" id="client-initial">C</div><span id="client-name">Client</span></div>
+    <div class="logout-btn" onclick="pmLogout()"><i class="ti ti-logout" style="font-size:14px;"></i> Déconnexion</div>
+  </div>
+</div>
+
+<div class="wrap no-print">
+  <div class="hero">
+    <div class="hero-greet">👋 Bonjour <span id="hero-name">cher client</span></div>
+    <div class="hero-title">Votre espace Pure Motion</div>
+    <div class="hero-sub">Suivez en temps réel les performances de vos réseaux sociaux, gérées par votre Community Manager.</div>
+  </div>
+
+  <div class="section-label">
+    <span>📊 Vos performances</span>
+    <div class="filt">
+      <button class="filt-btn act" id="cf-all" onclick="cliFilter('all')">Tout</button>
+      <button class="filt-btn" id="cf-month" onclick="cliFilter('month')">Ce mois</button>
+      <button class="filt-btn" id="cf-week" onclick="cliFilter('week')">Cette semaine</button>
+    </div>
+  </div>
+
+  <div id="cli-content"></div>
+
+  <div class="section-label">📄 Vos fiches de statistiques</div>
+  <div class="report-card">
+    <div class="report-ico">📈</div>
+    <div class="report-info">
+      <div class="report-title">Fiche de performance</div>
+      <div class="report-sub">Téléchargez le récapitulatif de vos statistiques à présenter ou archiver</div>
+    </div>
+    <div class="report-btns">
+      <button class="report-btn week" onclick="cliSheet('week')"><i class="ti ti-calendar-week"></i> Semaine</button>
+      <button class="report-btn month" onclick="cliSheet('month')"><i class="ti ti-calendar-month"></i> Mois</button>
+    </div>
+  </div>
+
+  <div class="contact-box">
+    <i class="ti ti-headset"></i>
+    <div><strong>Une question ?</strong> Votre Community Manager Pure Motion — 📧 puremotionci@gmail.com · 📱 +225 07-05-82-88-10 · 💬 WhatsApp 7j/7</div>
+  </div>
+</div>
+
+<div id="print-sheet"></div>
+
+<script>
+const CLI_NETS={'TikTok':'#000000','Instagram':'#E1306C','Facebook':'#1877F2','YouTube':'#FF0000'};
+let cliState={ clientKey:'soleil', filter:'all', charts:{}, data:[] };
+
+// Récupère le clientKey depuis la session
+(function(){
+  var u=window._pmUser;
+  if(u){
+    if(u.name){ document.getElementById('client-name').textContent=u.name; document.getElementById('hero-name').textContent=u.name; document.getElementById('client-initial').textContent=u.name.charAt(0).toUpperCase(); }
+    if(u.clientKey) cliState.clientKey=u.clientKey;
+  }
+})();
+
+function cliFmt(n){n=Number(n)||0;if(n>=1000000)return(n/1000000).toFixed(1).replace('.0','')+'M';if(n>=1000)return(n/1000).toFixed(1).replace('.0','')+'K';return String(n);}
+function cliRate(e){const v=Number(e.views)||0;if(v===0)return 0;return((Number(e.likes||0)+Number(e.comments||0)+Number(e.shares||0))/v*100);}
+
+function cliLoadData(){
+  return cliState.data || [];
+}
+
+// Charge les stats depuis le serveur (uniquement les stats publiées par l'admin)
+async function cliFetchData(){
+  try{
+    const r = await fetch('/api/client/stats/'+encodeURIComponent(cliState.clientKey));
+    const data = await r.json();
+    if(data.success && data.published){ cliState.data = data.entries||[]; }
+    else { cliState.data = []; }
+  }catch(e){ cliState.data = []; }
+  cliRender();
+}
+
+function cliFilterData(data){
+  const now=new Date();
+  let sorted=data.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  if(cliState.filter==='month'){
+    const cut=new Date(now); cut.setMonth(cut.getMonth()-1);
+    sorted=sorted.filter(e=>new Date(e.date)>=cut);
+  } else if(cliState.filter==='week'){
+    const cut=new Date(now); cut.setDate(cut.getDate()-7);
+    sorted=sorted.filter(e=>new Date(e.date)>=cut);
+  }
+  return sorted;
+}
+
+function cliFilter(f){
+  cliState.filter=f;
+  ['all','month','week'].forEach(x=>document.getElementById('cf-'+x).classList.toggle('act',x===f));
+  cliRender();
+}
+
+function cliRender(){
+  const all=cliLoadData();
+  const data=cliFilterData(all);
+  const box=document.getElementById('cli-content');
+
+  if(all.length===0){
+    box.innerHTML='<div class="empty"><i class="ti ti-chart-line"></i><div class="empty-t">Statistiques bientôt disponibles</div><div>Votre Community Manager prépare vos premiers relevés de performance.</div></div>';
+    return;
+  }
+  if(data.length===0){
+    box.innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i><div class="empty-t">Aucune donnée sur cette période</div><div>Essayez le filtre "Tout" pour voir l\'historique complet.</div></div>';
+    return;
+  }
+
+  const last=data[data.length-1];
+  const first=data[0];
+  const prev=data.length>1?data[data.length-2]:null;
+
+  // KPIs
+  const metrics=[
+    {ico:'👁️',lbl:'Vues',key:'views',fmt:true},
+    {ico:'👥',lbl:'Abonnés',key:'followers',fmt:true},
+    {ico:'❤️',lbl:'Likes',key:'likes',fmt:true},
+    {ico:'📊',lbl:'Engagement',isRate:true}
+  ];
+  let kpiHtml='<div class="kpi-grid">'+metrics.map(m=>{
+    let val,prevVal;
+    if(m.isRate){val=cliRate(last);prevVal=prev?cliRate(prev):null;}
+    else{val=Number(last[m.key])||0;prevVal=prev?(Number(prev[m.key])||0):null;}
+    let delta='';
+    if(prevVal!==null&&prevVal!==0){
+      const pct=((val-prevVal)/prevVal*100);
+      const cls=pct>0.5?'up':(pct<-0.5?'dn':'flat');
+      const ar=pct>0.5?'↑':(pct<-0.5?'↓':'→');
+      delta='<div class="kpi-delta '+cls+'">'+ar+' '+Math.abs(pct).toFixed(0)+'%</div>';
+    } else delta='<div class="kpi-delta flat">—</div>';
+    const disp=m.isRate?val.toFixed(1)+'%':(m.fmt?cliFmt(val):val);
+    const bg=['#e6f1fb','#faeeda','#fcebeb','#e1f5ee'][metrics.indexOf(m)];
+    return '<div class="kpi"><div class="kpi-ico" style="background:'+bg+'">'+m.ico+'</div><div class="kpi-val">'+disp+'</div><div class="kpi-lbl">'+m.lbl+'</div>'+delta+'</div>';
+  }).join('')+'</div>';
+
+  // Résumé situation
+  const growth=(k)=>{const a=Number(first[k])||0,b=Number(last[k])||0;return a===0?(b>0?100:0):((b-a)/a*100);};
+  const gV=growth('views'),gF=growth('followers');
+  const avgG=(gV+gF+growth('likes'))/3;
+  let verdict,vc,vb,vi,vt;
+  if(avgG>30){verdict='Excellente dynamique';vc='#085041';vb='#e1f5ee';vi='🚀';vt='Vos comptes sont en forte croissance';}
+  else if(avgG>5){verdict='En progression';vc='#185fa5';vb='#e6f1fb';vi='📈';vt='Vos comptes progressent bien';}
+  else if(avgG>-5){verdict='Stable';vc='#7a5800';vb='#faeeda';vi='➡️';vt='Vos comptes sont stables';}
+  else{verdict='À relancer';vc='#a32d2d';vb='#fcebeb';vi='⚠️';vt='Vos comptes méritent un coup de boost';}
+
+  let sumHtml='<div class="summary"><div class="sum-head"><div class="sum-badge" style="background:'+vb+'">'+vi+'</div>'
+    +'<div><div class="sum-title">'+vt+'</div><div class="sum-sub">Sur '+data.length+' relevé'+(data.length>1?'s':'')+'</div></div>'
+    +'<div class="sum-verdict" style="background:'+vb+';color:'+vc+'">'+verdict+'</div></div>'
+    +'<div class="sum-body">Vos vues sont passées de <strong>'+cliFmt(first.views)+' à '+cliFmt(last.views)+'</strong> ('+(gV>=0?'+':'')+gV.toFixed(0)+'%) et vos abonnés de <strong>'+cliFmt(first.followers)+' à '+cliFmt(last.followers)+'</strong> ('+(gF>=0?'+':'')+gF.toFixed(0)+'%). Taux d\'engagement actuel : <strong>'+cliRate(last).toFixed(1)+'%</strong>.</div></div>';
+
+  // Graphiques
+  let chartHtml='<div class="g2">'
+    +'<div class="chart-card"><div class="chart-title"><i class="ti ti-eye" style="color:var(--cyan)"></i> Évolution des vues</div><div class="chart-wrap"><canvas id="cli-chart-views"></canvas></div></div>'
+    +'<div class="chart-card"><div class="chart-title"><i class="ti ti-users" style="color:var(--gold)"></i> Croissance des abonnés</div><div class="chart-wrap"><canvas id="cli-chart-foll"></canvas></div></div>'
+    +'</div>';
+
+  box.innerHTML=kpiHtml+sumHtml+chartHtml;
+
+  // Dessiner les graphiques
+  if(typeof Chart!=='undefined'){
+    const labels=data.map(e=>{const p=e.date.split('-');return p[2]+'/'+p[1];});
+    cliChart('cli-chart-views',labels,data.map(e=>Number(e.views)||0),'#00C6E0');
+    cliChart('cli-chart-foll',labels,data.map(e=>Number(e.followers)||0),'#F5B731');
+  }
+}
+
+function cliChart(id,labels,dataset,color){
+  const ctx=document.getElementById(id);
+  if(!ctx)return;
+  if(cliState.charts[id])cliState.charts[id].destroy();
+  cliState.charts[id]=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[{data:dataset,borderColor:color,backgroundColor:color+'22',fill:true,tension:.35,borderWidth:2.5,pointRadius:4,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#12205A',padding:10,cornerRadius:8}},scales:{y:{grid:{color:'#eef0f7'},ticks:{font:{size:10},color:'#9aa0bc',callback:v=>cliFmt(v)}},x:{grid:{display:false},ticks:{font:{size:10},color:'#9aa0bc'}}}}
+  });
+}
+
+// Fiche téléchargeable (impression PDF)
+function cliSheet(period){
+  const all=cliLoadData();
+  const now=new Date();
+  let data=all.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  let periodLabel;
+  if(period==='week'){
+    const cut=new Date(now);cut.setDate(cut.getDate()-7);
+    data=data.filter(e=>new Date(e.date)>=cut);
+    periodLabel='Semaine du '+cut.toLocaleDateString('fr-FR')+' au '+now.toLocaleDateString('fr-FR');
+  } else {
+    const cut=new Date(now);cut.setMonth(cut.getMonth()-1);
+    data=data.filter(e=>new Date(e.date)>=cut);
+    periodLabel='Mois du '+cut.toLocaleDateString('fr-FR')+' au '+now.toLocaleDateString('fr-FR');
+  }
+  if(data.length===0){ alert('Aucune donnée sur cette période pour générer la fiche.'); return; }
+
+  const u=window._pmUser||{};
+  const last=data[data.length-1], first=data[0];
+  const g=(k)=>{const a=Number(first[k])||0,b=Number(last[k])||0;return a===0?(b>0?100:0):((b-a)/a*100);};
+
+  const rows=data.map(e=>'<tr><td>'+e.date.split('-').reverse().join('/')+'</td><td>'+e.net+'</td><td>'+cliFmt(e.views)+'</td><td>'+cliFmt(e.followers)+'</td><td>'+cliFmt(e.likes)+'</td><td>'+(e.comments||0)+'</td><td>'+cliRate(e).toFixed(1)+'%</td></tr>').join('');
+
+  document.getElementById('print-sheet').innerHTML=
+    '<div style="font-family:sans-serif;color:#1a1a2e;">'
+    +'<div style="display:flex;align-items:center;gap:12px;border-bottom:3px solid #12205A;padding-bottom:16px;margin-bottom:20px;">'
+    +'<div style="width:50px;height:50px;background:#12205A;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#00C6E0;font-size:24px;font-weight:800;">P</div>'
+    +'<div><div style="font-size:20px;font-weight:800;color:#12205A;">PURE MOTION</div><div style="font-size:11px;color:#9aa0bc;">Fiche de performance réseaux sociaux</div></div>'
+    +'<div style="margin-left:auto;text-align:right;font-size:11px;color:#5a6282;">Généré le '+now.toLocaleDateString('fr-FR')+'</div></div>'
+    +'<div style="margin-bottom:16px;"><div style="font-size:16px;font-weight:800;">'+(u.name||'Client')+'</div><div style="font-size:12px;color:#5a6282;">'+periodLabel+'</div></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">'
+    +'<div style="border:1px solid #e2e6f0;border-radius:10px;padding:12px;"><div style="font-size:22px;font-weight:800;">'+cliFmt(last.views)+'</div><div style="font-size:11px;color:#9aa0bc;">Vues ('+(g("views")>=0?"+":"")+g("views").toFixed(0)+'%)</div></div>'
+    +'<div style="border:1px solid #e2e6f0;border-radius:10px;padding:12px;"><div style="font-size:22px;font-weight:800;">'+cliFmt(last.followers)+'</div><div style="font-size:11px;color:#9aa0bc;">Abonnés ('+(g("followers")>=0?"+":"")+g("followers").toFixed(0)+'%)</div></div>'
+    +'<div style="border:1px solid #e2e6f0;border-radius:10px;padding:12px;"><div style="font-size:22px;font-weight:800;">'+cliFmt(last.likes)+'</div><div style="font-size:11px;color:#9aa0bc;">Likes</div></div>'
+    +'<div style="border:1px solid #e2e6f0;border-radius:10px;padding:12px;"><div style="font-size:22px;font-weight:800;">'+cliRate(last).toFixed(1)+'%</div><div style="font-size:11px;color:#9aa0bc;">Engagement</div></div>'
+    +'</div>'
+    +'<div style="font-size:13px;font-weight:700;margin-bottom:8px;">Détail des relevés</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+    +'<thead><tr style="background:#12205A;color:#fff;"><th style="padding:8px;text-align:left;">Date</th><th style="padding:8px;text-align:left;">Réseau</th><th style="padding:8px;text-align:left;">Vues</th><th style="padding:8px;text-align:left;">Abonnés</th><th style="padding:8px;text-align:left;">Likes</th><th style="padding:8px;text-align:left;">Comm.</th><th style="padding:8px;text-align:left;">Engag.</th></tr></thead>'
+    +'<tbody>'+rows.replace(/<td>/g,'<td style="padding:7px 8px;border-bottom:1px solid #e2e6f0;">')+'</tbody></table>'
+    +'<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e2e6f0;font-size:11px;color:#9aa0bc;text-align:center;">Pure Motion CI · puremotionci@gmail.com · +225 07-05-82-88-10 · Social-First Video That Moves Your Audience</div>'
+    +'</div>';
+
+  window.print();
+}
+
+cliFetchData();
+</script>
+</body>
+</html>
