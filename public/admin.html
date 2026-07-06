@@ -1218,9 +1218,7 @@ function pmLogout(){
         <div class="perf-client-select">
           <label>Client</label>
           <select id="perf-client" onchange="perfChangeClient()">
-            <option value="soleil">Soleil Communication</option>
-            <option value="fanta">Maquis Chez Fanta</option>
-            <option value="elegance">Boutique Élégance CI</option>
+            <option value="">— Chargement des clients... —</option>
           </select>
         </div>
         <div class="perf-period-select">
@@ -1365,7 +1363,7 @@ function showMain(section, el) {
   }
   // Rendu spécial de la performance
   if(section === 'performance'){
-    perfRender();
+    perfLoadClients();
   }
   // Rendu spécial de la gestion des accès
   if(section === 'acces'){
@@ -1815,23 +1813,14 @@ calLoad();
 const PERF_NETS = { 'TikTok':'#000000','Instagram':'#E1306C','Facebook':'#1877F2','YouTube':'#FF0000' };
 const PERF_CLIENTS = { soleil:'Soleil Communication', fanta:'Maquis Chez Fanta', elegance:'Boutique Élégance CI' };
 
-let perfState = { client:'soleil', data:{}, charts:{} };
+let perfState = { client:'', data:{}, charts:{}, published:false };
 
 function perfLoad(){
+  // Charge le cache local (utilisé en secours si le serveur ne répond pas)
   try {
     const raw = localStorage.getItem('pm_performance');
     if(raw) perfState.data = JSON.parse(raw);
   } catch(e){ perfState.data = {}; }
-  // Données de démo pour Soleil (basées sur les vraies stats TikTok analysées)
-  if(!perfState.data.soleil){
-    perfState.data.soleil = [
-      { id:'pd1', date:'2026-03-31', net:'TikTok', views:9500, followers:991, likes:1800, comments:45, reach:12000, shares:60, note:'Début de campagne' },
-      { id:'pd2', date:'2026-04-30', net:'TikTok', views:48000, followers:1320, likes:3900, comments:120, reach:38000, shares:180, note:'Montée en puissance' },
-      { id:'pd3', date:'2026-05-31', net:'TikTok', views:98000, followers:1650, likes:5800, comments:210, reach:71000, shares:310, note:'Vidéo PS4 virale' },
-      { id:'pd4', date:'2026-06-23', net:'TikTok', views:137000, followers:1861, likes:7400, comments:289, reach:93900, shares:420, note:'Pic d\'engagement' }
-    ];
-    perfSave();
-  }
 }
 function perfSave(){
   try{ localStorage.setItem('pm_performance', JSON.stringify(perfState.data)); }catch(e){}
@@ -1890,6 +1879,53 @@ function perfGetData(){
 
 function perfChangeClient(){
   perfState.client = document.getElementById('perf-client').value;
+  perfLoadFromServer();
+}
+
+// Charge la liste des clients depuis le serveur dans le sélecteur Performance
+async function perfLoadClients(){
+  const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+  const sel = document.getElementById('perf-client');
+  if(!token){
+    sel.innerHTML = '<option value="">⚠️ Valide ta clé admin (Gestion des accès)</option>';
+    return;
+  }
+  try {
+    const r = await fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } });
+    const data = await r.json();
+    if(!data.success || !data.clients.length){
+      sel.innerHTML = '<option value="">Aucun client — crée-en dans Gestion des accès</option>';
+      return;
+    }
+    // Ne garde que les clients avec une clé de données
+    const withKey = data.clients.filter(c=>c.clientKey);
+    if(!withKey.length){
+      sel.innerHTML = '<option value="">Aucun client avec données</option>';
+      return;
+    }
+    const current = perfState.client;
+    sel.innerHTML = withKey.map(c=>'<option value="'+c.clientKey+'">'+c.name+(c.activated?'':' (en attente)')+'</option>').join('');
+    // Restaure la sélection si elle existe encore, sinon prend le premier
+    if(current && withKey.some(c=>c.clientKey===current)) sel.value = current;
+    else perfState.client = withKey[0].clientKey;
+    perfLoadFromServer();
+  } catch(e){
+    sel.innerHTML = '<option value="">Erreur de chargement</option>';
+  }
+}
+
+// Charge les stats du client sélectionné depuis le serveur
+async function perfLoadFromServer(){
+  const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+  if(!token || !perfState.client){ perfRender(); return; }
+  try {
+    const r = await fetch('/api/admin/stats/'+encodeURIComponent(perfState.client), { headers:{ 'x-admin-token': token } });
+    const data = await r.json();
+    if(data.success){
+      perfState.data[perfState.client] = data.entries || [];
+      perfState.published = data.published;
+    }
+  } catch(e){}
   perfRender();
 }
 
