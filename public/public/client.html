@@ -9,13 +9,12 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --cyan:#00C6E0;--navy:#12205A;--gold:#F5B731;--gold-l:#FDD05A;
-  --blue:#0066CC;--bg:#f5f6fa;--white:#fff;--surf:#f0f2f8;
+  --cyan:#00C6E0;--navy:#12205A;--gold:#F5B731;--blue:#0066CC;
+  --bg:#f5f6fa;--white:#fff;--surf:#f0f2f8;
   --txt:#1a1a2e;--mut:#5a6282;--hint:#9aa0bc;--bord:#e2e6f0;
-  --up:#0a6b4f;--dn:#a32d2d;--r:12px;--rs:8px;
+  --up:#0a6b4f;--dn:#a32d2d;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;}
-
 .topbar{background:var(--white);border-bottom:1px solid var(--bord);padding:13px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
 .tb-left{display:flex;align-items:center;gap:11px;}
 .logo-sq{width:38px;height:38px;flex-shrink:0;}
@@ -26,81 +25,65 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .client-ava{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e6970f);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--navy);}
 .logout-btn{font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid var(--bord);}
 .logout-btn:hover{background:var(--surf);color:var(--dn);}
-
 .wrap{max-width:1000px;margin:0 auto;padding:22px 24px;}
-
 .hero{background:linear-gradient(135deg,var(--navy),#1a3a8a);border-radius:16px;padding:22px 26px;margin-bottom:20px;color:#fff;position:relative;overflow:hidden;}
 .hero::after{content:'';position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:rgba(0,198,224,.12);}
-.hero-greet{font-size:13px;color:var(--cyan);margin-bottom:4px;}
-.hero-title{font-size:22px;font-weight:800;margin-bottom:6px;}
-.hero-sub{font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;max-width:540px;}
-
-.section-label{font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.8px;margin:22px 0 12px;}
-
+.hero-greet{font-size:13px;color:var(--cyan);margin-bottom:4px;position:relative;}
+.hero-title{font-size:22px;font-weight:800;margin-bottom:6px;position:relative;}
+.hero-sub{font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;max-width:540px;position:relative;}
+.section-label{font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.8px;margin:22px 0 12px;display:flex;align-items:center;justify-content:space-between;}
+.section-label .filt{display:flex;gap:6px;}
+.filt-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:7px;border:1px solid var(--bord);background:var(--white);color:var(--mut);cursor:pointer;}
+.filt-btn.act{background:var(--navy);color:#fff;border-color:var(--navy);}
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:8px;}
 .kpi{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:14px 16px;}
 .kpi-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:9px;}
 .kpi-val{font-size:23px;font-weight:800;color:var(--txt);line-height:1.1;}
 .kpi-lbl{font-size:11px;color:var(--hint);margin-top:2px;}
 .kpi-delta{font-size:11px;font-weight:700;margin-top:5px;}
-.up{color:var(--up);}.dn{color:var(--dn);}
-
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
-.card-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
-
-.content-row{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--bord);align-items:center;}
-.content-row:last-child{border-bottom:none;}
-.content-thumb{width:42px;height:42px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--blue));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.content-info{flex:1;min-width:0;}
-.content-name{font-size:12px;font-weight:600;color:var(--txt);}
-.content-meta{font-size:10px;color:var(--hint);margin-top:2px;}
-.content-stat{text-align:right;}
-.content-views{font-size:13px;font-weight:700;color:var(--navy);}
-.content-views-lbl{font-size:9px;color:var(--hint);}
-
-.badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;}
-.b-pub{background:#e1f5ee;color:var(--up);}
-.b-prog{background:#faeeda;color:#7a5800;}
-
-.report-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:18px;display:flex;align-items:center;gap:14px;}
+.up{color:var(--up);}.dn{color:var(--dn);}.flat{color:var(--hint);}
+.summary{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+.sum-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sum-badge{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.sum-title{font-size:15px;font-weight:800;color:var(--txt);}
+.sum-sub{font-size:12px;color:var(--mut);margin-top:1px;}
+.sum-verdict{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;margin-left:auto;}
+.sum-body{font-size:13px;color:var(--txt);line-height:1.7;}
+.sum-body strong{color:var(--navy);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.chart-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;}
+.chart-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.chart-wrap{height:180px;position:relative;}
+.report-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:18px;display:flex;align-items:center;gap:14px;margin-bottom:14px;}
 .report-ico{width:46px;height:46px;border-radius:11px;background:#e6f1fb;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
 .report-info{flex:1;}
 .report-title{font-size:13px;font-weight:700;color:var(--txt);}
 .report-sub{font-size:11px;color:var(--mut);margin-top:2px;}
-.report-btn{padding:8px 16px;font-size:12px;font-weight:600;border-radius:8px;background:var(--navy);color:#fff;border:none;cursor:pointer;}
-.report-btn:hover{background:#1a2d80;}
-
+.report-btns{display:flex;gap:8px;}
+.report-btn{padding:8px 15px;font-size:12px;font-weight:600;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.report-btn.week{background:var(--white);color:var(--navy);border:1px solid var(--bord);}
+.report-btn.week:hover{background:var(--surf);}
+.report-btn.month{background:var(--navy);color:#fff;}
+.report-btn.month:hover{background:#1a2d80;}
 .contact-box{background:#e6f1fb;border:1px solid rgba(56,138,221,.2);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:12px;color:#0c447c;line-height:1.6;}
 .contact-box i{font-size:20px;}
-
-.fiche-btns{display:flex;gap:8px;text-transform:none;letter-spacing:0;}
-.fiche-btn{padding:7px 13px;font-size:11px;font-weight:600;border:1px solid var(--bord);border-radius:8px;background:var(--white);color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;}
-.fiche-btn:hover{background:var(--surf);color:var(--navy);}
-.fiche-btn.primary{background:var(--navy);color:#fff;border-color:var(--navy);}
-.fiche-btn.primary:hover{background:#1a2d80;color:#fff;}
-.cli-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:8px;}
-.cli-chart-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;}
-.cli-chart-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
-.cli-chart-wrap{height:180px;position:relative;}
-.cli-summary{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:18px 20px;}
-.cli-sum-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.cli-sum-badge{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
-.cli-sum-title{font-size:15px;font-weight:800;color:var(--txt);}
-.cli-sum-verdict{font-size:12px;font-weight:700;padding:3px 11px;border-radius:12px;margin-left:auto;}
-.cli-sum-body{font-size:13px;color:var(--txt);line-height:1.7;}
-.cli-sum-body strong{color:var(--navy);}
-.cli-sum-advice{margin-top:14px;padding:13px 15px;background:#e6f1fb;border:1px solid rgba(56,138,221,.2);border-radius:10px;font-size:12px;color:#0c447c;line-height:1.7;}
-.cli-sum-advice strong{color:#083056;}
-.cli-sum-advice ul{margin:6px 0 0;padding-left:18px;}
-@media(max-width:760px){.cli-charts{grid-template-columns:1fr;}}
-
+.empty{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:40px;text-align:center;color:var(--hint);}
+.empty i{font-size:36px;display:block;margin-bottom:12px;opacity:.4;}
+.empty-t{font-size:15px;font-weight:600;color:var(--mut);margin-bottom:5px;}
 @media(max-width:760px){.kpi-grid{grid-template-columns:1fr 1fr;}.g2{grid-template-columns:1fr;}}
+
+/* Fiche imprimable */
+@media print{
+  body *{visibility:hidden;}
+  #print-sheet, #print-sheet *{visibility:visible;}
+  #print-sheet{position:absolute;left:0;top:0;width:100%;padding:30px;}
+  .no-print{display:none!important;}
+}
+#print-sheet{display:none;}
 </style>
 </head>
 <body>
 <script>
-// ── Garde de session : vérifie qu'on est connecté en client ──
 (function(){
   try {
     var s = JSON.parse(sessionStorage.getItem('pm_session') || 'null');
@@ -108,269 +91,237 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     window._pmUser = s;
   } catch(e){ window.location.href = '/'; }
 })();
-function pmLogout(){
-  try { sessionStorage.removeItem('pm_session'); } catch(e){}
-  window.location.href = '/';
-}
+function pmLogout(){ try{ sessionStorage.removeItem('pm_session'); }catch(e){} window.location.href='/'; }
 </script>
 
-<div class="topbar">
+<div class="topbar no-print">
   <div class="tb-left">
     <svg class="logo-sq" viewBox="0 0 38 38" fill="none">
       <rect width="38" height="38" rx="9" fill="#12205A"/>
-      <line x1="4" y1="13" x2="12" y2="13" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".6"/>
-      <line x1="6" y1="19" x2="12" y2="19" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".4"/>
-      <line x1="8" y1="25" x2="12" y2="25" stroke="#00C6E0" stroke-width="2" stroke-linecap="round" opacity=".25"/>
       <line x1="13" y1="8" x2="13" y2="30" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
-      <path d="M13 8 Q29 8 29 17 Q29 26 13 26" stroke="url(#g)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      <path d="M13 8 Q29 8 29 17 Q29 26 13 26" stroke="#00C6E0" stroke-width="3.5" stroke-linecap="round" fill="none"/>
       <polygon points="19,13 19,22 27,17.5" fill="#F5B731"/>
-      <defs><linearGradient id="g" x1="13" y1="8" x2="29" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00C6E0"/><stop offset="100%" stop-color="#0066CC"/></linearGradient></defs>
     </svg>
     <div><div class="logo-name">PURE MOTION</div><div class="logo-tag">Espace Client</div></div>
   </div>
   <div class="tb-right">
-    <div class="client-badge">
-      <div class="client-ava" id="client-initial">C</div>
-      <span id="client-name">Client</span>
-    </div>
+    <div class="client-badge"><div class="client-ava" id="client-initial">C</div><span id="client-name">Client</span></div>
     <div class="logout-btn" onclick="pmLogout()"><i class="ti ti-logout" style="font-size:14px;"></i> Déconnexion</div>
   </div>
 </div>
 
-<div class="wrap">
-
+<div class="wrap no-print">
   <div class="hero">
     <div class="hero-greet">👋 Bonjour <span id="hero-name">cher client</span></div>
     <div class="hero-title">Votre espace Pure Motion</div>
-    <div class="hero-sub">Suivez en temps réel les performances de vos réseaux sociaux et les contenus créés pour vous par votre Community Manager.</div>
+    <div class="hero-sub">Suivez en temps réel les performances de vos réseaux sociaux, gérées par votre Community Manager.</div>
   </div>
 
-  <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
+  <div class="section-label">
     <span>📊 Vos performances</span>
-    <div class="fiche-btns">
-      <button class="fiche-btn" onclick="genFiche('week')"><i class="ti ti-file-download" style="font-size:13px"></i> Fiche de la semaine</button>
-      <button class="fiche-btn primary" onclick="genFiche('month')"><i class="ti ti-file-download" style="font-size:13px"></i> Fiche du mois</button>
-    </div>
-  </div>
-  <div class="kpi-grid" id="cli-kpis"></div>
-
-  <div class="section-label">📈 Évolution de vos comptes</div>
-  <div class="cli-charts">
-    <div class="cli-chart-card">
-      <div class="cli-chart-title"><i class="ti ti-eye" style="color:#00C6E0"></i> Vues</div>
-      <div class="cli-chart-wrap"><canvas id="cli-chart-views"></canvas></div>
-    </div>
-    <div class="cli-chart-card">
-      <div class="cli-chart-title"><i class="ti ti-users" style="color:#F5B731"></i> Abonnés</div>
-      <div class="cli-chart-wrap"><canvas id="cli-chart-foll"></canvas></div>
+    <div class="filt">
+      <button class="filt-btn act" id="cf-all" onclick="cliFilter('all')">Tout</button>
+      <button class="filt-btn" id="cf-month" onclick="cliFilter('month')">Ce mois</button>
+      <button class="filt-btn" id="cf-week" onclick="cliFilter('week')">Cette semaine</button>
     </div>
   </div>
 
-  <div class="section-label">💡 Situation de votre compte</div>
-  <div class="cli-summary" id="cli-summary"></div>
+  <div id="cli-content"></div>
 
-  <div class="g2">
-    <div>
-      <div class="section-label">🎬 Vos derniers contenus publiés</div>
-      <div class="card">
-        <div class="content-row">
-          <div class="content-thumb">🎮</div>
-          <div class="content-info"><div class="content-name">Qu'attends-tu pour venir récupérer ta PS4</div><div class="content-meta">TikTok · Publié il y a 3 jours</div></div>
-          <div class="content-stat"><div class="content-views">42K</div><div class="content-views-lbl">vues</div></div>
-        </div>
-        <div class="content-row">
-          <div class="content-thumb" style="background:linear-gradient(135deg,#F5B731,#e6970f);">📱</div>
-          <div class="content-info"><div class="content-name">Nouveaux iPhone disponibles en boutique</div><div class="content-meta">Instagram · Publié il y a 5 jours</div></div>
-          <div class="content-stat"><div class="content-views">18K</div><div class="content-views-lbl">vues</div></div>
-        </div>
-        <div class="content-row">
-          <div class="content-thumb" style="background:linear-gradient(135deg,#7B61FF,#5038d0);">🎧</div>
-          <div class="content-info"><div class="content-name">Promo accessoires audio cette semaine</div><div class="content-meta">TikTok · Publié il y a 1 semaine</div></div>
-          <div class="content-stat"><div class="content-views">12K</div><div class="content-views-lbl">vues</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div>
-      <div class="section-label">📅 Prochaines publications prévues</div>
-      <div class="card">
-        <div class="content-row">
-          <div class="content-thumb" style="background:var(--surf);font-size:14px;color:var(--mut);">Lun</div>
-          <div class="content-info"><div class="content-name">Vidéo déballage nouveau stock</div><div class="content-meta">Prévu lundi · 20h00</div></div>
-          <span class="badge b-prog">En préparation</span>
-        </div>
-        <div class="content-row">
-          <div class="content-thumb" style="background:var(--surf);font-size:14px;color:var(--mut);">Mer</div>
-          <div class="content-info"><div class="content-name">Témoignage client satisfait</div><div class="content-meta">Prévu mercredi · 20h00</div></div>
-          <span class="badge b-prog">En préparation</span>
-        </div>
-        <div class="content-row">
-          <div class="content-thumb" style="background:var(--surf);font-size:14px;color:var(--mut);">Ven</div>
-          <div class="content-info"><div class="content-name">Promo week-end flash</div><div class="content-meta">Prévu vendredi · 19h00</div></div>
-          <span class="badge b-prog">En préparation</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section-label">📄 Votre rapport</div>
-  <div class="report-card" style="margin-bottom:14px;">
+  <div class="section-label">📄 Vos fiches de statistiques</div>
+  <div class="report-card">
     <div class="report-ico">📈</div>
     <div class="report-info">
-      <div class="report-title">Fiche de performance détaillée</div>
-      <div class="report-sub">Téléchargez le récapitulatif de vos statistiques, avec analyse et recommandations</div>
+      <div class="report-title">Fiche de performance</div>
+      <div class="report-sub">Téléchargez le récapitulatif de vos statistiques à présenter ou archiver</div>
     </div>
-    <button class="report-btn" onclick="genFiche('month')">Télécharger la fiche</button>
+    <div class="report-btns">
+      <button class="report-btn week" onclick="cliSheet('week')"><i class="ti ti-calendar-week"></i> Semaine</button>
+      <button class="report-btn month" onclick="cliSheet('month')"><i class="ti ti-calendar-month"></i> Mois</button>
+    </div>
   </div>
 
   <div class="contact-box">
     <i class="ti ti-headset"></i>
-    <div><strong>Une question ?</strong> Votre Community Manager Pure Motion est disponible — 📧 puremotionci@gmail.com · 📱 +225 07-05-82-88-10 · 💬 WhatsApp 7j/7</div>
+    <div><strong>Une question ?</strong> Votre Community Manager Pure Motion — 📧 puremotionci@gmail.com · 📱 +225 07-05-82-88-10 · 💬 WhatsApp 7j/7</div>
   </div>
-
 </div>
 
+<div id="print-sheet"></div>
+
 <script>
-// Personnalise avec le nom du client connecté
+const CLI_NETS={'TikTok':'#000000','Instagram':'#E1306C','Facebook':'#1877F2','YouTube':'#FF0000'};
+let cliState={ clientKey:'soleil', filter:'all', charts:{} };
+
+// Récupère le clientKey depuis la session
 (function(){
-  var u = window._pmUser;
-  if(u && u.name){
-    document.getElementById('client-name').textContent = u.name;
-    document.getElementById('hero-name').textContent = u.name;
-    document.getElementById('client-initial').textContent = u.name.charAt(0).toUpperCase();
+  var u=window._pmUser;
+  if(u){
+    if(u.name){ document.getElementById('client-name').textContent=u.name; document.getElementById('hero-name').textContent=u.name; document.getElementById('client-initial').textContent=u.name.charAt(0).toUpperCase(); }
+    if(u.clientKey) cliState.clientKey=u.clientKey;
   }
 })();
 
-/* ══ STATS CLIENT (démo locale — deviendra serveur avec l'IA) ══ */
-// Données de démonstration (mêmes stats réelles que côté admin pour Soleil)
-var CLI_DEMO = [
-  { date:'2026-03-31', views:9500,  followers:991,  likes:1800, comments:45,  reach:12000, shares:60 },
-  { date:'2026-04-30', views:48000, followers:1320, likes:3900, comments:120, reach:38000, shares:180 },
-  { date:'2026-05-31', views:98000, followers:1650, likes:5800, comments:210, reach:71000, shares:310 },
-  { date:'2026-06-23', views:137000,followers:1861, likes:7400, comments:289, reach:93900, shares:420 }
-];
+function cliFmt(n){n=Number(n)||0;if(n>=1000000)return(n/1000000).toFixed(1).replace('.0','')+'M';if(n>=1000)return(n/1000).toFixed(1).replace('.0','')+'K';return String(n);}
+function cliRate(e){const v=Number(e.views)||0;if(v===0)return 0;return((Number(e.likes||0)+Number(e.comments||0)+Number(e.shares||0))/v*100);}
 
-function cliFmt(n){ n=Number(n)||0; if(n>=1000000)return(n/1000000).toFixed(1).replace('.0','')+'M'; if(n>=1000)return(n/1000).toFixed(1).replace('.0','')+'K'; return String(n); }
-function cliRate(e){ var v=Number(e.views)||0; if(!v)return 0; return((Number(e.likes||0)+Number(e.comments||0)+Number(e.shares||0))/v*100); }
+function cliLoadData(){
+  try{
+    const raw=localStorage.getItem('pm_performance');
+    if(raw){ const all=JSON.parse(raw); return all[cliState.clientKey]||[]; }
+  }catch(e){}
+  return [];
+}
 
-function cliRenderKpis(data){
-  var last=data[data.length-1], prev=data.length>1?data[data.length-2]:null;
-  var metrics=[
-    {ico:'👁️',bg:'#e6f1fb',lbl:'Vues',key:'views'},
-    {ico:'👥',bg:'#e1f5ee',lbl:'Abonnés',key:'followers'},
-    {ico:'❤️',bg:'#faeeda',lbl:'J\'aime',key:'likes'},
-    {ico:'💬',bg:'#f3e8ff',lbl:'Commentaires',key:'comments'}
+function cliFilterData(data){
+  const now=new Date();
+  let sorted=data.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  if(cliState.filter==='month'){
+    const cut=new Date(now); cut.setMonth(cut.getMonth()-1);
+    sorted=sorted.filter(e=>new Date(e.date)>=cut);
+  } else if(cliState.filter==='week'){
+    const cut=new Date(now); cut.setDate(cut.getDate()-7);
+    sorted=sorted.filter(e=>new Date(e.date)>=cut);
+  }
+  return sorted;
+}
+
+function cliFilter(f){
+  cliState.filter=f;
+  ['all','month','week'].forEach(x=>document.getElementById('cf-'+x).classList.toggle('act',x===f));
+  cliRender();
+}
+
+function cliRender(){
+  const all=cliLoadData();
+  const data=cliFilterData(all);
+  const box=document.getElementById('cli-content');
+
+  if(all.length===0){
+    box.innerHTML='<div class="empty"><i class="ti ti-chart-line"></i><div class="empty-t">Statistiques bientôt disponibles</div><div>Votre Community Manager prépare vos premiers relevés de performance.</div></div>';
+    return;
+  }
+  if(data.length===0){
+    box.innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i><div class="empty-t">Aucune donnée sur cette période</div><div>Essayez le filtre "Tout" pour voir l\'historique complet.</div></div>';
+    return;
+  }
+
+  const last=data[data.length-1];
+  const first=data[0];
+  const prev=data.length>1?data[data.length-2]:null;
+
+  // KPIs
+  const metrics=[
+    {ico:'👁️',lbl:'Vues',key:'views',fmt:true},
+    {ico:'👥',lbl:'Abonnés',key:'followers',fmt:true},
+    {ico:'❤️',lbl:'Likes',key:'likes',fmt:true},
+    {ico:'📊',lbl:'Engagement',isRate:true}
   ];
-  document.getElementById('cli-kpis').innerHTML = metrics.map(function(m){
-    var val=Number(last[m.key])||0, pv=prev?Number(prev[m.key])||0:null;
-    var delta='';
-    if(pv!==null&&pv!==0){ var pct=(val-pv)/pv*100; var cls=pct>0.5?'up':(pct<-0.5?'dn':''); var ar=pct>0.5?'↑':(pct<-0.5?'↓':'→'); delta='<div class="kpi-delta '+cls+'">'+ar+' '+Math.abs(pct).toFixed(0)+'%</div>'; }
-    return '<div class="kpi"><div class="kpi-ico" style="background:'+m.bg+'">'+m.ico+'</div><div class="kpi-val">'+cliFmt(val)+'</div><div class="kpi-lbl">'+m.lbl+'</div>'+delta+'</div>';
-  }).join('');
+  let kpiHtml='<div class="kpi-grid">'+metrics.map(m=>{
+    let val,prevVal;
+    if(m.isRate){val=cliRate(last);prevVal=prev?cliRate(prev):null;}
+    else{val=Number(last[m.key])||0;prevVal=prev?(Number(prev[m.key])||0):null;}
+    let delta='';
+    if(prevVal!==null&&prevVal!==0){
+      const pct=((val-prevVal)/prevVal*100);
+      const cls=pct>0.5?'up':(pct<-0.5?'dn':'flat');
+      const ar=pct>0.5?'↑':(pct<-0.5?'↓':'→');
+      delta='<div class="kpi-delta '+cls+'">'+ar+' '+Math.abs(pct).toFixed(0)+'%</div>';
+    } else delta='<div class="kpi-delta flat">—</div>';
+    const disp=m.isRate?val.toFixed(1)+'%':(m.fmt?cliFmt(val):val);
+    const bg=['#e6f1fb','#faeeda','#fcebeb','#e1f5ee'][metrics.indexOf(m)];
+    return '<div class="kpi"><div class="kpi-ico" style="background:'+bg+'">'+m.ico+'</div><div class="kpi-val">'+disp+'</div><div class="kpi-lbl">'+m.lbl+'</div>'+delta+'</div>';
+  }).join('')+'</div>';
+
+  // Résumé situation
+  const growth=(k)=>{const a=Number(first[k])||0,b=Number(last[k])||0;return a===0?(b>0?100:0):((b-a)/a*100);};
+  const gV=growth('views'),gF=growth('followers');
+  const avgG=(gV+gF+growth('likes'))/3;
+  let verdict,vc,vb,vi,vt;
+  if(avgG>30){verdict='Excellente dynamique';vc='#085041';vb='#e1f5ee';vi='🚀';vt='Vos comptes sont en forte croissance';}
+  else if(avgG>5){verdict='En progression';vc='#185fa5';vb='#e6f1fb';vi='📈';vt='Vos comptes progressent bien';}
+  else if(avgG>-5){verdict='Stable';vc='#7a5800';vb='#faeeda';vi='➡️';vt='Vos comptes sont stables';}
+  else{verdict='À relancer';vc='#a32d2d';vb='#fcebeb';vi='⚠️';vt='Vos comptes méritent un coup de boost';}
+
+  let sumHtml='<div class="summary"><div class="sum-head"><div class="sum-badge" style="background:'+vb+'">'+vi+'</div>'
+    +'<div><div class="sum-title">'+vt+'</div><div class="sum-sub">Sur '+data.length+' relevé'+(data.length>1?'s':'')+'</div></div>'
+    +'<div class="sum-verdict" style="background:'+vb+';color:'+vc+'">'+verdict+'</div></div>'
+    +'<div class="sum-body">Vos vues sont passées de <strong>'+cliFmt(first.views)+' à '+cliFmt(last.views)+'</strong> ('+(gV>=0?'+':'')+gV.toFixed(0)+'%) et vos abonnés de <strong>'+cliFmt(first.followers)+' à '+cliFmt(last.followers)+'</strong> ('+(gF>=0?'+':'')+gF.toFixed(0)+'%). Taux d\'engagement actuel : <strong>'+cliRate(last).toFixed(1)+'%</strong>.</div></div>';
+
+  // Graphiques
+  let chartHtml='<div class="g2">'
+    +'<div class="chart-card"><div class="chart-title"><i class="ti ti-eye" style="color:var(--cyan)"></i> Évolution des vues</div><div class="chart-wrap"><canvas id="cli-chart-views"></canvas></div></div>'
+    +'<div class="chart-card"><div class="chart-title"><i class="ti ti-users" style="color:var(--gold)"></i> Croissance des abonnés</div><div class="chart-wrap"><canvas id="cli-chart-foll"></canvas></div></div>'
+    +'</div>';
+
+  box.innerHTML=kpiHtml+sumHtml+chartHtml;
+
+  // Dessiner les graphiques
+  if(typeof Chart!=='undefined'){
+    const labels=data.map(e=>{const p=e.date.split('-');return p[2]+'/'+p[1];});
+    cliChart('cli-chart-views',labels,data.map(e=>Number(e.views)||0),'#00C6E0');
+    cliChart('cli-chart-foll',labels,data.map(e=>Number(e.followers)||0),'#F5B731');
+  }
 }
 
-function cliChart(id,labels,ds,color){
-  var ctx=document.getElementById(id); if(!ctx||typeof Chart==='undefined')return;
-  new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{data:ds,borderColor:color,backgroundColor:color+'22',fill:true,tension:.35,borderWidth:2.5,pointRadius:4,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#12205A',padding:10,cornerRadius:8}},scales:{y:{grid:{color:'#eef0f7'},ticks:{font:{size:10},color:'#9aa0bc',callback:function(v){return cliFmt(v);}}},x:{grid:{display:false},ticks:{font:{size:10},color:'#9aa0bc'}}}}});
+function cliChart(id,labels,dataset,color){
+  const ctx=document.getElementById(id);
+  if(!ctx)return;
+  if(cliState.charts[id])cliState.charts[id].destroy();
+  cliState.charts[id]=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[{data:dataset,borderColor:color,backgroundColor:color+'22',fill:true,tension:.35,borderWidth:2.5,pointRadius:4,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#12205A',padding:10,cornerRadius:8}},scales:{y:{grid:{color:'#eef0f7'},ticks:{font:{size:10},color:'#9aa0bc',callback:v=>cliFmt(v)}},x:{grid:{display:false},ticks:{font:{size:10},color:'#9aa0bc'}}}}
+  });
 }
 
-function cliRenderSummary(data){
-  var el=document.getElementById('cli-summary');
-  var first=data[0], last=data[data.length-1];
-  var g=function(k){var a=Number(first[k])||0,b=Number(last[k])||0;return a===0?(b>0?100:0):((b-a)/a*100);};
-  var gV=g('views'), gF=g('followers');
-  var avg=(gV+gF+g('likes'))/3;
-  var verdict,vc,vb,vi,vt;
-  if(avg>30){verdict='Excellente dynamique';vc='#085041';vb='#e1f5ee';vi='🚀';vt='Votre compte est en forte croissance';}
-  else if(avg>5){verdict='En progression';vc='#185fa5';vb='#e6f1fb';vi='📈';vt='Votre compte progresse bien';}
-  else if(avg>-5){verdict='Stable';vc='#7a5800';vb='#faeeda';vi='➡️';vt='Votre compte est stable';}
-  else{verdict='À relancer';vc='#a32d2d';vb='#fcebeb';vi='⚠️';vt='Votre compte mérite un coup de boost';}
+// Fiche téléchargeable (impression PDF)
+function cliSheet(period){
+  const all=cliLoadData();
+  const now=new Date();
+  let data=all.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  let periodLabel;
+  if(period==='week'){
+    const cut=new Date(now);cut.setDate(cut.getDate()-7);
+    data=data.filter(e=>new Date(e.date)>=cut);
+    periodLabel='Semaine du '+cut.toLocaleDateString('fr-FR')+' au '+now.toLocaleDateString('fr-FR');
+  } else {
+    const cut=new Date(now);cut.setMonth(cut.getMonth()-1);
+    data=data.filter(e=>new Date(e.date)>=cut);
+    periodLabel='Mois du '+cut.toLocaleDateString('fr-FR')+' au '+now.toLocaleDateString('fr-FR');
+  }
+  if(data.length===0){ alert('Aucune donnée sur cette période pour générer la fiche.'); return; }
 
-  var advice=[];
-  if(gV>20) advice.push('Votre visibilité progresse fortement — continuons sur cette lancée.');
-  if(gF>15) advice.push('Votre communauté grandit : les nouveaux abonnés sont au rendez-vous.');
-  if(cliRate(last)<2) advice.push('On va renforcer l\'interaction avec des formats plus engageants.');
-  if(advice.length===0) advice.push('Nous maintenons le cap et testons de nouveaux formats pour booster vos résultats.');
+  const u=window._pmUser||{};
+  const last=data[data.length-1], first=data[0];
+  const g=(k)=>{const a=Number(first[k])||0,b=Number(last[k])||0;return a===0?(b>0?100:0):((b-a)/a*100);};
 
-  el.innerHTML =
-    '<div class="cli-sum-head"><div class="cli-sum-badge" style="background:'+vb+'">'+vi+'</div><div class="cli-sum-title">'+vt+'</div><div class="cli-sum-verdict" style="background:'+vb+';color:'+vc+'">'+verdict+'</div></div>'
-    + '<div class="cli-sum-body">Sur la période suivie, vos vues sont passées de <strong>'+cliFmt(first.views)+' à '+cliFmt(last.views)+'</strong> ('+(gV>=0?'+':'')+gV.toFixed(0)+'%) et vos abonnés de <strong>'+cliFmt(first.followers)+' à '+cliFmt(last.followers)+'</strong> ('+(gF>=0?'+':'')+gF.toFixed(0)+'%). Votre taux d\'engagement actuel est de <strong>'+cliRate(last).toFixed(1)+'%</strong>.</div>'
-    + '<div class="cli-sum-advice"><strong>💡 Ce que Pure Motion met en place :</strong><ul>'+advice.map(function(a){return '<li>'+a+'</li>';}).join('')+'</ul></div>';
-}
+  const rows=data.map(e=>'<tr><td>'+e.date.split('-').reverse().join('/')+'</td><td>'+e.net+'</td><td>'+cliFmt(e.views)+'</td><td>'+cliFmt(e.followers)+'</td><td>'+cliFmt(e.likes)+'</td><td>'+(e.comments||0)+'</td><td>'+cliRate(e).toFixed(1)+'%</td></tr>').join('');
 
-function cliRenderAll(){
-  var data=CLI_DEMO;
-  if(!data.length)return;
-  cliRenderKpis(data);
-  var labels=data.map(function(e){var p=e.date.split('-');return p[2]+'/'+p[1];});
-  cliChart('cli-chart-views',labels,data.map(function(e){return e.views;}),'#00C6E0');
-  cliChart('cli-chart-foll',labels,data.map(function(e){return e.followers;}),'#F5B731');
-  cliRenderSummary(data);
-}
-
-/* ══ FICHE TÉLÉCHARGEABLE (semaine / mois) ══ */
-function genFiche(periode){
-  var data=CLI_DEMO;
-  if(!data.length){ alert('Aucune donnée disponible pour le moment.'); return; }
-  var last=data[data.length-1];
-  var first=data[0];
-  var name=(window._pmUser&&window._pmUser.name)?window._pmUser.name:'Client';
-  var titre = periode==='week'?'Fiche hebdomadaire':'Fiche mensuelle';
-  var g=function(k){var a=Number(first[k])||0,b=Number(last[k])||0;return a===0?0:((b-a)/a*100);};
-  var d=new Date();
-  var moisFr=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-  var dateStr=d.getDate()+' '+moisFr[d.getMonth()]+' '+d.getFullYear();
-
-  var html='<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>'+titre+' — '+name+'</title>'
-    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,Segoe UI,sans-serif;}'
-    +'body{padding:40px;color:#1a1a2e;max-width:800px;margin:0 auto;}'
-    +'.head{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #12205A;padding-bottom:16px;margin-bottom:24px;}'
-    +'.logo{font-size:22px;font-weight:800;color:#12205A;}.logo span{color:#00C6E0;}'
-    +'.tag{font-size:10px;color:#9aa0bc;}'
-    +'.meta{text-align:right;font-size:12px;color:#5a6282;}'
-    +'h1{font-size:20px;color:#12205A;margin-bottom:4px;}.sub{font-size:13px;color:#5a6282;margin-bottom:24px;}'
-    +'.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}'
-    +'.k{border:1px solid #e2e6f0;border-radius:10px;padding:14px;}'
-    +'.kv{font-size:22px;font-weight:800;color:#12205A;}.kl{font-size:11px;color:#9aa0bc;margin-top:2px;}'
-    +'.kd{font-size:11px;font-weight:700;margin-top:4px;}.up{color:#0a6b4f;}.dn{color:#a32d2d;}'
-    +'.sec{font-size:11px;font-weight:700;color:#9aa0bc;text-transform:uppercase;letter-spacing:.6px;margin:20px 0 10px;}'
-    +'table{width:100%;border-collapse:collapse;font-size:12px;}'
-    +'th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e2e6f0;}'
-    +'th{color:#9aa0bc;font-size:10px;text-transform:uppercase;}'
-    +'.box{background:#e6f1fb;border-radius:10px;padding:14px 16px;font-size:12px;color:#0c447c;line-height:1.7;margin-top:16px;}'
-    +'.foot{margin-top:30px;padding-top:16px;border-top:1px solid #e2e6f0;font-size:11px;color:#9aa0bc;text-align:center;}'
-    +'@media print{body{padding:20px;}}</style></head><body>'
-    +'<div class="head"><div><div class="logo">PURE <span>MOTION</span></div><div class="tag">Social-First Video That Moves Your Audience.</div></div>'
-    +'<div class="meta">'+titre+'<br>'+dateStr+'</div></div>'
-    +'<h1>'+name+'</h1><div class="sub">Récapitulatif de performance · '+(periode==='week'?'7 derniers jours':'période suivie')+'</div>'
-    +'<div class="sec">Chiffres clés</div>'
-    +'<div class="kpis">'
-    +'<div class="k"><div class="kv">'+cliFmt(last.views)+'</div><div class="kl">Vues totales</div><div class="kd up">↑ '+g('views').toFixed(0)+'%</div></div>'
-    +'<div class="k"><div class="kv">'+cliFmt(last.followers)+'</div><div class="kl">Abonnés</div><div class="kd up">↑ '+g('followers').toFixed(0)+'%</div></div>'
-    +'<div class="k"><div class="kv">'+cliFmt(last.likes)+'</div><div class="kl">J\'aime</div><div class="kd up">↑ '+g('likes').toFixed(0)+'%</div></div>'
-    +'<div class="k"><div class="kv">'+last.comments+'</div><div class="kl">Commentaires</div></div>'
-    +'<div class="k"><div class="kv">'+cliFmt(last.reach)+'</div><div class="kl">Portée</div></div>'
-    +'<div class="k"><div class="kv">'+cliRate(last).toFixed(1)+'%</div><div class="kl">Engagement</div></div>'
+  document.getElementById('print-sheet').innerHTML=
+    '<div style="font-family:sans-serif;color:#1a1a2e;">'
+    +'<div style="display:flex;align-items:center;gap:12px;border-bottom:3px solid #12205A;padding-bottom:16px;margin-bottom:20px;">'
+    +'<div style="width:50px;height:50px;background:#12205A;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#00C6E0;font-size:24px;font-weight:800;">P</div>'
+    +'<div><div style="font-size:20px;font-weight:800;color:#12205A;">PURE MOTION</div><div style="font-size:11px;color:#9aa0bc;">Fiche de performance réseaux sociaux</div></div>'
+    +'<div style="margin-left:auto;text-align:right;font-size:11px;color:#5a6282;">Généré le '+now.toLocaleDateString('fr-FR')+'</div></div>'
+    +'<div style="margin-bottom:16px;"><div style="font-size:16px;font-weight:800;">'+(u.name||'Client')+'</div><div style="font-size:12px;color:#5a6282;">'+periodLabel+'</div></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">'
+    +'<div style="border:1px solid #e2e6f0;border-radius:10px;padding:12px;"><div style="font-size:22px;font-weight:800;">'+cliFmt(last.views)+'</div><div style="font-size:11px;color:#9aa0bc;">Vues ('+(g("views")>=0?"+":"")+g("views").toFixed(0)+'%)</div></div>'
+    +'<div style="border:1px solid #e2e6f0;border-radius:10px;padding:12px;"><div style="font-size:22px;font-weight:800;">'+cliFmt(last.followers)+'</div><div style="font-size:11px;color:#9aa0bc;">Abonnés ('+(g("followers")>=0?"+":"")+g("followers").toFixed(0)+'%)</div></div>'
+    +'<div style="border:1px solid #e2e6f0;border-radius:10px;padding:12px;"><div style="font-size:22px;font-weight:800;">'+cliFmt(last.likes)+'</div><div style="font-size:11px;color:#9aa0bc;">Likes</div></div>'
+    +'<div style="border:1px solid #e2e6f0;border-radius:10px;padding:12px;"><div style="font-size:22px;font-weight:800;">'+cliRate(last).toFixed(1)+'%</div><div style="font-size:11px;color:#9aa0bc;">Engagement</div></div>'
     +'</div>'
-    +'<div class="sec">Historique des relevés</div>'
-    +'<table><tr><th>Date</th><th>Vues</th><th>Abonnés</th><th>J\'aime</th><th>Comm.</th><th>Engag.</th></tr>'
-    + data.slice().reverse().map(function(e){var p=e.date.split('-');return '<tr><td>'+p[2]+'/'+p[1]+'/'+p[0]+'</td><td>'+cliFmt(e.views)+'</td><td>'+cliFmt(e.followers)+'</td><td>'+cliFmt(e.likes)+'</td><td>'+e.comments+'</td><td>'+cliRate(e).toFixed(1)+'%</td></tr>';}).join('')
-    +'</table>'
-    +'<div class="box"><strong>Analyse Pure Motion :</strong> Sur la période, le compte a progressé de '+g('views').toFixed(0)+'% en vues et '+g('followers').toFixed(0)+'% en abonnés. '
-    +(g('views')>30?'Excellente dynamique — la stratégie de contenu porte ses fruits. ':'Progression à consolider avec un rythme de publication régulier. ')
-    +'Taux d\'engagement actuel : '+cliRate(last).toFixed(1)+'%.</div>'
-    +'<div class="foot">Document généré par Pure Motion CI · puremotionci@gmail.com · +225 07-05-82-88-10</div>'
-    +'</body></html>';
+    +'<div style="font-size:13px;font-weight:700;margin-bottom:8px;">Détail des relevés</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+    +'<thead><tr style="background:#12205A;color:#fff;"><th style="padding:8px;text-align:left;">Date</th><th style="padding:8px;text-align:left;">Réseau</th><th style="padding:8px;text-align:left;">Vues</th><th style="padding:8px;text-align:left;">Abonnés</th><th style="padding:8px;text-align:left;">Likes</th><th style="padding:8px;text-align:left;">Comm.</th><th style="padding:8px;text-align:left;">Engag.</th></tr></thead>'
+    +'<tbody>'+rows.replace(/<td>/g,'<td style="padding:7px 8px;border-bottom:1px solid #e2e6f0;">')+'</tbody></table>'
+    +'<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e2e6f0;font-size:11px;color:#9aa0bc;text-align:center;">Pure Motion CI · puremotionci@gmail.com · +225 07-05-82-88-10 · Social-First Video That Moves Your Audience</div>'
+    +'</div>';
 
-  var w=window.open('','_blank');
-  if(!w){ alert('Autorise les fenêtres pop-up pour télécharger la fiche.'); return; }
-  w.document.write(html);
-  w.document.close();
-  setTimeout(function(){ w.print(); }, 500);
+  window.print();
 }
 
-// Lancer le rendu
-cliRenderAll();
+cliRender();
 </script>
 </body>
 </html>
