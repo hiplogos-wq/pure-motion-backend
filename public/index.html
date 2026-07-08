@@ -106,6 +106,108 @@ select.csel:focus{border-color:var(--cyan);}
 .id-tog-btn{flex:1;padding:8px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--hint);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;}
 .id-tog-btn.act{background:var(--white);color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.08);}
 .id-tog-btn i{font-size:14px;}
+/* ═══════════════════════════════════════════
+   REFONTE VISUELLE — DYNAMIQUE & COLORÉE
+   Pure Motion : navy, cyan, gold
+   ═══════════════════════════════════════════ */
+
+/* Fond animé avec dégradé et formes flottantes */
+html,body{background:linear-gradient(135deg,#0a1240 0%,#12205A 45%,#1a3a8a 100%);position:relative;overflow-x:hidden;}
+body::before{
+  content:'';position:fixed;top:-15%;left:-10%;width:55vw;height:55vw;
+  background:radial-gradient(circle,rgba(0,198,224,.28),transparent 65%);
+  border-radius:50%;filter:blur(20px);z-index:0;
+  animation:floatA 18s ease-in-out infinite;
+}
+body::after{
+  content:'';position:fixed;bottom:-20%;right:-10%;width:50vw;height:50vw;
+  background:radial-gradient(circle,rgba(245,183,49,.22),transparent 65%);
+  border-radius:50%;filter:blur(20px);z-index:0;
+  animation:floatB 22s ease-in-out infinite;
+}
+@keyframes floatA{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(8vw,6vh) scale(1.15);}}
+@keyframes floatB{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-7vw,-5vh) scale(1.2);}}
+
+.screen{position:relative;z-index:1;}
+
+/* Topbar transparente sur le fond sombre */
+.topbar{background:rgba(255,255,255,.06);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.1);}
+.logo-name{color:#fff;}
+.logo-tag{color:rgba(255,255,255,.55);}
+.topbar-link{color:rgba(255,255,255,.55);}
+
+/* Cartes : verre dépoli lumineux, profondeur, animation d'entrée */
+.card,.wcard,.scard{
+  background:rgba(255,255,255,.98);
+  border:1px solid rgba(255,255,255,.5);
+  box-shadow:0 20px 60px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.1) inset;
+  animation:cardIn .6s cubic-bezier(.16,1,.3,1);
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+/* Titre en dégradé */
+.wtitle,.card-title,.stitle{
+  background:linear-gradient(120deg,#12205A,#0066CC,#00C6E0);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* Cartes de rôle : plus vivantes */
+.rcard{border:2px solid var(--bord);border-radius:14px;position:relative;overflow:hidden;background:var(--white);}
+.rcard::before{
+  content:'';position:absolute;inset:0;opacity:0;transition:opacity .25s;z-index:0;
+}
+.rcard.rc-c::before{background:linear-gradient(135deg,rgba(0,198,224,.1),rgba(0,102,204,.06));}
+.rcard.rc-cl::before{background:linear-gradient(135deg,rgba(245,183,49,.12),rgba(253,208,90,.06));}
+.rcard:hover::before{opacity:1;}
+.rcard>*{position:relative;z-index:1;}
+.rcard:hover{transform:translateY(-4px);}
+.rcard.rc-c:hover{border-color:var(--cyan);box-shadow:0 12px 30px rgba(0,198,224,.25);}
+.rcard.rc-cl:hover{border-color:var(--gold);box-shadow:0 12px 30px rgba(245,183,49,.25);}
+.rci{transition:transform .25s;}
+.rcard:hover .rci{transform:scale(1.15) rotate(-5deg);}
+
+/* Boutons : dégradés dynamiques + effet de brillance */
+.btn-n{
+  background:linear-gradient(120deg,#12205A,#0066CC);
+  position:relative;overflow:hidden;box-shadow:0 4px 16px rgba(18,32,90,.3);
+}
+.btn-n::after{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+  transition:left .5s;
+}
+.btn-n:hover{background:linear-gradient(120deg,#1a2d80,#0077ee);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,102,204,.4);}
+.btn-n:hover::after{left:100%;}
+.btn-g{
+  background:linear-gradient(120deg,#F5B731,#FDD05A);
+  box-shadow:0 4px 16px rgba(245,183,49,.35);
+}
+.btn-g:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,183,49,.5);}
+
+/* Onglet actif : soulignement dégradé */
+.rtab.act{border-bottom-color:transparent;position:relative;}
+.rtab.act::after{
+  content:'';position:absolute;bottom:-1px;left:20%;right:20%;height:2.5px;
+  background:linear-gradient(90deg,var(--cyan),var(--blue));border-radius:2px;
+}
+
+/* Toggle identifiant : dégradé sur l'actif */
+.id-tog-btn.act{background:linear-gradient(120deg,#12205A,#0066CC);color:#fff;box-shadow:0 2px 8px rgba(18,32,90,.25);}
+
+/* Icône de succès animée */
+.sicon{background:linear-gradient(135deg,#1D9E75,#0a6b4f)!important;box-shadow:0 8px 24px rgba(29,158,117,.4);animation:pop .5s cubic-bezier(.16,1.4,.3,1);}
+@keyframes pop{from{transform:scale(0);}to{transform:scale(1);}}
+
+/* Inputs focus plus lumineux */
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 4px rgba(0,198,224,.14);}
+
+/* Badge sécurité brillant */
+.sec-badge{position:relative;}
+
+@media(max-width:520px){
+  body::before,body::after{width:90vw;height:90vw;}
+}
 </style>
 </head>
 <body>
