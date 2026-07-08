@@ -26,6 +26,7 @@ const {
   ALLOWED_ORIGIN = '*',
   NODE_ENV = 'development',
   ADMIN_TOKEN = 'change_me',
+  ANTHROPIC_API_KEY = '',
 } = process.env;
 
 // ══════════════════════════════════════════
@@ -403,6 +404,43 @@ app.post('/api/admin/clients/reset', (req, res) => {
 });
 
 // ══════════════════════════════════════════
+// ADMIN — SUPPRIMER UN CLIENT (efface TOUTES ses données)
+// POST /api/admin/clients/delete
+// Body : { adminToken, identifier }
+// ══════════════════════════════════════════
+app.post('/api/admin/clients/delete', (req, res) => {
+  const { adminToken, identifier } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!identifier) return res.status(400).json({ success:false, error:'Identifiant du client requis.' });
+
+  const found = findUser(identifier);
+  if (!found || found.user.role === 'admin') return res.status(404).json({ success:false, error:'Client introuvable.' });
+
+  const name = found.user.name;
+  const clientKey = found.user.clientKey;
+
+  // 1. Supprime le compte
+  delete USERS[found.key];
+  reindexAll();
+  persistClients();
+
+  // 2. Efface ses stats
+  if (clientKey && STORE.stats[clientKey]) delete STORE.stats[clientKey];
+  // 3. Efface son calendrier
+  if (clientKey && STORE.calendar[clientKey]) delete STORE.calendar[clientKey];
+  // 4. Efface ses contrats
+  if (STORE.contracts) {
+    Object.keys(STORE.contracts).forEach(id => {
+      if (STORE.contracts[id].clientKey === clientKey) delete STORE.contracts[id];
+    });
+  }
+  saveStore();
+
+  log('INFO', 'Client supprimé avec toutes ses données', { name, clientKey });
+  return res.json({ success:true, message:`${name} et toutes ses données ont été définitivement supprimés.` });
+});
+
+// ══════════════════════════════════════════
 // ADMIN — LISTE DES CLIENTS
 // GET /api/admin/clients  (header x-admin-token)
 // ══════════════════════════════════════════
@@ -457,6 +495,193 @@ app.get('/api/client/stats/:clientKey', (req, res) => {
     return res.json({ success:true, entries:[], published:false });
   }
   return res.json({ success:true, entries: s.entries || [], published:true, updatedAt: s.updatedAt || null });
+});
+
+// ══════════════════════════════════════════
+// CONTRATS
+// ══════════════════════════════════════════
+if (!STORE.contracts) STORE.contracts = {};
+
+// Admin crée / met à jour un contrat
+// POST /api/admin/contracts/save
+app.post('/api/admin/contracts/save', (req, res) => {
+  const { adminToken, contract } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!contract || !contract.clientKey || !contract.clientName) {
+    return res.status(400).json({ success:false, error:'Informations du contrat incomplètes.' });
+  }
+  const id = contract.id || ('ct' + Date.now());
+  STORE.contracts[id] = {
+    id,
+    clientKey: contract.clientKey,
+    clientName: contract.clientName,
+    formule: contract.formule || 'Bronze',
+    montant: Number(contract.montant) || 0,
+    dateDebut: contract.dateDebut || '',
+    dateFin: contract.dateFin || '',
+    statut: contract.statut || 'actif',       // actif | resilié | renouvellement
+    motifResiliation: contract.motifResiliation || '',
+    renouvellement: contract.renouvellement || null, // proposition envoyée au client
+    updatedAt: Date.now()
+  };
+  saveStore();
+  log('INFO', 'Contrat enregistré', { id, client: contract.clientName });
+  return res.json({ success:true, message:'Contrat enregistré.', id });
+});
+
+// Admin liste tous les contrats
+// GET /api/admin/contracts  (header x-admin-token)
+app.get('/api/admin/contracts', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+  const contracts = Object.values(STORE.contracts || {});
+  return res.json({ success:true, count: contracts.length, contracts });
+});
+
+// Admin résilie un contrat (avec motif)
+// POST /api/admin/contracts/terminate
+app.post('/api/admin/contracts/terminate', (req, res) => {
+  const { adminToken, id, motif } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!id || !STORE.contracts[id]) return res.status(404).json({ success:false, error:'Contrat introuvable.' });
+  STORE.contracts[id].statut = 'resilié';
+  STORE.contracts[id].motifResiliation = motif || 'Non précisé';
+  STORE.contracts[id].dateResiliation = new Date().toISOString().split('T')[0];
+  STORE.contracts[id].updatedAt = Date.now();
+  saveStore();
+  log('INFO', 'Contrat résilié', { id, motif });
+  return res.json({ success:true, message:'Contrat résilié.' });
+});
+
+// Admin envoie une proposition de renouvellement au client
+// POST /api/admin/contracts/renew
+app.post('/api/admin/contracts/renew', (req, res) => {
+  const { adminToken, id, renouvellement } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!id || !STORE.contracts[id]) return res.status(404).json({ success:false, error:'Contrat introuvable.' });
+  STORE.contracts[id].renouvellement = {
+    formule: renouvellement.formule,
+    montant: Number(renouvellement.montant) || 0,
+    nouvelleDateFin: renouvellement.nouvelleDateFin || '',
+    message: renouvellement.message || '',
+    envoyeLe: new Date().toISOString().split('T')[0],
+    statut: 'en_attente'   // en_attente | accepté | refusé
+  };
+  STORE.contracts[id].statut = 'renouvellement';
+  STORE.contracts[id].updatedAt = Date.now();
+  saveStore();
+  log('INFO', 'Renouvellement envoyé au client', { id });
+  return res.json({ success:true, message:'Proposition de renouvellement envoyée au client.' });
+});
+
+// Admin supprime un contrat
+// POST /api/admin/contracts/delete
+app.post('/api/admin/contracts/delete', (req, res) => {
+  const { adminToken, id } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!id || !STORE.contracts[id]) return res.status(404).json({ success:false, error:'Contrat introuvable.' });
+  delete STORE.contracts[id];
+  saveStore();
+  return res.json({ success:true, message:'Contrat supprimé.' });
+});
+
+// Client consulte SON contrat + proposition de renouvellement
+// GET /api/client/contract/:clientKey
+app.get('/api/client/contract/:clientKey', (req, res) => {
+  const contracts = Object.values(STORE.contracts || {}).filter(c => c.clientKey === req.params.clientKey);
+  return res.json({ success:true, contracts });
+});
+
+// Client répond à une proposition de renouvellement
+// POST /api/client/contract/respond
+app.post('/api/client/contract/respond', (req, res) => {
+  const { id, reponse } = req.body; // reponse: 'accepté' | 'refusé'
+  if (!id || !STORE.contracts[id] || !STORE.contracts[id].renouvellement) {
+    return res.status(404).json({ success:false, error:'Proposition introuvable.' });
+  }
+  STORE.contracts[id].renouvellement.statut = reponse === 'accepté' ? 'accepté' : 'refusé';
+  STORE.contracts[id].updatedAt = Date.now();
+  saveStore();
+  log('INFO', 'Client a répondu au renouvellement', { id, reponse });
+  return res.json({ success:true, message: reponse==='accepté' ? 'Renouvellement accepté.' : 'Renouvellement refusé.' });
+});
+
+// ══════════════════════════════════════════
+// PROPOSITIONS IA (Anthropic API)
+// POST /api/admin/ai/proposal
+// Body : { adminToken, clientName, secteur, reseaux, objectif, contexte }
+// ══════════════════════════════════════════
+app.post('/api/admin/ai/proposal', async (req, res) => {
+  const { adminToken, clientName, secteur, reseaux, objectif, contexte } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!ANTHROPIC_API_KEY) {
+    return res.status(503).json({ success:false, error:'Clé API IA non configurée. Ajoute ANTHROPIC_API_KEY dans les variables Render.' });
+  }
+  if (!clientName || !secteur) {
+    return res.status(400).json({ success:false, error:'Nom du client et secteur requis.' });
+  }
+
+  const prompt = `Tu es un expert en stratégie de contenu social media pour PURE MOTION, une agence ivoirienne (Abidjan) spécialisée dans la vidéo social-first.
+
+CLIENT : ${clientName}
+SECTEUR : ${secteur}
+RÉSEAUX ANIMÉS : ${(reseaux && reseaux.length) ? reseaux.join(', ') : 'TikTok, Instagram, Facebook'}
+OBJECTIF PRINCIPAL : ${objectif || 'Croissance et engagement'}
+${contexte ? 'CONTEXTE PARTICULIER : ' + contexte : ''}
+
+Génère une proposition stratégique concrète et actionnable, adaptée au marché ivoirien et ouest-africain. Réponds UNIQUEMENT en JSON valide (sans texte avant ou après, sans backticks) avec cette structure exacte :
+{
+  "styles_contenu": [ { "titre": "...", "description": "...", "frequence": "..." } ],
+  "formats_tendance": [ { "format": "...", "pourquoi": "...", "exemple": "..." } ],
+  "idees_hooks": [ "...", "...", "..." ],
+  "calendrier_type": [ { "jour": "...", "type": "...", "reseau": "..." } ],
+  "conseils_viraux": [ "...", "..." ],
+  "recherche_inspiration": [ { "plateforme": "...", "a_chercher": "..." } ]
+}
+
+Sois précis, créatif et concret. 3-4 éléments par liste. Adapte au secteur ${secteur} et à la culture locale ivoirienne.`;
+
+  try {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!apiRes.ok) {
+      const errText = await apiRes.text();
+      log('ERROR', 'Erreur API Anthropic', { status: apiRes.status, body: errText.slice(0,200) });
+      return res.status(502).json({ success:false, error:'L\'IA n\'a pas pu répondre (erreur '+apiRes.status+'). Vérifie ta clé API et ton crédit.' });
+    }
+
+    const data = await apiRes.json();
+    let text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+    // Nettoie d'éventuels backticks
+    text = text.replace(/```json/g,'').replace(/```/g,'').trim();
+
+    let proposal;
+    try { proposal = JSON.parse(text); }
+    catch(e){
+      log('WARN', 'Réponse IA non-JSON', { text: text.slice(0,200) });
+      return res.status(502).json({ success:false, error:'L\'IA a répondu dans un format inattendu. Réessaie.' });
+    }
+
+    log('INFO', 'Proposition IA générée', { client: clientName });
+    return res.json({ success:true, proposal });
+
+  } catch (e) {
+    log('ERROR', 'Exception appel IA', { message: e.message });
+    return res.status(500).json({ success:false, error:'Erreur technique lors de l\'appel à l\'IA.' });
+  }
 });
 
 // ══════════════════════════════════════════
