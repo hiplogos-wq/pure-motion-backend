@@ -517,6 +517,64 @@ textarea{resize:none;line-height:1.5;}
 .pv-pub{background:#e1f5ee;color:#085041;}
 .pv-draft{background:#faeeda;color:#7a5800;}
 .pv-empty{background:#e6f1fb;color:#185fa5;}
+/* ══ GRILLE TARIFAIRE ══ */
+.tarif-formules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.tarif-formule{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;text-align:center;}
+.tf-badge{display:inline-block;color:#fff;font-size:12px;font-weight:800;letter-spacing:1px;padding:5px 16px;border-radius:20px;margin-bottom:10px;}
+.tf-price{font-size:22px;font-weight:800;color:var(--txt);}
+.tf-price span{font-size:12px;font-weight:500;color:var(--hint);}
+.tf-desc{font-size:11px;color:var(--mut);margin-top:6px;line-height:1.4;}
+
+.tarif-list-title{font-size:13px;font-weight:700;color:var(--txt);margin:20px 0 12px;display:flex;align-items:center;justify-content:space-between;}
+.tarif-list-title span:first-child{display:flex;align-items:center;gap:7px;}
+.tarif-table{width:100%;border-collapse:collapse;background:var(--white);border:1px solid var(--bord);border-radius:12px;overflow:hidden;}
+.tarif-table th{background:var(--surf);font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;text-align:left;padding:11px 14px;}
+.tarif-table td{padding:12px 14px;border-top:1px solid var(--bord);font-size:13px;}
+.tarif-table tr:hover td{background:var(--surf);}
+.tarif-client{font-weight:700;color:var(--txt);}
+.tarif-formule-tag{font-size:10px;font-weight:700;color:#fff;padding:3px 10px;border-radius:12px;display:inline-block;}
+.tarif-montant{font-weight:800;color:var(--navy);}
+.tarif-statut{font-size:10px;font-weight:600;padding:3px 10px;border-radius:12px;}
+.tarif-statut.actif{background:#e1f5ee;color:var(--up);}
+.tarif-statut.resilié{background:#fcebeb;color:var(--dn);}
+.tarif-statut.renouvellement{background:#faeeda;color:#7a5800;}
+
+/* ══ PROPOSITIONS IA ══ */
+.ai-intro{background:linear-gradient(135deg,#f3e8ff,#e6f1fb);border:1px solid rgba(123,97,255,.2);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.ai-intro-ico{font-size:30px;flex-shrink:0;}
+.ai-intro-title{font-size:15px;font-weight:800;color:var(--navy);}
+.ai-intro-sub{font-size:12px;color:var(--mut);line-height:1.5;margin-top:3px;}
+.ai-form{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+.ai-net-picker{display:flex;gap:14px;flex-wrap:wrap;}
+.ai-net-chk{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt);cursor:pointer;padding:7px 13px;border:1px solid var(--bord);border-radius:8px;}
+.ai-net-chk input{width:auto;margin:0;}
+.ai-net-chk:has(input:checked){border-color:var(--cyan);background:rgba(0,198,224,.05);font-weight:600;}
+.ai-cost-note{font-size:11px;color:var(--hint);text-align:center;margin-top:10px;}
+
+.ai-result-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:20px;margin-bottom:14px;}
+.ai-result-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid var(--surf);}
+.ai-result-head-ico{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#7B61FF,#00C6E0);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ai-result-title{font-size:16px;font-weight:800;color:var(--txt);}
+.ai-result-sub{font-size:12px;color:var(--mut);}
+.ai-section{margin-bottom:18px;}
+.ai-section-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.ai-item{background:var(--surf);border-radius:9px;padding:11px 14px;margin-bottom:8px;}
+.ai-item-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:3px;}
+.ai-item-desc{font-size:12px;color:var(--mut);line-height:1.5;}
+.ai-item-meta{font-size:11px;color:var(--cyan);font-weight:600;margin-top:4px;}
+.ai-chip{display:inline-block;background:var(--surf);border-radius:8px;padding:8px 12px;margin:0 6px 6px 0;font-size:12px;color:var(--txt);}
+.ai-hook{background:#fffbf0;border-left:3px solid var(--gold);padding:9px 13px;margin-bottom:7px;border-radius:0 8px 8px 0;font-size:13px;color:var(--txt);font-style:italic;}
+.ai-cal-row{display:flex;align-items:center;gap:10px;background:var(--surf);border-radius:8px;padding:9px 13px;margin-bottom:6px;}
+.ai-cal-day{font-size:12px;font-weight:700;color:var(--navy);width:80px;flex-shrink:0;}
+.ai-cal-type{font-size:12px;color:var(--txt);flex:1;}
+.ai-cal-net{font-size:10px;font-weight:700;color:#fff;padding:2px 8px;border-radius:6px;}
+.ai-search-item{display:flex;align-items:center;gap:10px;background:#e6f1fb;border-radius:8px;padding:10px 13px;margin-bottom:6px;}
+.ai-search-plat{font-size:11px;font-weight:700;color:#0c447c;background:#fff;padding:3px 9px;border-radius:6px;flex-shrink:0;}
+.ai-search-txt{font-size:12px;color:#0c447c;}
+.ai-loading{text-align:center;padding:40px;color:var(--mut);}
+.ai-loading .spin-big{width:40px;height:40px;border:3px solid var(--surf);border-top-color:var(--cyan);border-radius:50%;animation:aispin 1s linear infinite;margin:0 auto 16px;}
+@keyframes aispin{to{transform:rotate(360deg);}}
+
 </style>
 </head>
 <body>
@@ -600,73 +658,22 @@ function pmLogout(){
     <!-- ════ PANEL LISTE ════ -->
     <div class="panel act" id="panel-list">
 
-      <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-lbl"><i class="ti ti-file-check" style="font-size:11px;color:var(--up)"></i> Contrats signés</div><div class="kpi-val">2</div><div class="kpi-d up">Actifs ce mois</div></div>
-        <div class="kpi"><div class="kpi-lbl"><i class="ti ti-clock" style="font-size:11px;color:#185fa5"></i> En attente</div><div class="kpi-val">1</div><div class="kpi-d" style="color:var(--hint)">Envoyé, pas signé</div></div>
-        <div class="kpi"><div class="kpi-lbl"><i class="ti ti-coin" style="font-size:11px;color:var(--gold)"></i> CA mensuel contrats</div><div class="kpi-val">230K</div><div class="kpi-d up">FCFA / mois</div></div>
-        <div class="kpi"><div class="kpi-lbl"><i class="ti ti-calendar" style="font-size:11px;color:var(--cyan)"></i> Prochaine échéance</div><div class="kpi-val">14 juin</div><div class="kpi-d" style="color:var(--hint)">Soleil Communication</div></div>
+      <div class="perf-hint-box" id="ct-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour charger et gérer tes contrats.</div>
+
+      <div class="kpi-grid" id="ct-kpis"></div>
+
+      <div id="ct-alert-zone"></div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:700;color:var(--txt);"><i class="ti ti-file-text" style="color:var(--cyan)"></i> Contrats clients</div>
+        <button class="btn btn-gold" onclick="ctOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau contrat</button>
       </div>
 
-      <div class="alert warn"><i class="ti ti-alert-triangle"></i> Le contrat de Soleil Communication arrive à échéance le 14 juin 2026. Prépare le renouvellement ou génère un avenant dès maintenant.</div>
+      <div id="ct-list"></div>
 
-      <div style="background:var(--white);border:1px solid var(--bord);border-radius:var(--r);overflow:hidden;">
-        <div class="ct-head">
-          <div class="ct-th">Client</div>
-          <div class="ct-th">Forfait</div>
-          <div class="ct-th">Montant</div>
-          <div class="ct-th">Durée</div>
-          <div class="ct-th">Statut</div>
-          <div class="ct-th">Actions</div>
-        </div>
-
-        <div class="ct-row">
-          <div class="ct-cell ct-name">
-            <div class="ct-ava" style="background:linear-gradient(135deg,var(--cyan),var(--blue))">SC</div>
-            <div><div style="font-weight:600;font-size:12px;">Soleil Communication</div><div style="font-size:10px;color:var(--hint)">Téléphonie · Cocody</div></div>
-          </div>
-          <div class="ct-cell">Bronze</div>
-          <div class="ct-cell" style="font-weight:600;">50 000 FCFA</div>
-          <div class="ct-cell mut">14 mars → 14 juin 26</div>
-          <div class="ct-cell"><span class="badge b-signed">✓ Signé</span></div>
-          <div class="ct-cell ct-actions">
-            <button class="act-btn p" onclick="showTab('gen',document.getElementById('tab-gen'));preloadClient('Soleil Communication','Téléphonie & Électronique','Bronze','50 000','3')">Renouveler</button>
-            <button class="act-btn" onclick="downloadContract()">⬇</button>
-          </div>
-        </div>
-
-        <div class="ct-row">
-          <div class="ct-cell ct-name">
-            <div class="ct-ava" style="background:linear-gradient(135deg,var(--gold),#e6970f)">MF</div>
-            <div><div style="font-weight:600;font-size:12px;">Maquis Chez Fanta</div><div style="font-size:10px;color:var(--hint)">Restaurant · Cocody</div></div>
-          </div>
-          <div class="ct-cell">Platinum</div>
-          <div class="ct-cell" style="font-weight:600;">80 000 FCFA</div>
-          <div class="ct-cell mut">1 juin → 1 sept 26</div>
-          <div class="ct-cell"><span class="badge b-sent">Envoyé</span></div>
-          <div class="ct-cell ct-actions">
-            <button class="act-btn p">Relancer</button>
-            <button class="act-btn" onclick="downloadContract()">⬇</button>
-          </div>
-        </div>
-
-        <div class="ct-row">
-          <div class="ct-cell ct-name">
-            <div class="ct-ava" style="background:linear-gradient(135deg,#7B61FF,#5038d0)">BE</div>
-            <div><div style="font-weight:600;font-size:12px;">Boutique Élégance CI</div><div style="font-size:10px;color:var(--hint)">Mode & Retail · Plateau</div></div>
-          </div>
-          <div class="ct-cell">Gold</div>
-          <div class="ct-cell" style="font-weight:600;">150 000 FCFA</div>
-          <div class="ct-cell mut">15 juin → 15 déc 26</div>
-          <div class="ct-cell"><span class="badge b-draft">Brouillon</span></div>
-          <div class="ct-cell ct-actions">
-            <button class="act-btn g" onclick="showTab('gen',document.getElementById('tab-gen'));preloadClient('Boutique Élégance CI','Boutique / Mode','Gold','150 000','6')">Finaliser</button>
-            <button class="act-btn" onclick="downloadContract()">⬇</button>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- ════ PANEL GÉNÉRATEUR ════ -->
+    <!-- ════ PANEL GÉNÉRATEUR (conservé) ════ -->
     <div class="panel" id="panel-gen">
       <div style="display:flex;gap:0;min-height:500px;">
 
@@ -1108,8 +1115,64 @@ function pmLogout(){
     </div>
 
     <div class="panel" id="panel-propositions">
-      <div class="alert info"><i class="ti ti-file-plus"></i> Module Propositions commerciales — génération de propositions par secteur avec preuves sociales intégrées.</div>
+
+      <div class="ai-intro">
+        <div class="ai-intro-ico">🤖</div>
+        <div>
+          <div class="ai-intro-title">Propositions IA</div>
+          <div class="ai-intro-sub">L'intelligence artificielle génère des propositions stratégiques sur mesure : styles de contenu, formats tendance, idées de hooks, calendrier type et pistes d'inspiration virale — adaptés au secteur de ton client et au marché ivoirien.</div>
+        </div>
+      </div>
+
+      <div class="perf-hint-box" id="ai-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour utiliser l'IA.</div>
+
+      <div class="ai-form">
+        <div class="cal-frow c2">
+          <div class="cal-field">
+            <label>Nom du client</label>
+            <input type="text" id="ai-client" placeholder="Ex: Soleil Communication"/>
+          </div>
+          <div class="cal-field">
+            <label>Secteur d'activité</label>
+            <input type="text" id="ai-secteur" placeholder="Ex: Boutique de téléphones, Restaurant..."/>
+          </div>
+        </div>
+
+        <div class="cal-field">
+          <label>Réseaux animés</label>
+          <div class="ai-net-picker">
+            <label class="ai-net-chk"><input type="checkbox" value="TikTok" checked> TikTok</label>
+            <label class="ai-net-chk"><input type="checkbox" value="Instagram" checked> Instagram</label>
+            <label class="ai-net-chk"><input type="checkbox" value="Facebook"> Facebook</label>
+            <label class="ai-net-chk"><input type="checkbox" value="YouTube"> YouTube</label>
+          </div>
+        </div>
+
+        <div class="cal-field">
+          <label>Objectif principal</label>
+          <select id="ai-objectif">
+            <option>Notoriété — se faire connaître</option>
+            <option>Engagement — créer une communauté active</option>
+            <option>Conversion — générer des ventes</option>
+            <option>Fidélisation — retenir les clients existants</option>
+          </select>
+        </div>
+
+        <div class="cal-field">
+          <label>Contexte particulier <span style="font-weight:400;color:var(--hint)">(optionnel)</span></label>
+          <textarea id="ai-contexte" rows="2" placeholder="Ex: nouvelle boutique, lancement produit, faible engagement actuel..."></textarea>
+        </div>
+
+        <button class="btn btn-gold" id="ai-generate-btn" onclick="aiGenerate()" style="width:100%;justify-content:center;padding:12px;">
+          <i class="ti ti-sparkles" style="font-size:15px"></i> Générer une proposition IA
+        </button>
+        <div class="ai-cost-note">💡 Chaque génération coûte environ 30 FCFA. L'IA ne se déclenche que quand tu cliques.</div>
+      </div>
+
+      <div id="ai-result"></div>
+
     </div>
+
     <div class="panel" id="panel-preuves">
       <div class="proof-grid">
         <div class="proof-card"><div class="proof-client">Soleil Communication · TikTok</div><div class="proof-stat">137K vues</div><div class="proof-desc">Boutique téléphones, Abidjan. 3 mois.</div><div class="proof-delta">↑ +3 246% followers</div></div>
@@ -1145,7 +1208,38 @@ function pmLogout(){
 
     </div>
 
-    <div class="panel" id="panel-tarifs"><div class="alert info"><i class="ti ti-coin"></i> Module Grille tarifaire — Bronze 50K · Platinum 80K · Gold 150K FCFA.</div></div>
+    <div class="panel" id="panel-tarifs">
+
+      <div class="perf-hint-box" id="tarif-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour charger la grille tarifaire.</div>
+
+      <!-- RAPPEL DES FORMULES -->
+      <div class="tarif-formules">
+        <div class="tarif-formule">
+          <div class="tf-badge" style="background:linear-gradient(135deg,#cd7f32,#a86428)">BRONZE</div>
+          <div class="tf-price">50 000 <span>FCFA/mois</span></div>
+          <div class="tf-desc">Formule d'entrée — présence régulière</div>
+        </div>
+        <div class="tarif-formule">
+          <div class="tf-badge" style="background:linear-gradient(135deg,#8e9eab,#5a6b7d)">PLATINUM</div>
+          <div class="tf-price">80 000 <span>FCFA/mois</span></div>
+          <div class="tf-desc">Formule intermédiaire — engagement renforcé</div>
+        </div>
+        <div class="tarif-formule">
+          <div class="tf-badge" style="background:linear-gradient(135deg,#F5B731,#d9970a)">GOLD</div>
+          <div class="tf-price">150 000 <span>FCFA/mois</span></div>
+          <div class="tf-desc">Formule premium — accompagnement complet</div>
+        </div>
+      </div>
+
+      <!-- SYNTHÈSE REVENUS -->
+      <div class="kpi-grid" id="tarif-kpis"></div>
+
+      <!-- TABLEAU CLIENTS + TARIFS -->
+      <div class="tarif-list-title"><span><i class="ti ti-users"></i> Clients & tarifs signés</span> <span class="acces-list-hint" id="tarif-count"></span></div>
+      <div id="tarif-list"></div>
+
+    </div>
+
     <div class="panel" id="panel-marche"><div class="alert info"><i class="ti ti-telescope"></i> Module Étude de marché — analyse concurrentielle par secteur.</div></div>
     <div class="panel" id="panel-objectifs"><div class="alert info"><i class="ti ti-target"></i> Module Objectifs stratégiques — définition et suivi des KPIs par client.</div></div>
     <div class="panel" id="panel-settings"><div class="alert info"><i class="ti ti-settings"></i> Paramètres Pure Motion — infos de l'agence, coordonnées, logo.</div></div>
@@ -1368,6 +1462,14 @@ function showMain(section, el) {
   // Rendu spécial de la gestion des accès
   if(section === 'acces'){
     if(accToken) accLoadClients();
+  }
+  // Rendu spécial de la grille tarifaire
+  if(section === 'tarifs'){
+    tarifLoad();
+  }
+  // Rendu spécial des contrats
+  if(section === 'contrats'){
+    ctLoad();
   }
 }
 
@@ -2240,6 +2342,7 @@ function accRenderClients(clients){
       + '<div class="acc-actions">'
       + '<button class="acc-btn" title="Voir son tableau de bord" onclick="accPreview(\''+ckey.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')" style="color:var(--cyan);border-color:rgba(0,198,224,.3);"><i class="ti ti-eye"></i></button>'
       + '<button class="acc-btn" title="Réinitialiser le mot de passe" onclick="accQuickReset(\''+idr.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')"><i class="ti ti-refresh"></i></button>'
+      + '<button class="acc-btn" title="Supprimer ce client et toutes ses données" onclick="accDelete(\''+idr.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')" style="color:var(--dn);border-color:rgba(162,45,45,.3);"><i class="ti ti-trash"></i></button>'
       + '</div>'
       + '</div>';
   }).join('');
@@ -2313,6 +2416,25 @@ async function accQuickReset(identifier, name){
 }
 
 function accResetPw(){} // placeholder (reset se fait via accQuickReset)
+
+// Supprimer un client et TOUTES ses données (irréversible)
+async function accDelete(identifier, name){
+  const step1 = confirm('⚠️ SUPPRIMER '+name+' ?\n\nCela effacera DÉFINITIVEMENT :\n• Son compte et ses accès\n• Toutes ses statistiques\n• Son calendrier éditorial\n• Ses contrats\n\nCette action est IRRÉVERSIBLE.');
+  if(!step1) return;
+  const typed = prompt('Pour confirmer la suppression, tape le nom exact du client :\n\n'+name);
+  if(typed===null) return;
+  if(typed.trim() !== name.trim()){ alert('Le nom ne correspond pas. Suppression annulée.'); return; }
+
+  try {
+    const r = await fetch('/api/admin/clients/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: accToken, identifier })
+    });
+    const data = await r.json();
+    if(data.success){ alert('✓ '+data.message); accLoadClients(); }
+    else alert('✗ '+(data.error||'Erreur.'));
+  } catch(e){ alert('✗ Erreur de connexion.'); }
+}
 
 /* ── APERÇU DASHBOARD CLIENT ── */
 let previewClientKey = '';
@@ -2425,6 +2547,412 @@ async function accPreviewPublish(){
     if(t){ accToken = t; const el=document.getElementById('acc-token'); if(el) el.value=t; }
   } catch(e){}
 })();
+
+/* ══════════════════════════════════════════
+   CONTRATS
+   ══════════════════════════════════════════ */
+const CT_FORMULES = { 'Bronze':50000, 'Platinum':80000, 'Gold':150000 };
+let ctContracts = [];
+let ctClientsList = [];
+
+function ctToken(){ return accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })(); }
+
+async function ctLoad(){
+  const token = ctToken();
+  if(!token){
+    document.getElementById('ct-token-hint').style.display='flex';
+    document.getElementById('ct-kpis').innerHTML='';
+    document.getElementById('ct-list').innerHTML='';
+    return;
+  }
+  document.getElementById('ct-token-hint').style.display='none';
+  try {
+    // Charge les contrats
+    const r = await fetch('/api/admin/contracts', { headers:{ 'x-admin-token': token } });
+    const data = await r.json();
+    ctContracts = data.success ? data.contracts : [];
+    // Charge la liste des clients (pour le sélecteur)
+    const r2 = await fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } });
+    const d2 = await r2.json();
+    ctClientsList = (d2.success ? d2.clients : []).filter(c=>c.clientKey);
+    ctRender();
+  } catch(e){
+    document.getElementById('ct-list').innerHTML='<div class="perf-empty"><i class="ti ti-wifi-off"></i><div class="perf-empty-title">Erreur de connexion</div></div>';
+  }
+}
+
+function ctFmt(n){ return (Number(n)||0).toLocaleString('fr-FR'); }
+function ctDateFr(d){ if(!d) return '—'; const p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0].slice(2); }
+
+function ctRender(){
+  // KPIs
+  const actifs = ctContracts.filter(c=>c.statut==='actif');
+  const enAttente = ctContracts.filter(c=>c.statut==='envoye'||c.statut==='brouillon');
+  const caMensuel = actifs.reduce((s,c)=>s+(Number(c.montant)||0),0);
+  // Prochaine échéance
+  const futures = actifs.filter(c=>c.dateFin).sort((a,b)=>a.dateFin.localeCompare(b.dateFin));
+  const proch = futures[0];
+
+  document.getElementById('ct-kpis').innerHTML =
+    '<div class="kpi"><div class="kpi-lbl"><i class="ti ti-file-check" style="font-size:11px;color:var(--up)"></i> Contrats actifs</div><div class="kpi-val">'+actifs.length+'</div><div class="kpi-d up">Signés</div></div>'
+    + '<div class="kpi"><div class="kpi-lbl"><i class="ti ti-clock" style="font-size:11px;color:#185fa5"></i> En attente</div><div class="kpi-val">'+enAttente.length+'</div><div class="kpi-d" style="color:var(--hint)">Envoyé / brouillon</div></div>'
+    + '<div class="kpi"><div class="kpi-lbl"><i class="ti ti-coin" style="font-size:11px;color:var(--gold)"></i> CA mensuel</div><div class="kpi-val">'+ctFmt(caMensuel)+'</div><div class="kpi-d up">FCFA / mois</div></div>'
+    + '<div class="kpi"><div class="kpi-lbl"><i class="ti ti-calendar" style="font-size:11px;color:var(--cyan)"></i> Prochaine échéance</div><div class="kpi-val" style="font-size:16px;">'+(proch?ctDateFr(proch.dateFin):'—')+'</div><div class="kpi-d" style="color:var(--hint)">'+(proch?proch.clientName:'Aucune')+'</div></div>';
+
+  // Alerte échéance proche (< 30 jours)
+  const alertZone = document.getElementById('ct-alert-zone');
+  alertZone.innerHTML='';
+  if(proch && proch.dateFin){
+    const days = Math.ceil((new Date(proch.dateFin)-new Date())/(1000*60*60*24));
+    if(days>0 && days<=30){
+      alertZone.innerHTML = '<div class="alert warn"><i class="ti ti-alert-triangle"></i> Le contrat de <strong>'+proch.clientName+'</strong> arrive à échéance dans '+days+' jour(s) ('+ctDateFr(proch.dateFin)+'). Pense au renouvellement.</div>';
+    }
+  }
+
+  // Liste des contrats
+  const list = document.getElementById('ct-list');
+  if(ctContracts.length===0){
+    list.innerHTML='<div class="perf-empty"><i class="ti ti-file-text"></i><div class="perf-empty-title">Aucun contrat</div><div>Clique sur "Nouveau contrat" pour enregistrer ton premier contrat client.</div></div>';
+    return;
+  }
+
+  const statutBadge = (c)=>{
+    if(c.statut==='actif') return '<span class="badge b-signed">✓ Actif</span>';
+    if(c.statut==='resilié') return '<span class="badge" style="background:#fcebeb;color:var(--dn)">✕ Résilié</span>';
+    if(c.statut==='renouvellement') return '<span class="badge" style="background:#e1f5ee;color:var(--up)">↻ Renouvellement envoyé</span>';
+    if(c.statut==='envoye') return '<span class="badge b-sent">Envoyé</span>';
+    return '<span class="badge b-draft">Brouillon</span>';
+  };
+
+  list.innerHTML = '<div style="background:var(--white);border:1px solid var(--bord);border-radius:var(--r);overflow:hidden;">'
+    + '<div class="ct-head"><div class="ct-th">Client</div><div class="ct-th">Formule</div><div class="ct-th">Montant</div><div class="ct-th">Durée</div><div class="ct-th">Statut</div><div class="ct-th">Actions</div></div>'
+    + ctContracts.map(c=>{
+      const init = c.clientName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const resilInfo = c.statut==='resilié' ? '<div style="font-size:9px;color:var(--dn);margin-top:2px;">Motif: '+(c.motifResiliation||'—')+'</div>' : '';
+      let actions='';
+      if(c.statut!=='resilié'){
+        actions = '<button class="act-btn p" title="Proposer un renouvellement" onclick="ctRenewOpen(\''+c.id+'\')">↻ Renouveler</button>'
+                + '<button class="act-btn" title="Modifier" onclick="ctEdit(\''+c.id+'\')"><i class="ti ti-edit"></i></button>'
+                + '<button class="act-btn" title="Résilier" style="color:var(--dn)" onclick="ctTermOpen(\''+c.id+'\')"><i class="ti ti-file-x"></i></button>';
+      } else {
+        actions = '<button class="act-btn" title="Supprimer" style="color:var(--dn)" onclick="ctDelete(\''+c.id+'\')"><i class="ti ti-trash"></i></button>';
+      }
+      return '<div class="ct-row">'
+        + '<div class="ct-cell ct-name"><div class="ct-ava" style="background:linear-gradient(135deg,var(--cyan),var(--blue))">'+init+'</div><div><div style="font-weight:600;font-size:12px;">'+c.clientName+'</div>'+resilInfo+'</div></div>'
+        + '<div class="ct-cell">'+c.formule+'</div>'
+        + '<div class="ct-cell" style="font-weight:600;">'+ctFmt(c.montant)+' FCFA</div>'
+        + '<div class="ct-cell mut">'+ctDateFr(c.dateDebut)+' → '+ctDateFr(c.dateFin)+'</div>'
+        + '<div class="ct-cell">'+statutBadge(c)+'</div>'
+        + '<div class="ct-cell ct-actions">'+actions+'</div>'
+        + '</div>';
+    }).join('')
+    + '</div>';
+}
+
+// ── Modal créer/éditer ──
+function ctFillClientSelect(sel, selectedKey){
+  sel.innerHTML = ctClientsList.length
+    ? ctClientsList.map(c=>'<option value="'+c.clientKey+'|'+c.name+'"'+(c.clientKey===selectedKey?' selected':'')+'>'+c.name+'</option>').join('')
+    : '<option value="">Aucun client — crée-en d\'abord</option>';
+}
+
+function ctOpenModal(){
+  if(!ctToken()){ alert('Valide ta clé admin dans Gestion des accès.'); return; }
+  document.getElementById('ct-modal-title').textContent='Nouveau contrat';
+  document.getElementById('ct-id').value='';
+  ctFillClientSelect(document.getElementById('ct-client'),'');
+  document.getElementById('ct-formule').value='Bronze';
+  document.getElementById('ct-montant').value=50000;
+  document.getElementById('ct-debut').value=new Date().toISOString().split('T')[0];
+  document.getElementById('ct-fin').value='';
+  document.getElementById('ct-statut').value='actif';
+  document.getElementById('ct-modal').classList.add('show');
+}
+function ctFormuleAuto(){
+  const f=document.getElementById('ct-formule').value;
+  if(CT_FORMULES[f]) document.getElementById('ct-montant').value=CT_FORMULES[f];
+}
+function ctEdit(id){
+  const c=ctContracts.find(x=>x.id===id); if(!c) return;
+  document.getElementById('ct-modal-title').textContent='Modifier le contrat';
+  document.getElementById('ct-id').value=c.id;
+  ctFillClientSelect(document.getElementById('ct-client'),c.clientKey);
+  document.getElementById('ct-formule').value=CT_FORMULES[c.formule]?c.formule:'Personnalisé';
+  document.getElementById('ct-montant').value=c.montant;
+  document.getElementById('ct-debut').value=c.dateDebut;
+  document.getElementById('ct-fin').value=c.dateFin;
+  document.getElementById('ct-statut').value=c.statut==='resilié'?'actif':c.statut;
+  document.getElementById('ct-modal').classList.add('show');
+}
+function ctCloseModal(){ document.getElementById('ct-modal').classList.remove('show'); }
+function ctModalBg(e){ if(e.target.id==='ct-modal') ctCloseModal(); }
+
+async function ctSave(){
+  const clientVal=document.getElementById('ct-client').value;
+  if(!clientVal){ alert('Choisis un client.'); return; }
+  const [clientKey, clientName] = clientVal.split('|');
+  const contract = {
+    id: document.getElementById('ct-id').value || undefined,
+    clientKey, clientName,
+    formule: document.getElementById('ct-formule').value,
+    montant: document.getElementById('ct-montant').value,
+    dateDebut: document.getElementById('ct-debut').value,
+    dateFin: document.getElementById('ct-fin').value,
+    statut: document.getElementById('ct-statut').value
+  };
+  try {
+    const r=await fetch('/api/admin/contracts/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(),contract})});
+    const d=await r.json();
+    if(d.success){ ctCloseModal(); ctLoad(); }
+    else alert('✗ '+(d.error||'Erreur'));
+  } catch(e){ alert('✗ Erreur de connexion.'); }
+}
+
+// ── Résiliation ──
+function ctTermOpen(id){
+  const c=ctContracts.find(x=>x.id===id); if(!c) return;
+  document.getElementById('ct-term-id').value=id;
+  document.getElementById('ct-term-name').textContent=c.clientName;
+  document.getElementById('ct-term-motif-select').value='Fin de collaboration convenue';
+  document.getElementById('ct-term-autre-field').style.display='none';
+  document.getElementById('ct-term-motif').value='';
+  document.getElementById('ct-term-modal').classList.add('show');
+}
+function ctTermMotifChange(){
+  const v=document.getElementById('ct-term-motif-select').value;
+  document.getElementById('ct-term-autre-field').style.display = v==='autre'?'block':'none';
+}
+function ctTermClose(){ document.getElementById('ct-term-modal').classList.remove('show'); }
+function ctTermBg(e){ if(e.target.id==='ct-term-modal') ctTermClose(); }
+async function ctTerminate(){
+  const id=document.getElementById('ct-term-id').value;
+  const sel=document.getElementById('ct-term-motif-select').value;
+  const motif = sel==='autre' ? document.getElementById('ct-term-motif').value.trim() : sel;
+  if(sel==='autre' && !motif){ alert('Précise le motif.'); return; }
+  try {
+    const r=await fetch('/api/admin/contracts/terminate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(),id,motif})});
+    const d=await r.json();
+    if(d.success){ ctTermClose(); ctLoad(); alert('✓ Contrat résilié.'); }
+    else alert('✗ '+(d.error||'Erreur'));
+  } catch(e){ alert('✗ Erreur de connexion.'); }
+}
+
+// ── Renouvellement ──
+function ctRenewOpen(id){
+  const c=ctContracts.find(x=>x.id===id); if(!c) return;
+  document.getElementById('ct-renew-id').value=id;
+  document.getElementById('ct-renew-name').textContent=c.clientName;
+  document.getElementById('ct-renew-formule').value=CT_FORMULES[c.formule]?c.formule:'Personnalisé';
+  document.getElementById('ct-renew-montant').value=c.montant;
+  document.getElementById('ct-renew-datefin').value='';
+  document.getElementById('ct-renew-message').value='';
+  document.getElementById('ct-renew-modal').classList.add('show');
+}
+function ctRenewAuto(){
+  const f=document.getElementById('ct-renew-formule').value;
+  if(CT_FORMULES[f]) document.getElementById('ct-renew-montant').value=CT_FORMULES[f];
+}
+function ctRenewClose(){ document.getElementById('ct-renew-modal').classList.remove('show'); }
+function ctRenewBg(e){ if(e.target.id==='ct-renew-modal') ctRenewClose(); }
+async function ctRenewSend(){
+  const id=document.getElementById('ct-renew-id').value;
+  const renouvellement={
+    formule:document.getElementById('ct-renew-formule').value,
+    montant:document.getElementById('ct-renew-montant').value,
+    nouvelleDateFin:document.getElementById('ct-renew-datefin').value,
+    message:document.getElementById('ct-renew-message').value.trim()
+  };
+  if(!renouvellement.nouvelleDateFin){ alert('Indique la nouvelle date de fin.'); return; }
+  try {
+    const r=await fetch('/api/admin/contracts/renew',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(),id,renouvellement})});
+    const d=await r.json();
+    if(d.success){ ctRenewClose(); ctLoad(); alert('✓ Proposition de renouvellement envoyée au client !'); }
+    else alert('✗ '+(d.error||'Erreur'));
+  } catch(e){ alert('✗ Erreur de connexion.'); }
+}
+
+async function ctDelete(id){
+  if(!confirm('Supprimer définitivement ce contrat ?')) return;
+  try {
+    const r=await fetch('/api/admin/contracts/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(),id})});
+    const d=await r.json();
+    if(d.success){ ctLoad(); }
+    else alert('✗ '+(d.error||'Erreur'));
+  } catch(e){ alert('✗ Erreur de connexion.'); }
+}
+
+/* ══════════════════════════════════════════
+   GRILLE TARIFAIRE
+   ══════════════════════════════════════════ */
+const TARIF_FORMULES = {
+  'Bronze':   { montant:50000,  color:'#a86428' },
+  'Platinum': { montant:80000,  color:'#5a6b7d' },
+  'Gold':     { montant:150000, color:'#d9970a' }
+};
+
+async function tarifLoad(){
+  const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+  const hint = document.getElementById('tarif-token-hint');
+  if(!token){ if(hint) hint.style.display='flex'; document.getElementById('tarif-list').innerHTML=''; document.getElementById('tarif-kpis').innerHTML=''; return; }
+  if(hint) hint.style.display='none';
+  try {
+    const r = await fetch('/api/admin/contracts', { headers:{ 'x-admin-token': token } });
+    const data = await r.json();
+    if(data.success) tarifRender(data.contracts||[]);
+  } catch(e){
+    document.getElementById('tarif-list').innerHTML='<div class="perf-empty"><i class="ti ti-wifi-off"></i><div class="perf-empty-title">Erreur de connexion</div></div>';
+  }
+}
+
+function tarifFmtMontant(n){ return (Number(n)||0).toLocaleString('fr-FR'); }
+
+function tarifRender(contracts){
+  const actifs = contracts.filter(c=>c.statut==='actif' || c.statut==='renouvellement');
+  const mrr = actifs.reduce((s,c)=>s+(Number(c.montant)||0),0);
+  const panier = actifs.length ? Math.round(mrr/actifs.length) : 0;
+  const annuel = mrr*12;
+
+  document.getElementById('tarif-kpis').innerHTML =
+    '<div class="kpi"><div class="kpi-ico" style="background:#e1f5ee">💰</div><div class="kpi-val">'+tarifFmtMontant(mrr)+'</div><div class="kpi-lbl">Revenu mensuel (FCFA)</div></div>'
+    + '<div class="kpi"><div class="kpi-ico" style="background:#e6f1fb">📅</div><div class="kpi-val">'+tarifFmtMontant(annuel)+'</div><div class="kpi-lbl">Projection annuelle (FCFA)</div></div>'
+    + '<div class="kpi"><div class="kpi-ico" style="background:#faeeda">🤝</div><div class="kpi-val">'+actifs.length+'</div><div class="kpi-lbl">Contrats actifs</div></div>'
+    + '<div class="kpi"><div class="kpi-ico" style="background:#f3e8ff">📊</div><div class="kpi-val">'+tarifFmtMontant(panier)+'</div><div class="kpi-lbl">Panier moyen (FCFA)</div></div>';
+
+  document.getElementById('tarif-count').textContent = contracts.length+' contrat'+(contracts.length>1?'s':'');
+
+  const box = document.getElementById('tarif-list');
+  if(contracts.length===0){
+    box.innerHTML='<div class="perf-empty"><i class="ti ti-coin"></i><div class="perf-empty-title">Aucun contrat signé</div><div>Crée des contrats dans le module Contrats pour les voir apparaître ici.</div></div>';
+    return;
+  }
+
+  const sorted = contracts.slice().sort((a,b)=>{
+    const order={actif:0,renouvellement:1,resilié:2};
+    const d=(order[a.statut]??3)-(order[b.statut]??3);
+    return d!==0?d:(Number(b.montant)||0)-(Number(a.montant)||0);
+  });
+
+  let rows = sorted.map(c=>{
+    const f = TARIF_FORMULES[c.formule] || { color:'#888' };
+    const statutLabel = c.statut==='actif'?'Actif':(c.statut==='resilié'?'Résilié':(c.statut==='renouvellement'?'Renouvellement':c.statut));
+    const periode = (c.dateDebut||'?')+' → '+(c.dateFin||'?');
+    return '<tr>'
+      + '<td class="tarif-client">'+c.clientName+'</td>'
+      + '<td><span class="tarif-formule-tag" style="background:'+f.color+'">'+(c.formule||'—')+'</span></td>'
+      + '<td class="tarif-montant">'+tarifFmtMontant(c.montant)+' FCFA</td>'
+      + '<td style="font-size:11px;color:var(--mut)">'+periode+'</td>'
+      + '<td><span class="tarif-statut '+c.statut+'">'+statutLabel+'</span></td>'
+      + '</tr>';
+  }).join('');
+
+  box.innerHTML = '<table class="tarif-table"><thead><tr><th>Client</th><th>Formule</th><th>Tarif signé</th><th>Période</th><th>Statut</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+/* ══════════════════════════════════════════
+   PROPOSITIONS IA
+   ══════════════════════════════════════════ */
+const AI_NET_COLORS = { 'TikTok':'#000','Instagram':'#E1306C','Facebook':'#1877F2','YouTube':'#FF0000' };
+
+async function aiGenerate(){
+  const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+  if(!token){ document.getElementById('ai-token-hint').style.display='flex'; return; }
+  document.getElementById('ai-token-hint').style.display='none';
+
+  const clientName = document.getElementById('ai-client').value.trim();
+  const secteur = document.getElementById('ai-secteur').value.trim();
+  if(!clientName || !secteur){ alert('Renseigne au moins le nom du client et son secteur.'); return; }
+
+  const reseaux = Array.from(document.querySelectorAll('.ai-net-chk input:checked')).map(c=>c.value);
+  const objectif = document.getElementById('ai-objectif').value;
+  const contexte = document.getElementById('ai-contexte').value.trim();
+
+  const btn = document.getElementById('ai-generate-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin" style="width:15px;height:15px;border-width:2px;"></div> Génération en cours...';
+  document.getElementById('ai-result').innerHTML = '<div class="ai-loading"><div class="spin-big"></div><div style="font-weight:600;">L\'IA analyse et prépare ta proposition...</div><div style="font-size:12px;margin-top:5px;">Quelques secondes</div></div>';
+
+  try {
+    const r = await fetch('/api/admin/ai/proposal', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, clientName, secteur, reseaux, objectif, contexte })
+    });
+    const data = await r.json();
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-sparkles" style="font-size:15px"></i> Générer une proposition IA';
+
+    if(!data.success){
+      document.getElementById('ai-result').innerHTML = '<div class="ai-result-card" style="border-color:rgba(162,45,45,.3);"><div style="color:var(--dn);font-size:13px;"><i class="ti ti-alert-circle"></i> '+(data.error||'Erreur')+'</div></div>';
+      return;
+    }
+    aiRenderProposal(clientName, secteur, data.proposal);
+  } catch(e){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-sparkles" style="font-size:15px"></i> Générer une proposition IA';
+    document.getElementById('ai-result').innerHTML = '<div class="ai-result-card" style="border-color:rgba(162,45,45,.3);"><div style="color:var(--dn);font-size:13px;"><i class="ti ti-wifi-off"></i> Erreur de connexion au serveur.</div></div>';
+  }
+}
+
+function aiRenderProposal(clientName, secteur, p){
+  const safe = (arr)=>Array.isArray(arr)?arr:[];
+  let html = '<div class="ai-result-card">';
+  html += '<div class="ai-result-head"><div class="ai-result-head-ico">✨</div><div><div class="ai-result-title">Proposition pour '+clientName+'</div><div class="ai-result-sub">Secteur : '+secteur+' · Générée par IA</div></div></div>';
+
+  // Styles de contenu
+  if(safe(p.styles_contenu).length){
+    html += '<div class="ai-section"><div class="ai-section-title"><i class="ti ti-palette" style="color:#7B61FF"></i> Styles de contenu à mettre à la une</div>';
+    p.styles_contenu.forEach(s=>{
+      html += '<div class="ai-item"><div class="ai-item-title">'+(s.titre||'')+'</div><div class="ai-item-desc">'+(s.description||'')+'</div>'+(s.frequence?'<div class="ai-item-meta">📅 '+s.frequence+'</div>':'')+'</div>';
+    });
+    html += '</div>';
+  }
+
+  // Formats tendance
+  if(safe(p.formats_tendance).length){
+    html += '<div class="ai-section"><div class="ai-section-title"><i class="ti ti-trending-up" style="color:var(--up)"></i> Formats tendance qui marchent</div>';
+    p.formats_tendance.forEach(f=>{
+      html += '<div class="ai-item"><div class="ai-item-title">'+(f.format||'')+'</div><div class="ai-item-desc">'+(f.pourquoi||'')+'</div>'+(f.exemple?'<div class="ai-item-meta">💡 Exemple : '+f.exemple+'</div>':'')+'</div>';
+    });
+    html += '</div>';
+  }
+
+  // Idées de hooks
+  if(safe(p.idees_hooks).length){
+    html += '<div class="ai-section"><div class="ai-section-title"><i class="ti ti-bulb" style="color:var(--gold)"></i> Idées d\'accroches (hooks)</div>';
+    p.idees_hooks.forEach(h=>{ html += '<div class="ai-hook">« '+h+' »</div>'; });
+    html += '</div>';
+  }
+
+  // Calendrier type
+  if(safe(p.calendrier_type).length){
+    html += '<div class="ai-section"><div class="ai-section-title"><i class="ti ti-calendar" style="color:var(--cyan)"></i> Calendrier type suggéré</div>';
+    p.calendrier_type.forEach(c=>{
+      const color = AI_NET_COLORS[c.reseau]||'#888';
+      html += '<div class="ai-cal-row"><div class="ai-cal-day">'+(c.jour||'')+'</div><div class="ai-cal-type">'+(c.type||'')+'</div><div class="ai-cal-net" style="background:'+color+'">'+(c.reseau||'')+'</div></div>';
+    });
+    html += '</div>';
+  }
+
+  // Conseils viraux
+  if(safe(p.conseils_viraux).length){
+    html += '<div class="ai-section"><div class="ai-section-title"><i class="ti ti-rocket" style="color:#E1306C"></i> Conseils pour devenir viral</div>';
+    p.conseils_viraux.forEach(c=>{ html += '<div class="ai-item"><div class="ai-item-desc">✅ '+c+'</div></div>'; });
+    html += '</div>';
+  }
+
+  // Recherche d'inspiration
+  if(safe(p.recherche_inspiration).length){
+    html += '<div class="ai-section"><div class="ai-section-title"><i class="ti ti-search" style="color:#185fa5"></i> Où chercher l\'inspiration virale</div>';
+    p.recherche_inspiration.forEach(r=>{
+      html += '<div class="ai-search-item"><div class="ai-search-plat">'+(r.plateforme||'')+'</div><div class="ai-search-txt">🔍 '+(r.a_chercher||'')+'</div></div>';
+    });
+    html += '</div>';
+  }
+
+  html += '<div style="display:flex;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--bord);"><button class="btn btn-sm" onclick="aiGenerate()"><i class="ti ti-refresh" style="font-size:13px"></i> Régénérer</button><button class="btn btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px"></i> Imprimer / PDF</button></div>';
+  html += '</div>';
+
+  document.getElementById('ai-result').innerHTML = html;
+}
 
 /* ── INIT ── */
 document.querySelectorAll('.ni').forEach(n => n.addEventListener('click', function(){
@@ -2686,6 +3214,129 @@ showMain('dashboard', document.querySelector('.ni'));
   </div>
 </div>
 
+<!-- ══ MODAL CONTRAT (créer/éditer) ══ -->
+<div class="cal-modal-overlay" id="ct-modal" onclick="ctModalBg(event)">
+  <div class="cal-modal">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title" id="ct-modal-title">Nouveau contrat</div>
+      <button class="cal-modal-close" onclick="ctCloseModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body">
+      <input type="hidden" id="ct-id"/>
+      <div class="cal-field">
+        <label>Client</label>
+        <select id="ct-client"><option value="">— Chargement... —</option></select>
+      </div>
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Formule</label>
+          <select id="ct-formule" onchange="ctFormuleAuto()">
+            <option value="Bronze">Bronze — 50 000 FCFA</option>
+            <option value="Platinum">Platinum — 80 000 FCFA</option>
+            <option value="Gold">Gold — 150 000 FCFA</option>
+            <option value="Personnalisé">Personnalisé</option>
+          </select>
+        </div>
+        <div class="cal-field">
+          <label>Montant (FCFA/mois)</label>
+          <input type="number" id="ct-montant" placeholder="50000"/>
+        </div>
+      </div>
+      <div class="cal-frow c2">
+        <div class="cal-field"><label>Date de début</label><input type="date" id="ct-debut"/></div>
+        <div class="cal-field"><label>Date de fin</label><input type="date" id="ct-fin"/></div>
+      </div>
+      <div class="cal-field">
+        <label>Statut</label>
+        <select id="ct-statut">
+          <option value="actif">✓ Actif / Signé</option>
+          <option value="envoye">📤 Envoyé (pas signé)</option>
+          <option value="brouillon">📝 Brouillon</option>
+        </select>
+      </div>
+    </div>
+    <div class="cal-modal-foot">
+      <div style="flex:1"></div>
+      <button class="btn" onclick="ctCloseModal()">Annuler</button>
+      <button class="btn btn-navy" onclick="ctSave()"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL RÉSILIATION ══ -->
+<div class="cal-modal-overlay" id="ct-term-modal" onclick="ctTermBg(event)">
+  <div class="cal-modal" style="max-width:440px;">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title" style="color:var(--dn)"><i class="ti ti-file-x"></i> Résilier le contrat</div>
+      <button class="cal-modal-close" onclick="ctTermClose()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body">
+      <input type="hidden" id="ct-term-id"/>
+      <div class="perf-hint-box" style="background:#fcebeb;border-color:rgba(162,45,45,.2);color:var(--dn);"><i class="ti ti-alert-triangle"></i> La résiliation met fin au contrat de <strong id="ct-term-name"></strong>. Le contrat sera marqué comme résilié avec le motif indiqué.</div>
+      <div class="cal-field">
+        <label>Motif de résiliation</label>
+        <select id="ct-term-motif-select" onchange="ctTermMotifChange()">
+          <option value="Fin de collaboration convenue">Fin de collaboration convenue</option>
+          <option value="Non-paiement">Non-paiement</option>
+          <option value="Demande du client">Demande du client</option>
+          <option value="Réorientation stratégique">Réorientation stratégique</option>
+          <option value="autre">Autre (préciser)</option>
+        </select>
+      </div>
+      <div class="cal-field" id="ct-term-autre-field" style="display:none;">
+        <label>Précisez le motif</label>
+        <textarea id="ct-term-motif" rows="2" placeholder="Détaille le motif de résiliation..."></textarea>
+      </div>
+    </div>
+    <div class="cal-modal-foot">
+      <div style="flex:1"></div>
+      <button class="btn" onclick="ctTermClose()">Annuler</button>
+      <button class="btn" style="background:var(--dn);color:#fff;" onclick="ctTerminate()"><i class="ti ti-file-x" style="font-size:13px"></i> Confirmer la résiliation</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL RENOUVELLEMENT ══ -->
+<div class="cal-modal-overlay" id="ct-renew-modal" onclick="ctRenewBg(event)">
+  <div class="cal-modal">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title" style="color:var(--up)"><i class="ti ti-refresh"></i> Proposer un renouvellement</div>
+      <button class="cal-modal-close" onclick="ctRenewClose()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body">
+      <input type="hidden" id="ct-renew-id"/>
+      <div class="perf-hint-box" style="background:#e1f5ee;border-color:rgba(29,158,117,.25);color:#085041;"><i class="ti ti-send"></i> Cette proposition sera <strong>envoyée sur le tableau de bord de <span id="ct-renew-name"></span></strong>, qui pourra l'accepter ou la refuser.</div>
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Nouvelle formule</label>
+          <select id="ct-renew-formule" onchange="ctRenewAuto()">
+            <option value="Bronze">Bronze — 50 000 FCFA</option>
+            <option value="Platinum">Platinum — 80 000 FCFA</option>
+            <option value="Gold">Gold — 150 000 FCFA</option>
+            <option value="Personnalisé">Personnalisé</option>
+          </select>
+        </div>
+        <div class="cal-field">
+          <label>Montant (FCFA/mois)</label>
+          <input type="number" id="ct-renew-montant" placeholder="50000"/>
+        </div>
+      </div>
+      <div class="cal-field">
+        <label>Nouvelle date de fin</label>
+        <input type="date" id="ct-renew-datefin"/>
+      </div>
+      <div class="cal-field">
+        <label>Message au client <span style="font-weight:400;color:var(--hint)">(optionnel)</span></label>
+        <textarea id="ct-renew-message" rows="3" placeholder="Ex: Merci pour cette belle collaboration ! Je te propose de renouveler pour 3 mois avec..."></textarea>
+      </div>
+    </div>
+    <div class="cal-modal-foot">
+      <div style="flex:1"></div>
+      <button class="btn" onclick="ctRenewClose()">Annuler</button>
+      <button class="btn btn-navy" style="background:var(--up);" onclick="ctRenewSend()"><i class="ti ti-send" style="font-size:13px"></i> Envoyer au client</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
-
