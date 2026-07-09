@@ -131,13 +131,10 @@ function makeClient({ name, clientKey, email, phone, password }) {
   };
 }
 
-// Les 3 clients de démarrage — MODIFIE ces infos avec les vraies coordonnées
-makeClient({ name:'Soleil Communication', clientKey:'soleil', phone:'+22507000001', email:'soleil@client.ci' });
-makeClient({ name:'Maquis Chez Fanta', clientKey:'fanta', phone:'+22507000002', email:'fanta@client.ci' });
-makeClient({ name:'Boutique Élégance CI', clientKey:'elegance', phone:'+22507000003', email:'elegance@client.ci' });
+// Aucun client par défaut — tu les crées depuis "Gestion des accès".
+// (makeClient reste disponible si tu veux en pré-remplir un jour.)
 
 // Restaure les clients créés précédemment (persistés dans le fichier)
-// Ils écrasent les clients de démo s'ils ont le même identifiant (données à jour)
 if (STORE.clients && typeof STORE.clients === 'object') {
   Object.entries(STORE.clients).forEach(([id, u]) => {
     USERS[id] = u;
