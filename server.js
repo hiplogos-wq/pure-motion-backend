@@ -48,6 +48,7 @@ function loadStore() {
       if (!STORE.stats) STORE.stats = {};
       if (!STORE.calendar) STORE.calendar = {};
       if (!STORE.posts) STORE.posts = {};
+      if (!STORE.tasks) STORE.tasks = { items: [] };
       if (!STORE.publications) STORE.publications = {};
       console.log('✅ Données chargées depuis le fichier');
     }
@@ -429,6 +430,9 @@ app.post('/api/admin/clients/delete', (req, res) => {
   // 2. Efface ses stats
   if (clientKey && STORE.stats[clientKey]) delete STORE.stats[clientKey];
   if (clientKey && STORE.posts && STORE.posts[clientKey]) delete STORE.posts[clientKey];
+  if (clientKey && STORE.tasks && Array.isArray(STORE.tasks.items)) {
+    STORE.tasks.items = STORE.tasks.items.filter(t => t.clientKey !== clientKey);
+  }
   // 3. Efface son calendrier
   if (clientKey && STORE.calendar[clientKey]) delete STORE.calendar[clientKey];
   // 4. Efface ses contrats
@@ -932,6 +936,78 @@ Mets null (pas 0) pour toute métrique absente ou illisible. Ne devine jamais un
     log('ERROR', 'Exception lecture capture', { message: e.message });
     return res.status(500).json({ success:false, error:'Erreur technique lors de l\'analyse de l\'image.' });
   }
+});
+
+// ══════════════════════════════════════════
+// CALENDRIER ÉDITORIAL (publications planifiées)
+// ══════════════════════════════════════════
+
+// Admin enregistre le calendrier d'un client
+// POST /api/admin/calendar/save
+app.post('/api/admin/calendar/save', (req, res) => {
+  const { adminToken, clientKey, events } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!clientKey) return res.status(400).json({ success:false, error:'clientKey requis.' });
+  if (!Array.isArray(events)) return res.status(400).json({ success:false, error:'events doit être une liste.' });
+
+  STORE.calendar[clientKey] = { events, updatedAt: Date.now() };
+  saveStore();
+  return res.json({ success:true, count: events.length });
+});
+
+// Admin récupère le calendrier d'un client
+// GET /api/admin/calendar/:clientKey  (header x-admin-token)
+app.get('/api/admin/calendar/:clientKey', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+  const c = STORE.calendar[req.params.clientKey] || { events: [] };
+  return res.json({ success:true, events: c.events || [] });
+});
+
+// Admin récupère TOUTES les publications d'une date (tous clients)
+// GET /api/admin/calendar-day/:date   ex: 2026-07-09
+app.get('/api/admin/calendar-day/:date', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+  const date = req.params.date;
+  const nameByKey = {};
+  Object.values(USERS).forEach(u => { if (u.clientKey) nameByKey[u.clientKey] = u.name; });
+
+  const items = [];
+  Object.entries(STORE.calendar || {}).forEach(([key, c]) => {
+    // Ignore les clients qui n'existent plus
+    if (!nameByKey[key]) return;
+    (c.events || []).forEach(e => {
+      if (e.date === date) items.push({ ...e, clientKey: key, clientName: nameByKey[key] });
+    });
+  });
+  items.sort((a,b) => String(a.hour||'').localeCompare(String(b.hour||'')));
+  return res.json({ success:true, date, items });
+});
+
+// ══════════════════════════════════════════
+// TÂCHES (à faire, avec dates)
+// ══════════════════════════════════════════
+app.post('/api/admin/tasks/save', (req, res) => {
+  const { adminToken, tasks } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!Array.isArray(tasks)) return res.status(400).json({ success:false, error:'tasks doit être une liste.' });
+
+  if (!STORE.tasks) STORE.tasks = {};
+  STORE.tasks.items = tasks;
+  STORE.tasks.updatedAt = Date.now();
+  saveStore();
+  return res.json({ success:true, count: tasks.length });
+});
+
+app.get('/api/admin/tasks', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+  const t = (STORE.tasks && STORE.tasks.items) ? STORE.tasks.items : [];
+  return res.json({ success:true, tasks: t });
 });
 
 // ══════════════════════════════════════════
