@@ -80,6 +80,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .no-print{display:none!important;}
 }
 #print-sheet{display:none;}
+/* Publications client */
+.cpub-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:13px;text-decoration:none;color:inherit;transition:all .15s;}
+.cpub-card:hover{box-shadow:0 6px 20px rgba(18,32,90,.09);transform:translateY(-1px);}
+.cpub-net{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;flex-shrink:0;padding:3px;text-align:center;line-height:1.1;}
+.cpub-body{flex:1;min-width:0;}
+.cpub-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:3px;}
+.cpub-date{font-size:11px;color:var(--hint);}
+.cpub-open{color:var(--cyan);font-size:18px;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -152,6 +160,12 @@ function pmLogout(){ try{ sessionStorage.removeItem('pm_session'); }catch(e){} w
   </div>
 
   <div id="cli-content"></div>
+
+  <div class="section-label">
+    <span>🔗 Vos publications</span>
+    <div class="filt" id="cli-pub-filters"></div>
+  </div>
+  <div id="cli-pub-list"></div>
 
   <div class="section-label">📄 Vos fiches de statistiques</div>
   <div class="report-card">
@@ -353,7 +367,63 @@ function cliSheet(period){
   window.print();
 }
 
+/* ── PUBLICATIONS DU CLIENT ── */
+let cliPubs = { items:[], filter:'all' };
+
+async function cliFetchPubs(){
+  try{
+    const r = await fetch('/api/client/posts/'+encodeURIComponent(cliState.clientKey));
+    const data = await r.json();
+    cliPubs.items = (data.success && data.posts) ? data.posts : [];
+  }catch(e){ cliPubs.items=[]; }
+  cliRenderPubs();
+}
+
+function cliPubFilter(net){
+  cliPubs.filter = net;
+  cliRenderPubs();
+}
+
+function cliRenderPubs(){
+  const box = document.getElementById('cli-pub-list');
+  const filterBox = document.getElementById('cli-pub-filters');
+  if(!box) return;
+
+  if(cliPubs.items.length===0){
+    filterBox.innerHTML='';
+    box.innerHTML='<div class="empty"><i class="ti ti-link"></i><div class="empty-t">Aucune publication pour le moment</div><div>Votre Community Manager partagera bientôt vos contenus ici.</div></div>';
+    return;
+  }
+
+  // Boutons de filtre : seulement les réseaux présents
+  const nets = Array.from(new Set(cliPubs.items.map(p=>p.net)));
+  filterBox.innerHTML = '<button class="filt-btn'+(cliPubs.filter==='all'?' act':'')+'" onclick="cliPubFilter(\'all\')">Tous</button>'
+    + nets.map(n=>'<button class="filt-btn'+(cliPubs.filter===n?' act':'')+'" onclick="cliPubFilter(\''+n+'\')">'+n+'</button>').join('');
+
+  let items = cliPubs.items.slice();
+  if(cliPubs.filter!=='all') items = items.filter(p=>p.net===cliPubs.filter);
+  items.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  if(items.length===0){
+    box.innerHTML='<div class="empty"><i class="ti ti-filter-off"></i><div class="empty-t">Aucune publication sur ce réseau</div></div>';
+    return;
+  }
+
+  box.innerHTML = items.map(p=>{
+    const color = CLI_NETS[p.net]||'#888';
+    const dateFr = p.date ? p.date.split('-').reverse().join('/') : '';
+    const safeTitle = (p.title||'Publication').replace(/</g,'&lt;');
+    return '<a href="'+p.url+'" target="_blank" rel="noopener" class="cpub-card">'
+      + '<div class="cpub-net" style="background:'+color+'">'+p.net+'</div>'
+      + '<div class="cpub-body"><div class="cpub-title">'+safeTitle+'</div><div class="cpub-date">📅 '+dateFr+'</div></div>'
+      + '<i class="ti ti-external-link cpub-open"></i>'
+      + '</a>';
+  }).join('');
+}
+
 cliFetchData();
+cliFetchPubs();
 </script>
 </body>
 </html>
+
