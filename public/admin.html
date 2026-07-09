@@ -575,6 +575,29 @@ textarea{resize:none;line-height:1.5;}
 .ai-loading .spin-big{width:40px;height:40px;border:3px solid var(--surf);border-top-color:var(--cyan);border-radius:50%;animation:aispin 1s linear infinite;margin:0 auto 16px;}
 @keyframes aispin{to{transform:rotate(360deg);}}
 
+/* ══ PUBLICATIONS (liens) ══ */
+.pub-intro{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.pub-intro-ico{font-size:28px;flex-shrink:0;}
+.pub-intro-title{font-size:15px;font-weight:800;color:var(--txt);}
+.pub-intro-sub{font-size:12px;color:var(--mut);line-height:1.5;margin-top:2px;}
+.pub-count-line{font-size:11px;color:var(--hint);margin:14px 0 10px;}
+.publink-card{background:var(--white);border:1px solid var(--bord);border-radius:11px;padding:13px 15px;margin-bottom:9px;display:flex;align-items:center;gap:13px;transition:box-shadow .15s;}
+.publink-card:hover{box-shadow:0 4px 14px rgba(18,32,90,.07);}
+.publink-net{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;flex-shrink:0;text-align:center;line-height:1.1;padding:3px;}
+.publink-body{flex:1;min-width:0;}
+.publink-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:3px;}
+.publink-url{font-size:11px;color:var(--cyan);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;display:block;}
+.publink-url:hover{text-decoration:underline;}
+.publink-meta{font-size:10px;color:var(--hint);margin-top:3px;}
+.publink-status{font-size:10px;font-weight:600;padding:3px 10px;border-radius:12px;flex-shrink:0;}
+.publink-status.vis{background:#e1f5ee;color:var(--up);}
+.publink-status.hid{background:var(--surf);color:var(--hint);}
+.publink-actions{display:flex;gap:6px;flex-shrink:0;}
+.pub-visible-toggle{display:flex;align-items:flex-start;gap:9px;cursor:pointer;padding:11px 13px;border:1px solid var(--bord);border-radius:9px;font-size:12px;color:var(--mut);line-height:1.5;text-transform:none;letter-spacing:0;font-weight:400;}
+.pub-visible-toggle input{width:auto;margin:2px 0 0;}
+.pub-visible-toggle strong{color:var(--txt);}
+.pub-visible-toggle:has(input:checked){border-color:var(--up);background:rgba(10,107,79,.03);}
+
 </style>
 </head>
 <body>
@@ -609,6 +632,7 @@ function pmLogout(){
     <div class="ni act" onclick="showMain('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
     <div class="ni" onclick="showMain('calendrier',this)"><i class="ti ti-calendar-event"></i> Calendrier éditorial</div>
     <div class="ni" onclick="showMain('performance',this)"><i class="ti ti-chart-line"></i> Performance réseaux</div>
+    <div class="ni" onclick="showMain('publications',this)"><i class="ti ti-link"></i> Publications</div>
     <div class="ns">Commercial — Admin uniquement</div>
     <div class="ni" onclick="showMain('contrats',this)"><i class="ti ti-file-text"></i> Contrats <span class="ni-badge">3</span></div>
     <div class="ni" onclick="showMain('propositions',this)"><i class="ti ti-file-plus"></i> Propositions <span class="ni-badge gold">2</span></div>
@@ -1368,6 +1392,46 @@ function pmLogout(){
 
     </div>
 
+    <!-- ══ MODULE PUBLICATIONS ══ -->
+    <div class="panel" id="panel-publications">
+
+      <div class="pub-intro">
+        <div class="pub-intro-ico">🔗</div>
+        <div>
+          <div class="pub-intro-title">Publications partagées</div>
+          <div class="pub-intro-sub">Ajoute les liens des posts que tu publies pour chaque client. Coche « Visible » pour qu'il puisse les consulter dans son espace, filtrés par réseau.</div>
+        </div>
+      </div>
+
+      <div class="perf-hint-box" id="pub-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour gérer les publications.</div>
+
+      <div class="perf-toolbar">
+        <div class="perf-client-select">
+          <label>Client</label>
+          <select id="pub-client" onchange="pubChangeClient()">
+            <option value="">— Chargement... —</option>
+          </select>
+        </div>
+        <div class="perf-period-select">
+          <label>Réseau</label>
+          <select id="pub-filter-net" onchange="pubRender()">
+            <option value="all">Tous réseaux</option>
+            <option value="TikTok">TikTok</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Facebook">Facebook</option>
+            <option value="YouTube">YouTube</option>
+          </select>
+        </div>
+        <div style="flex:1"></div>
+        <div class="perf-sync-status" id="pub-sync-status"></div>
+        <button class="btn btn-gold" onclick="pubOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Ajouter un lien</button>
+      </div>
+
+      <div class="pub-count-line" id="pub-count"></div>
+      <div id="pub-list"></div>
+
+    </div>
+
 
   </div><!-- /body -->
 
@@ -1405,7 +1469,7 @@ function showMain(section, el) {
     preuves:'panel-preuves', marche:'panel-marche',
     objectifs:'panel-objectifs', acces:'panel-acces',
     settings:'panel-settings', calendrier:'panel-calendrier',
-    performance:'panel-performance'
+    performance:'panel-performance', publications:'panel-publications'
   };
 
   const titleMap = {
@@ -1414,7 +1478,7 @@ function showMain(section, el) {
     preuves:'Preuves sociales', marche:'Étude de marché',
     objectifs:'Objectifs stratégiques', acces:'Gestion des accès',
     settings:'Paramètres', calendrier:'Calendrier éditorial',
-    performance:'Performance réseaux'
+    performance:'Performance réseaux', publications:'Publications partagées'
   };
 
   const subMap = {
@@ -1427,7 +1491,8 @@ function showMain(section, el) {
     objectifs:'Définition des KPIs et objectifs par client',
     acces:'Création et révocation des accès clients et collaborateurs',
     calendrier:'Planification éditoriale par client',
-    performance:'Suivi des statistiques réseaux sociaux'
+    performance:'Suivi des statistiques réseaux sociaux',
+    publications:'Liens des posts partagés avec les clients'
   };
 
   const panel = panelMap[section] || 'panel-dashboard';
@@ -1458,6 +1523,10 @@ function showMain(section, el) {
   // Rendu spécial de la performance
   if(section === 'performance'){
     perfLoadClients();
+  }
+  // Rendu spécial des publications
+  if(section === 'publications'){
+    pubLoadClients();
   }
   // Rendu spécial de la gestion des accès
   if(section === 'acces'){
@@ -2954,6 +3023,176 @@ function aiRenderProposal(clientName, secteur, p){
   document.getElementById('ai-result').innerHTML = html;
 }
 
+/* ══════════════════════════════════════════
+   PUBLICATIONS (liens partagés au client)
+   ══════════════════════════════════════════ */
+const PUB_NETS = { 'TikTok':'#000000','Instagram':'#E1306C','Facebook':'#1877F2','YouTube':'#FF0000' };
+let pubState = { client:'', items:[] };
+
+function pubToken(){
+  return accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+}
+
+async function pubLoadClients(){
+  const token = pubToken();
+  const sel = document.getElementById('pub-client');
+  const hint = document.getElementById('pub-token-hint');
+  if(!token){ if(hint) hint.style.display='flex'; sel.innerHTML='<option value="">⚠️ Valide ta clé admin</option>'; return; }
+  if(hint) hint.style.display='none';
+  try {
+    const r = await fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } });
+    const data = await r.json();
+    if(!data.success || !data.clients.length){ sel.innerHTML='<option value="">Aucun client</option>'; return; }
+    const withKey = data.clients.filter(c=>c.clientKey);
+    const current = pubState.client;
+    sel.innerHTML = withKey.map(c=>'<option value="'+c.clientKey+'">'+c.name+'</option>').join('');
+    if(current && withKey.some(c=>c.clientKey===current)) sel.value = current;
+    else pubState.client = withKey.length ? withKey[0].clientKey : '';
+    pubLoadPosts();
+  } catch(e){ sel.innerHTML='<option value="">Erreur de chargement</option>'; }
+}
+
+function pubChangeClient(){
+  pubState.client = document.getElementById('pub-client').value;
+  pubLoadPosts();
+}
+
+async function pubLoadPosts(){
+  const token = pubToken();
+  if(!token || !pubState.client){ pubState.items=[]; pubRender(); return; }
+  try {
+    const r = await fetch('/api/admin/posts/'+encodeURIComponent(pubState.client), { headers:{ 'x-admin-token': token } });
+    const data = await r.json();
+    pubState.items = (data.success && data.posts) ? data.posts : [];
+  } catch(e){ pubState.items=[]; }
+  pubRender();
+}
+
+async function pubSyncToServer(){
+  const token = pubToken();
+  if(!token || !pubState.client) return false;
+  try {
+    const r = await fetch('/api/admin/posts/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, clientKey: pubState.client, posts: pubState.items })
+    });
+    const data = await r.json();
+    if(data.success){ pubShowSync('✓ Enregistré','ok'); return true; }
+    pubShowSync('✗ '+(data.error||'Erreur'),'err'); return false;
+  } catch(e){ pubShowSync('✗ Erreur de connexion','err'); return false; }
+}
+
+function pubShowSync(msg,type){
+  const el=document.getElementById('pub-sync-status');
+  if(!el)return;
+  el.textContent=msg;
+  el.style.color = type==='ok'?'var(--up)':(type==='err'?'var(--dn)':'var(--mut)');
+  if(type==='ok') setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; },3000);
+}
+
+function pubRender(){
+  const box = document.getElementById('pub-list');
+  const netFilter = document.getElementById('pub-filter-net').value;
+  let items = pubState.items.slice();
+  if(netFilter!=='all') items = items.filter(p=>p.net===netFilter);
+  items.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  const visibles = pubState.items.filter(p=>p.published).length;
+  document.getElementById('pub-count').textContent = pubState.items.length
+    ? pubState.items.length+' publication'+(pubState.items.length>1?'s':'')+' · '+visibles+' visible'+(visibles>1?'s':'')+' par le client'
+    : '';
+
+  if(items.length===0){
+    box.innerHTML='<div class="perf-empty"><i class="ti ti-link"></i><div class="perf-empty-title">Aucune publication</div><div>Clique sur « Ajouter un lien » pour partager tes posts avec ce client.</div></div>';
+    return;
+  }
+
+  box.innerHTML = items.map(p=>{
+    const color = PUB_NETS[p.net]||'#888';
+    const dateFr = p.date ? p.date.split('-').reverse().join('/') : '—';
+    const status = p.published
+      ? '<span class="publink-status vis">👁️ Visible</span>'
+      : '<span class="publink-status hid">🔒 Masqué</span>';
+    const safeTitle = (p.title||'Sans titre').replace(/</g,'&lt;');
+    return '<div class="publink-card">'
+      + '<div class="publink-net" style="background:'+color+'">'+p.net+'</div>'
+      + '<div class="publink-body">'
+      + '<div class="publink-title">'+safeTitle+'</div>'
+      + '<a href="'+p.url+'" target="_blank" rel="noopener" class="publink-url">'+p.url+'</a>'
+      + '<div class="publink-meta">📅 '+dateFr+'</div>'
+      + '</div>'
+      + status
+      + '<div class="publink-actions"><button class="acc-btn" title="Modifier" onclick="pubEdit(\''+p.id+'\')"><i class="ti ti-edit"></i></button></div>'
+      + '</div>';
+  }).join('');
+}
+
+function pubOpenModal(){
+  if(!pubToken()){ alert('Valide d\'abord ta clé administrateur dans Gestion des accès.'); return; }
+  if(!pubState.client){ alert('Sélectionne un client.'); return; }
+  document.getElementById('publink-modal-title').textContent='Ajouter une publication';
+  document.getElementById('publink-id').value='';
+  document.getElementById('publink-url').value='';
+  document.getElementById('publink-title').value='';
+  document.getElementById('publink-net').selectedIndex=0;
+  document.getElementById('publink-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('publink-visible').checked=true;
+  document.getElementById('publink-delete-btn').style.display='none';
+  document.getElementById('publink-modal').classList.add('show');
+}
+
+function pubEdit(id){
+  const p = pubState.items.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('publink-modal-title').textContent='Modifier la publication';
+  document.getElementById('publink-id').value=p.id;
+  document.getElementById('publink-url').value=p.url||'';
+  document.getElementById('publink-title').value=p.title||'';
+  document.getElementById('publink-net').value=p.net||'TikTok';
+  document.getElementById('publink-date').value=p.date||'';
+  document.getElementById('publink-visible').checked=!!p.published;
+  document.getElementById('publink-delete-btn').style.display='inline-flex';
+  document.getElementById('publink-modal').classList.add('show');
+}
+
+function pubCloseModal(){ document.getElementById('publink-modal').classList.remove('show'); }
+function pubModalBg(e){ if(e.target.id==='publink-modal') pubCloseModal(); }
+
+async function pubSave(){
+  const url = document.getElementById('publink-url').value.trim();
+  const title = document.getElementById('publink-title').value.trim();
+  if(!url){ alert('Colle le lien de la publication.'); return; }
+  if(!/^https?:\/\//i.test(url)){ alert('Le lien doit commencer par http:// ou https://'); return; }
+
+  const id = document.getElementById('publink-id').value;
+  const post = {
+    id: id || 'pl'+Date.now(),
+    url: url,
+    title: title || 'Sans titre',
+    net: document.getElementById('publink-net').value,
+    date: document.getElementById('publink-date').value,
+    published: document.getElementById('publink-visible').checked
+  };
+
+  if(id){
+    const i = pubState.items.findIndex(x=>x.id===id);
+    if(i>=0) pubState.items[i]=post;
+  } else {
+    pubState.items.push(post);
+  }
+  const ok = await pubSyncToServer();
+  if(ok){ pubCloseModal(); pubRender(); }
+}
+
+async function pubDelete(){
+  const id = document.getElementById('publink-id').value;
+  if(!id) return;
+  if(!confirm('Supprimer cette publication ?')) return;
+  pubState.items = pubState.items.filter(x=>x.id!==id);
+  const ok = await pubSyncToServer();
+  if(ok){ pubCloseModal(); pubRender(); }
+}
+
 /* ── INIT ── */
 document.querySelectorAll('.ni').forEach(n => n.addEventListener('click', function(){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));
@@ -3334,6 +3573,59 @@ showMain('dashboard', document.querySelector('.ni'));
       <div style="flex:1"></div>
       <button class="btn" onclick="ctRenewClose()">Annuler</button>
       <button class="btn btn-navy" style="background:var(--up);" onclick="ctRenewSend()"><i class="ti ti-send" style="font-size:13px"></i> Envoyer au client</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL PUBLICATION (LIEN) ══ -->
+<div class="cal-modal-overlay" id="publink-modal" onclick="pubModalBg(event)">
+  <div class="cal-modal">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title" id="publink-modal-title">Ajouter une publication</div>
+      <button class="cal-modal-close" onclick="pubCloseModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body">
+      <input type="hidden" id="publink-id"/>
+
+      <div class="cal-field">
+        <label>Lien de la publication</label>
+        <input type="url" id="publink-url" placeholder="https://www.tiktok.com/@compte/video/..."/>
+        <div style="font-size:10px;color:var(--hint);margin-top:4px;">Colle l'adresse complète du post</div>
+      </div>
+
+      <div class="cal-field">
+        <label>Titre / Description</label>
+        <input type="text" id="publink-title" placeholder="Ex: Déballage nouveau stock iPhone"/>
+      </div>
+
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Réseau</label>
+          <select id="publink-net">
+            <option>TikTok</option>
+            <option>Instagram</option>
+            <option>Facebook</option>
+            <option>YouTube</option>
+          </select>
+        </div>
+        <div class="cal-field">
+          <label>Date de publication</label>
+          <input type="date" id="publink-date"/>
+        </div>
+      </div>
+
+      <div class="cal-field">
+        <label class="pub-visible-toggle">
+          <input type="checkbox" id="publink-visible" checked>
+          <span><strong>Visible par le client</strong> — il pourra consulter ce lien dans son espace</span>
+        </label>
+      </div>
+    </div>
+    <div class="cal-modal-foot">
+      <button class="btn" id="publink-delete-btn" onclick="pubDelete()" style="color:var(--dn);border-color:rgba(162,45,45,.2);display:none;"><i class="ti ti-trash" style="font-size:13px"></i> Supprimer</button>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="pubCloseModal()">Annuler</button>
+      <button class="btn btn-navy" onclick="pubSave()"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer</button>
     </div>
   </div>
 </div>
