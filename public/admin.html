@@ -739,10 +739,8 @@ function pmLogout(){
   </div>
   <div class="side-clients">
     <div class="ns">Clients actifs</div>
-    <div class="cl-item"><div class="cl-dot" style="background:var(--cyan)"></div> Soleil Communication</div>
-    <div class="cl-item"><div class="cl-dot" style="background:var(--gold)"></div> Maquis Chez Fanta</div>
-    <div class="cl-item"><div class="cl-dot" style="background:#7B61FF"></div> Boutique Élégance CI</div>
-    <div class="cl-add" onclick="showMain('contrats',document.querySelector('.ni'))"><i class="ti ti-plus" style="font-size:11px"></i> Nouveau client</div>
+    <div id="side-clients-list"></div>
+    <div class="cl-add" onclick="showMain('acces',null)"><i class="ti ti-plus" style="font-size:11px"></i> Nouveau client</div>
   </div>
 </div>
 
@@ -1750,6 +1748,7 @@ async function dashLoad(){
     dashState.pubs=[]; dashState.tasks=[]; dashState.clients=[]; dashState.contracts=[];
   }
 
+  sideRenderClients(dashState.clients);
   dashRenderStats();
   dashRenderPubs();
   taskRender();
@@ -2418,7 +2417,6 @@ async function calDeletePub(){
    PERFORMANCE RÉSEAUX
    ══════════════════════════════════════════ */
 const PERF_NETS = { 'TikTok':'#000000','Instagram':'#E1306C','Facebook':'#1877F2','YouTube':'#FF0000' };
-const PERF_CLIENTS = { soleil:'Soleil Communication', fanta:'Maquis Chez Fanta', elegance:'Boutique Élégance CI' };
 
 let perfState = { client:'', data:{}, charts:{}, published:false };
 
@@ -2826,7 +2824,21 @@ async function accLoadClients(){
   }
 }
 
+function sideRenderClients(clients){
+  const box = document.getElementById('side-clients-list');
+  if(!box) return;
+  if(!clients || !clients.length){
+    box.innerHTML = '<div class="cl-item" style="opacity:.5;font-style:italic;">Aucun client</div>';
+    return;
+  }
+  const palette = ['#00C6E0','#F5B731','#7B61FF','#0066CC','#E1306C','#0a6b4f'];
+  box.innerHTML = clients.map((c,i)=>
+    '<div class="cl-item"><div class="cl-dot" style="background:'+palette[i%palette.length]+'"></div> '+c.name+'</div>'
+  ).join('');
+}
+
 function accRenderClients(clients){
+  sideRenderClients(clients);
   const list = document.getElementById('acc-list');
   if(!clients.length){
     list.innerHTML='<div class="perf-empty"><i class="ti ti-user-plus"></i><div class="perf-empty-title">Aucun client</div><div>Clique sur "Nouveau client" pour créer le premier compte.</div></div>';
@@ -4120,9 +4132,6 @@ showMain('dashboard', document.querySelector('.ni'));
         <label>Clé de liaison données <span style="font-weight:400;color:var(--hint)">(avancé)</span></label>
         <select id="acc-clientkey">
           <option value="">— Nouveau (données vierges) —</option>
-          <option value="soleil">soleil (Soleil Communication)</option>
-          <option value="fanta">fanta (Maquis Chez Fanta)</option>
-          <option value="elegance">elegance (Boutique Élégance CI)</option>
         </select>
         <div style="font-size:10px;color:var(--hint);margin-top:4px;">Relie ce compte aux stats/calendrier existants. Laisse vide pour un nouveau client.</div>
       </div>
