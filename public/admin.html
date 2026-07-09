@@ -635,6 +635,30 @@ textarea{resize:none;line-height:1.5;}
 
 @media(max-width:900px){.proof-summary-grid{grid-template-columns:1fr 1fr;}.proof-stats-row{grid-template-columns:1fr 1fr;}}
 
+/* ══ LECTURE IA DES CAPTURES (OCR) ══ */
+.ocr-zone{background:linear-gradient(135deg,#f3e8ff,#e6f1fb);border:1px solid rgba(123,97,255,.22);border-radius:12px;padding:15px 16px;margin-bottom:16px;}
+.ocr-head{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px;}
+.ocr-head-ico{font-size:22px;flex-shrink:0;}
+.ocr-title{font-size:13px;font-weight:800;color:var(--navy);}
+.ocr-sub{font-size:11px;color:var(--mut);line-height:1.5;margin-top:2px;}
+.ocr-drop{background:rgba(255,255,255,.75);border:2px dashed rgba(123,97,255,.35);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .18s;}
+.ocr-drop:hover{border-color:var(--cyan);background:#fff;}
+.ocr-drop i{font-size:26px;color:#7B61FF;display:block;margin-bottom:6px;}
+.ocr-drop-txt{font-size:12px;font-weight:600;color:var(--txt);}
+.ocr-drop-hint{font-size:10px;color:var(--hint);margin-top:3px;}
+.ocr-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.ocr-thumb{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;border:1px solid var(--bord);}
+.ocr-thumb img{width:100%;height:100%;object-fit:cover;}
+.ocr-thumb-x{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;border:none;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;}
+.ocr-status{font-size:11px;margin-top:10px;line-height:1.5;}
+.ocr-status.ok{color:var(--up);}
+.ocr-status.err{color:var(--dn);}
+.ocr-status.warn{color:#7a5800;}
+.ocr-review{background:#fffbf0;border:1px solid rgba(245,183,49,.4);border-radius:9px;padding:10px 13px;margin-top:10px;font-size:11px;color:#7a5800;line-height:1.6;}
+.ocr-review strong{color:#5a4200;}
+.ocr-filled{animation:ocrFlash 1.2s ease;}
+@keyframes ocrFlash{0%,100%{background:var(--white);}30%{background:#fff8e0;}}
+
 </style>
 </head>
 <body>
@@ -2341,6 +2365,7 @@ function perfOpenModal(){
   ['perf-views','perf-followers','perf-likes','perf-comments','perf-reach','perf-shares','perf-note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('perf-delete-btn').style.display='none';
   document.getElementById('perf-rate-preview').innerHTML='';
+  ocrReset();
   document.getElementById('perf-modal').classList.add('show');
 }
 
@@ -2360,6 +2385,7 @@ function perfEditEntry(id){
   document.getElementById('perf-note').value=e.note||'';
   document.getElementById('perf-delete-btn').style.display='inline-flex';
   document.getElementById('perf-rate-preview').innerHTML='';
+  ocrReset();
   document.getElementById('perf-modal').classList.add('show');
 }
 
@@ -3338,6 +3364,151 @@ function proofCopy(el, texte){
   document.body.removeChild(ta);
 }
 
+/* ══════════════════════════════════════════
+   LECTURE IA DES CAPTURES DE STATS
+   ══════════════════════════════════════════ */
+let ocrImages = []; // [{media_type, data, preview}]
+const OCR_MAX_FILES = 4;
+const OCR_MAX_BYTES = 4 * 1024 * 1024; // 4 Mo par image
+
+function ocrShowStatus(msg, type){
+  const el = document.getElementById('ocr-status');
+  if(!el) return;
+  el.className = 'ocr-status' + (type ? ' '+type : '');
+  el.innerHTML = msg;
+}
+
+function ocrReset(){
+  ocrImages = [];
+  const f = document.getElementById('ocr-file'); if(f) f.value='';
+  const t = document.getElementById('ocr-thumbs'); if(t) t.innerHTML='';
+  const b = document.getElementById('ocr-btn'); if(b) b.style.display='none';
+  ocrShowStatus('');
+}
+
+function ocrPick(ev){
+  const files = Array.from(ev.target.files || []);
+  if(!files.length) return;
+
+  if(ocrImages.length + files.length > OCR_MAX_FILES){
+    ocrShowStatus('⚠️ '+OCR_MAX_FILES+' captures maximum.', 'warn');
+    return;
+  }
+
+  let pending = files.length;
+  files.forEach(file=>{
+    if(file.size > OCR_MAX_BYTES){
+      ocrShowStatus('⚠️ « '+file.name+' » dépasse 4 Mo. Réduis l\'image et réessaie.', 'warn');
+      pending--; return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const dataUrl = e.target.result;
+      const base64 = dataUrl.split(',')[1];
+      ocrImages.push({ media_type: file.type, data: base64, preview: dataUrl });
+      pending--;
+      ocrRenderThumbs();
+    };
+    reader.onerror = function(){ pending--; ocrShowStatus('✗ Impossible de lire « '+file.name+' ».','err'); };
+    reader.readAsDataURL(file);
+  });
+  ev.target.value = '';
+}
+
+function ocrRenderThumbs(){
+  const box = document.getElementById('ocr-thumbs');
+  box.innerHTML = ocrImages.map((img,i)=>
+    '<div class="ocr-thumb"><img src="'+img.preview+'" alt="capture"/><button class="ocr-thumb-x" onclick="ocrRemove('+i+')" title="Retirer">✕</button></div>'
+  ).join('');
+  const btn = document.getElementById('ocr-btn');
+  btn.style.display = ocrImages.length ? 'flex' : 'none';
+  if(ocrImages.length) ocrShowStatus(ocrImages.length+' capture'+(ocrImages.length>1?'s':'')+' prête'+(ocrImages.length>1?'s':'')+' à analyser.', '');
+  else ocrShowStatus('');
+}
+
+function ocrRemove(i){
+  ocrImages.splice(i,1);
+  ocrRenderThumbs();
+}
+
+async function ocrAnalyze(){
+  const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+  if(!token){ ocrShowStatus('⚠️ Valide ta clé admin dans Gestion des accès.', 'warn'); return; }
+  if(!ocrImages.length){ ocrShowStatus('⚠️ Ajoute au moins une capture.', 'warn'); return; }
+
+  const btn = document.getElementById('ocr-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin" style="width:14px;height:14px;border-width:2px;"></div> L\'IA lit tes captures...';
+  ocrShowStatus('Analyse en cours, quelques secondes...', '');
+
+  const reseau = document.getElementById('perf-net-in').value;
+
+  try {
+    const r = await fetch('/api/admin/ai/read-stats', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        adminToken: token,
+        reseau: reseau,
+        images: ocrImages.map(i=>({ media_type:i.media_type, data:i.data }))
+      })
+    });
+    const data = await r.json();
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-sparkles" style="font-size:14px"></i> Lire les chiffres avec l\'IA';
+
+    if(!data.success){ ocrShowStatus('✗ '+(data.error||'Erreur'), 'err'); return; }
+    ocrFillForm(data.stats);
+
+  } catch(e){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-sparkles" style="font-size:14px"></i> Lire les chiffres avec l\'IA';
+    ocrShowStatus('✗ Erreur de connexion au serveur.', 'err');
+  }
+}
+
+function ocrFillForm(s){
+  const map = {
+    'perf-views': s.views,
+    'perf-followers': s.followers,
+    'perf-likes': s.likes,
+    'perf-comments': s.comments,
+    'perf-reach': s.reach,
+    'perf-shares': s.shares
+  };
+  let remplis = 0;
+  Object.entries(map).forEach(([id,val])=>{
+    if(val !== null && val !== undefined && !isNaN(val)){
+      const el = document.getElementById(id);
+      if(el){ el.value = val; el.classList.add('ocr-filled'); setTimeout(()=>el.classList.remove('ocr-filled'),1300); remplis++; }
+    }
+  });
+
+  // Réseau détecté
+  if(s.reseau){
+    const sel = document.getElementById('perf-net-in');
+    if(sel && Array.from(sel.options).some(o=>o.value===s.reseau)) sel.value = s.reseau;
+  }
+  // Date détectée
+  if(s.date && /^\d{4}-\d{2}-\d{2}$/.test(s.date)){
+    const d = document.getElementById('perf-date');
+    if(d){ d.value = s.date; d.classList.add('ocr-filled'); setTimeout(()=>d.classList.remove('ocr-filled'),1300); }
+  }
+
+  if(remplis === 0){
+    ocrShowStatus('⚠️ Aucun chiffre n\'a pu être lu. Essaie une capture plus nette ou saisis à la main.', 'warn');
+    return;
+  }
+
+  const conf = s.confiance || 'moyenne';
+  const confIco = conf==='haute' ? '🟢' : (conf==='basse' ? '🔴' : '🟡');
+  let review = '<div class="ocr-review"><strong>⚠️ Vérifie les chiffres avant d\'enregistrer.</strong><br>'
+    + remplis+' champ'+(remplis>1?'s':'')+' rempli'+(remplis>1?'s':'')+' par l\'IA · Confiance : '+confIco+' '+conf;
+  if(s.remarques) review += '<br><em>'+String(s.remarques).replace(/</g,'&lt;')+'</em>';
+  review += '</div>';
+
+  ocrShowStatus('✓ Lecture terminée !' + review, 'ok');
+}
+
 /* ── INIT ── */
 document.querySelectorAll('.ni').forEach(n => n.addEventListener('click', function(){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));
@@ -3469,6 +3640,32 @@ showMain('dashboard', document.querySelector('.ni'));
             <option>YouTube</option>
           </select>
         </div>
+      </div>
+
+      <!-- ══ LECTURE IA DES CAPTURES ══ -->
+      <div class="ocr-zone" id="ocr-zone">
+        <div class="ocr-head">
+          <div class="ocr-head-ico">📸</div>
+          <div>
+            <div class="ocr-title">Remplir avec l'IA</div>
+            <div class="ocr-sub">Importe tes captures d'écran de statistiques — l'IA lit les chiffres et remplit le formulaire. Tu vérifies avant d'enregistrer.</div>
+          </div>
+        </div>
+
+        <div class="ocr-drop" id="ocr-drop" onclick="document.getElementById('ocr-file').click()">
+          <input type="file" id="ocr-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple onchange="ocrPick(event)" style="display:none;"/>
+          <i class="ti ti-photo-plus"></i>
+          <div class="ocr-drop-txt">Clique pour choisir tes captures</div>
+          <div class="ocr-drop-hint">PNG, JPEG ou WEBP · 4 maximum · 4 Mo par image</div>
+        </div>
+
+        <div class="ocr-thumbs" id="ocr-thumbs"></div>
+
+        <button class="btn btn-navy" id="ocr-btn" onclick="ocrAnalyze()" style="width:100%;justify-content:center;display:none;">
+          <i class="ti ti-sparkles" style="font-size:14px"></i> Lire les chiffres avec l'IA
+        </button>
+
+        <div class="ocr-status" id="ocr-status"></div>
       </div>
 
       <div class="perf-hint-box"><i class="ti ti-info-circle"></i> Saisis les chiffres que tu vois dans les statistiques de l'application. Ce sont les totaux du compte à cette date.</div>
@@ -3777,4 +3974,3 @@ showMain('dashboard', document.querySelector('.ni'));
 
 </body>
 </html>
-
