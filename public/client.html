@@ -190,7 +190,7 @@ function pmLogout(){ try{ sessionStorage.removeItem('pm_session'); }catch(e){} w
 
 <script>
 const CLI_NETS={'TikTok':'#000000','Instagram':'#E1306C','Facebook':'#1877F2','YouTube':'#FF0000'};
-let cliState={ clientKey:'soleil', filter:'all', charts:{}, data:[] };
+let cliState={ clientKey:'', filter:'all', charts:{}, data:[] };
 
 // Récupère le clientKey depuis la session
 (function(){
@@ -210,6 +210,7 @@ function cliLoadData(){
 
 // Charge les stats depuis le serveur (uniquement les stats publiées par l'admin)
 async function cliFetchData(){
+  if(!cliState.clientKey){ cliState.data=[]; cliRender(); return; }
   try{
     const r = await fetch('/api/client/stats/'+encodeURIComponent(cliState.clientKey));
     const data = await r.json();
@@ -371,6 +372,7 @@ function cliSheet(period){
 let cliPubs = { items:[], filter:'all' };
 
 async function cliFetchPubs(){
+  if(!cliState.clientKey){ cliPubs.items=[]; cliRenderPubs(); return; }
   try{
     const r = await fetch('/api/client/posts/'+encodeURIComponent(cliState.clientKey));
     const data = await r.json();
@@ -426,4 +428,3 @@ cliFetchPubs();
 </script>
 </body>
 </html>
-
