@@ -761,6 +761,85 @@ app.get('/api/client/posts/:clientKey', (req, res) => {
 });
 
 // ══════════════════════════════════════════
+// PREUVES SOCIALES (agrégées depuis les vraies stats)
+// GET /api/admin/social-proof  (header x-admin-token)
+// ══════════════════════════════════════════
+app.get('/api/admin/social-proof', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+
+  // Nom du client depuis sa clé
+  const nameByKey = {};
+  Object.values(USERS).forEach(u => { if (u.clientKey) nameByKey[u.clientKey] = u.name; });
+
+  const proofs = [];
+  let totalVues = 0, totalAbonnes = 0, clientsAvecStats = 0;
+
+  Object.entries(STORE.stats || {}).forEach(([key, s]) => {
+    const entries = (s && s.entries) ? s.entries.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))) : [];
+    if (entries.length < 1) return;
+
+    const first = entries[0];
+    const last  = entries[entries.length - 1];
+    const clientName = nameByKey[key] || key;
+    clientsAvecStats++;
+
+    const num = (v) => Number(v) || 0;
+    totalVues    += num(last.views);
+    totalAbonnes += num(last.followers);
+
+    const growth = (k) => {
+      const a = num(first[k]), b = num(last[k]);
+      if (a === 0) return b > 0 ? 100 : 0;
+      return ((b - a) / a) * 100;
+    };
+
+    const rate = (e) => {
+      const v = num(e.views);
+      if (v === 0) return 0;
+      return ((num(e.likes) + num(e.comments) + num(e.shares)) / v) * 100;
+    };
+
+    // Nombre de mois couverts
+    const d1 = new Date(first.date), d2 = new Date(last.date);
+    const mois = Math.max(1, Math.round((d2 - d1) / (1000*60*60*24*30)));
+
+    proofs.push({
+      clientKey: key,
+      clientName,
+      reseau: last.net || '—',
+      vues: num(last.views),
+      abonnes: num(last.followers),
+      likes: num(last.likes),
+      portee: num(last.reach),
+      tauxEngagement: Number(rate(last).toFixed(1)),
+      croissanceVues: Number(growth('views').toFixed(0)),
+      croissanceAbonnes: Number(growth('followers').toFixed(0)),
+      moisAccompagnement: mois,
+      nbReleves: entries.length,
+      derniereMaj: last.date,
+      publie: !!s.published
+    });
+  });
+
+  // Tri : meilleure croissance en premier
+  proofs.sort((a,b) => b.croissanceVues - a.croissanceVues);
+
+  return res.json({
+    success: true,
+    generatedAt: Date.now(),
+    resume: {
+      clientsAccompagnes: clientsAvecStats,
+      totalVues,
+      totalAbonnes,
+      meilleureCroissance: proofs.length ? proofs[0].croissanceVues : 0
+    },
+    proofs
+  });
+});
+
+// ══════════════════════════════════════════
 // PAGES TABLEAUX DE BORD
 // ══════════════════════════════════════════
 
