@@ -659,6 +659,36 @@ textarea{resize:none;line-height:1.5;}
 .ocr-filled{animation:ocrFlash 1.2s ease;}
 @keyframes ocrFlash{0%,100%{background:var(--white);}30%{background:#fff8e0;}}
 
+/* ══ DASHBOARD DYNAMIQUE — TÂCHES ══ */
+.task-filters{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;}
+.filt-mini{font-size:10px;font-weight:600;padding:4px 10px;border-radius:7px;border:1px solid var(--bord);background:var(--white);color:var(--mut);cursor:pointer;font-family:inherit;}
+.filt-mini.act{background:var(--navy);color:#fff;border-color:var(--navy);}
+.filt-mini:hover:not(.act){background:var(--surf);}
+
+.task-prio{width:4px;height:34px;border-radius:3px;flex-shrink:0;}
+.task-prio.urgent{background:var(--dn);}
+.task-prio.normal{background:var(--gold);}
+.task-prio.low{background:var(--hint);}
+.task-client-tag{font-size:9px;font-weight:700;color:#fff;padding:2px 7px;border-radius:6px;background:var(--cyan);margin-left:6px;}
+.task-overdue{color:var(--dn)!important;font-weight:700;}
+
+.dash-empty{background:var(--white);border:1px dashed var(--bord);border-radius:11px;padding:26px 20px;text-align:center;}
+.dash-empty i{font-size:26px;color:var(--hint);opacity:.5;display:block;margin-bottom:8px;}
+.dash-empty-t{font-size:13px;font-weight:600;color:var(--mut);margin-bottom:4px;}
+.dash-empty-s{font-size:11px;color:var(--hint);line-height:1.5;}
+.dash-empty a{color:var(--cyan);cursor:pointer;font-weight:600;}
+.dash-empty a:hover{text-decoration:underline;}
+
+.taskcal-nav{display:flex;align-items:center;gap:8px;}
+.taskcal-period{font-size:12px;font-weight:700;color:var(--txt);min-width:110px;text-align:center;text-transform:capitalize;}
+.taskcal-day-tasks{display:flex;flex-direction:column;gap:2px;overflow:hidden;}
+.taskcal-item{font-size:9px;padding:2px 5px;border-radius:4px;color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;}
+.taskcal-item.urgent{background:var(--dn);}
+.taskcal-item.normal{background:var(--gold);color:#5a4200;}
+.taskcal-item.low{background:var(--hint);}
+.taskcal-item.done{background:var(--up);text-decoration:line-through;opacity:.7;}
+.taskcal-more{font-size:8px;color:var(--hint);text-align:center;}
+
 </style>
 </head>
 <body>
@@ -1074,30 +1104,13 @@ function pmLogout(){
           <div class="dash-hero-sub">Voici ta journée en un coup d'œil — tes publications prévues et tes tâches à faire.</div>
         </div>
         <div class="dash-hero-stat">
-          <div class="dhs-num" id="dash-posts-today">3</div>
+          <div class="dhs-num" id="dash-posts-today">—</div>
           <div class="dhs-lbl">posts prévus<br>aujourd'hui</div>
         </div>
       </div>
 
       <!-- LIGNE STAT RAPIDE -->
-      <div class="dash-quickstats">
-        <div class="dqs">
-          <div class="dqs-ico" style="background:#e6f1fb;">📅</div>
-          <div><div class="dqs-num">3</div><div class="dqs-lbl">Publications aujourd'hui</div></div>
-        </div>
-        <div class="dqs">
-          <div class="dqs-ico" style="background:#faeeda;">⏰</div>
-          <div><div class="dqs-num">5</div><div class="dqs-lbl">Tâches en attente</div></div>
-        </div>
-        <div class="dqs">
-          <div class="dqs-ico" style="background:#e1f5ee;">✅</div>
-          <div><div class="dqs-num">12</div><div class="dqs-lbl">Faites cette semaine</div></div>
-        </div>
-        <div class="dqs">
-          <div class="dqs-ico" style="background:#f3e8ff;">🏪</div>
-          <div><div class="dqs-num">3</div><div class="dqs-lbl">Clients actifs</div></div>
-        </div>
-      </div>
+      <div class="dash-quickstats" id="dash-quickstats"></div>
 
       <!-- 2 COLONNES : PUBLICATIONS + TÂCHES -->
       <div class="dash-cols">
@@ -1106,91 +1119,44 @@ function pmLogout(){
         <div class="dash-col">
           <div class="dash-block-title">
             <span><i class="ti ti-calendar-time" style="color:var(--cyan)"></i> Publications du jour</span>
-            <a onclick="showMain('calendrier')">Voir le calendrier →</a>
+            <a onclick="showMain('calendrier')">Ouvrir le calendrier →</a>
           </div>
-
-          <div class="pub-card">
-            <div class="pub-time">
-              <div class="pub-hour">20:00</div>
-              <div class="pub-net" style="background:#000;">TikTok</div>
-            </div>
-            <div class="pub-body">
-              <div class="pub-client"><span class="pub-dot" style="background:var(--cyan)"></span> Soleil Communication</div>
-              <div class="pub-desc">Vidéo déballage nouveau stock iPhone</div>
-              <div class="pub-tags"><span class="pub-tag">🎬 Reel</span><span class="pub-tag ready">✓ Prêt</span></div>
-            </div>
-            <div class="pub-actions"><button class="pub-btn" onclick="alert('Aperçu du contenu')"><i class="ti ti-eye"></i></button></div>
-          </div>
-
-          <div class="pub-card">
-            <div class="pub-time">
-              <div class="pub-hour">13:00</div>
-              <div class="pub-net" style="background:#E1306C;">Insta</div>
-            </div>
-            <div class="pub-body">
-              <div class="pub-client"><span class="pub-dot" style="background:var(--gold)"></span> Maquis Chez Fanta</div>
-              <div class="pub-desc">Menu du jour + ambiance midi</div>
-              <div class="pub-tags"><span class="pub-tag">📸 Carrousel</span><span class="pub-tag warn">⏳ À finaliser</span></div>
-            </div>
-            <div class="pub-actions"><button class="pub-btn" onclick="alert('Aperçu du contenu')"><i class="ti ti-eye"></i></button></div>
-          </div>
-
-          <div class="pub-card">
-            <div class="pub-time">
-              <div class="pub-hour">18:30</div>
-              <div class="pub-net" style="background:#000;">TikTok</div>
-            </div>
-            <div class="pub-body">
-              <div class="pub-client"><span class="pub-dot" style="background:#7B61FF"></span> Boutique Élégance CI</div>
-              <div class="pub-desc">Nouvelle collection — try-on haul</div>
-              <div class="pub-tags"><span class="pub-tag">🎬 Reel</span><span class="pub-tag warn">⏳ À finaliser</span></div>
-            </div>
-            <div class="pub-actions"><button class="pub-btn" onclick="alert('Aperçu du contenu')"><i class="ti ti-eye"></i></button></div>
-          </div>
+          <div id="dash-pubs"></div>
         </div>
 
-        <!-- TÂCHES DU JOUR -->
+        <!-- TÂCHES -->
         <div class="dash-col">
           <div class="dash-block-title">
             <span><i class="ti ti-checklist" style="color:var(--gold)"></i> Mes tâches</span>
-            <a onclick="alert('Ajouter une tâche')">+ Ajouter</a>
+            <a onclick="taskOpenModal()">+ Ajouter</a>
           </div>
-
-          <div class="task-item" onclick="toggleTask(this)">
-            <div class="task-check"></div>
-            <div class="task-body"><div class="task-name">Filmer le contenu déballage iPhone (Soleil)</div><div class="task-meta">🔴 Urgent · avant 18h</div></div>
+          <div class="task-filters" id="task-filters">
+            <button class="filt-mini act" onclick="taskFilter('today')">Aujourd'hui</button>
+            <button class="filt-mini" onclick="taskFilter('week')">Cette semaine</button>
+            <button class="filt-mini" onclick="taskFilter('all')">Toutes</button>
+            <button class="filt-mini" onclick="taskFilter('done')">Faites</button>
           </div>
-          <div class="task-item" onclick="toggleTask(this)">
-            <div class="task-check"></div>
-            <div class="task-body"><div class="task-name">Répondre aux commentaires TikTok Soleil</div><div class="task-meta">🟠 Aujourd'hui</div></div>
-          </div>
-          <div class="task-item" onclick="toggleTask(this)">
-            <div class="task-check"></div>
-            <div class="task-body"><div class="task-name">Monter le carrousel Maquis Chez Fanta</div><div class="task-meta">🟠 Aujourd'hui</div></div>
-          </div>
-          <div class="task-item" onclick="toggleTask(this)">
-            <div class="task-check"></div>
-            <div class="task-body"><div class="task-name">Préparer le rapport mensuel Soleil</div><div class="task-meta">🟡 Cette semaine</div></div>
-          </div>
-          <div class="task-item" onclick="toggleTask(this)">
-            <div class="task-check"></div>
-            <div class="task-body"><div class="task-name">Relancer Maquis pour le paiement</div><div class="task-meta">🟡 Cette semaine</div></div>
-          </div>
-
-          <div class="task-done-item">
-            <div class="task-check done"><i class="ti ti-check"></i></div>
-            <div class="task-body"><div class="task-name" style="text-decoration:line-through;color:var(--hint)">Publier le Reel PS4 Soleil</div></div>
-          </div>
+          <div id="dash-tasks"></div>
         </div>
       </div>
 
+      <!-- CALENDRIER DES TÂCHES -->
+      <div class="dash-block-title" style="margin-top:18px;">
+        <span><i class="ti ti-calendar-check" style="color:var(--gold)"></i> Calendrier des tâches</span>
+        <span class="taskcal-nav">
+          <button class="cal-nav-btn" onclick="taskCalPrev()"><i class="ti ti-chevron-left"></i></button>
+          <span class="taskcal-period" id="taskcal-period"></span>
+          <button class="cal-nav-btn" onclick="taskCalNext()"><i class="ti ti-chevron-right"></i></button>
+        </span>
+      </div>
+      <div class="cal-weekdays"><div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div></div>
+      <div class="cal-grid" id="taskcal-grid"></div>
+
       <!-- ALERTES / RAPPELS -->
-      <div class="dash-block-title" style="margin-top:6px;"><span><i class="ti ti-bell" style="color:var(--dn)"></i> À ne pas oublier</span></div>
-      <div class="dash-alerts">
-        <div class="dash-alert">
-          <i class="ti ti-alert-triangle" style="color:#7a5800"></i>
-          <div><strong>Contrat Soleil Communication</strong> arrive à échéance le 14 juin. <a onclick="showMain('contrats')">Préparer le renouvellement →</a></div>
-        </div>
+      <div class="dash-block-title" style="margin-top:18px;"><span><i class="ti ti-bell" style="color:var(--dn)"></i> À ne pas oublier</span></div>
+      <div class="dash-alerts" id="dash-alerts"></div>
+
+    </div>
         <div class="dash-alert">
           <i class="ti ti-clock" style="color:#185fa5"></i>
           <div><strong>Meilleur créneau ce soir :</strong> 20h-22h (mercredi = pic d'engagement pour Soleil selon les stats).</div>
@@ -1347,13 +1313,10 @@ function pmLogout(){
           <div class="cal-client-select">
             <label>Client</label>
             <select id="cal-client" onchange="calChangeClient()">
-              <option value="soleil" data-color="#00C6E0" data-start="2026-03-14" data-months="3">Soleil Communication</option>
-              <option value="fanta" data-color="#F5B731" data-start="2026-06-01" data-months="3">Maquis Chez Fanta</option>
-              <option value="elegance" data-color="#7B61FF" data-start="2026-06-15" data-months="6">Boutique Élégance CI</option>
+              <option value="">— Chargement... —</option>
             </select>
           </div>
           <div class="cal-contract-info" id="cal-contract-info">
-            <i class="ti ti-file-text"></i> Contrat : <strong>14 mars → 14 juin 2026</strong> · <span id="cal-contract-remain">3 mois</span>
           </div>
         </div>
         <div class="cal-tb-right">
@@ -1588,9 +1551,13 @@ function showMain(section, el) {
   }
   document.getElementById('tb-actions').innerHTML = actions;
 
+  // Rendu spécial du dashboard
+  if(section === 'dashboard'){
+    dashLoad();
+  }
   // Rendu spécial du calendrier
   if(section === 'calendrier'){
-    calChangeClient();
+    calLoadClients();
   }
   // Rendu spécial de la performance
   if(section === 'performance'){
@@ -1738,14 +1705,339 @@ function saveContract(){
 }
 
 /* ── TÂCHES : cocher/décocher ── */
-function toggleTask(el){
-  el.classList.toggle('checked');
-  const chk = el.querySelector('.task-check');
-  if(el.classList.contains('checked')){
-    chk.innerHTML = '<i class="ti ti-check"></i>';
-  } else {
-    chk.innerHTML = '';
+/* ══════════════════════════════════════════
+   DASHBOARD "MA JOURNÉE" — DONNÉES RÉELLES
+   ══════════════════════════════════════════ */
+let dashState = { pubs:[], tasks:[], clients:[], taskFilter:'today', taskCursor:new Date() };
+
+function dashToken(){
+  return accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+}
+function dashDateStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+async function dashLoad(){
+  const token = dashToken();
+  const today = dashDateStr(new Date());
+
+  if(!token){
+    document.getElementById('dash-quickstats').innerHTML = '';
+    document.getElementById('dash-pubs').innerHTML = '<div class="dash-empty"><i class="ti ti-key"></i><div class="dash-empty-t">Clé admin requise</div><div class="dash-empty-s">Valide ta clé dans <a onclick="showMain(\'acces\')">Gestion des accès</a> pour voir tes données.</div></div>';
+    document.getElementById('dash-tasks').innerHTML = '';
+    document.getElementById('dash-alerts').innerHTML = '';
+    document.getElementById('taskcal-grid').innerHTML = '';
+    return;
   }
+
+  try {
+    const [rp, rt, rc, rk] = await Promise.all([
+      fetch('/api/admin/calendar-day/'+today, { headers:{ 'x-admin-token': token } }),
+      fetch('/api/admin/tasks', { headers:{ 'x-admin-token': token } }),
+      fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } }),
+      fetch('/api/admin/contracts', { headers:{ 'x-admin-token': token } })
+    ]);
+    const dp = await rp.json();
+    const dt = await rt.json();
+    const dc = await rc.json();
+    const dk = await rk.json().catch(()=>({contracts:[]}));
+
+    dashState.pubs    = (dp.success && dp.items) ? dp.items : [];
+    dashState.tasks   = (dt.success && dt.tasks) ? dt.tasks : [];
+    dashState.clients = (dc.success && dc.clients) ? dc.clients : [];
+    dashState.contracts = (dk.contracts) ? dk.contracts : [];
+  } catch(e){
+    dashState.pubs=[]; dashState.tasks=[]; dashState.clients=[]; dashState.contracts=[];
+  }
+
+  dashRenderStats();
+  dashRenderPubs();
+  taskRender();
+  taskCalRender();
+  dashRenderAlerts();
+}
+
+function dashRenderStats(){
+  const today = dashDateStr(new Date());
+  const enAttente = dashState.tasks.filter(t=>!t.done).length;
+
+  // Tâches faites cette semaine
+  const now = new Date();
+  const lundi = new Date(now); const j = now.getDay()===0?6:now.getDay()-1; lundi.setDate(now.getDate()-j);
+  const faitesSemaine = dashState.tasks.filter(t=>t.done && t.doneAt && new Date(t.doneAt) >= lundi).length;
+
+  document.getElementById('dash-quickstats').innerHTML =
+    '<div class="dqs"><div class="dqs-ico" style="background:#e6f1fb;">📅</div><div><div class="dqs-num">'+dashState.pubs.length+'</div><div class="dqs-lbl">Publications aujourd\'hui</div></div></div>'
+    + '<div class="dqs"><div class="dqs-ico" style="background:#faeeda;">⏰</div><div><div class="dqs-num">'+enAttente+'</div><div class="dqs-lbl">Tâches en attente</div></div></div>'
+    + '<div class="dqs"><div class="dqs-ico" style="background:#e1f5ee;">✅</div><div><div class="dqs-num">'+faitesSemaine+'</div><div class="dqs-lbl">Faites cette semaine</div></div></div>'
+    + '<div class="dqs"><div class="dqs-ico" style="background:#f3e8ff;">🏪</div><div><div class="dqs-num">'+dashState.clients.length+'</div><div class="dqs-lbl">Clients actifs</div></div></div>';
+
+  const dp = document.getElementById('dash-posts-today');
+  if(dp) dp.textContent = dashState.pubs.length;
+}
+
+function dashRenderPubs(){
+  const box = document.getElementById('dash-pubs');
+  if(dashState.pubs.length===0){
+    box.innerHTML = '<div class="dash-empty"><i class="ti ti-calendar-off"></i><div class="dash-empty-t">Aucune publication prévue aujourd\'hui</div><div class="dash-empty-s">Planifie tes contenus dans le <a onclick="showMain(\'calendrier\')">calendrier éditorial</a> — ils apparaîtront ici le jour J.</div></div>';
+    return;
+  }
+  const NETC = { 'TikTok':'#000','Instagram':'#E1306C','Facebook':'#1877F2','WhatsApp':'#25D366','YouTube':'#FF0000' };
+  const STAT = { done:{l:'✓ Publié',c:'ready'}, ready:{l:'✓ Prêt',c:'ready'}, idea:{l:'⏳ À finaliser',c:'warn'} };
+
+  box.innerHTML = dashState.pubs.map(p=>{
+    const color = NETC[p.net]||'#888';
+    const st = STAT[p.status] || STAT.idea;
+    const txt = (p.text||'Sans titre').replace(/</g,'&lt;');
+    return '<div class="pub-card">'
+      + '<div class="pub-time"><div class="pub-hour">'+(p.hour||'--:--')+'</div><div class="pub-net" style="background:'+color+';">'+p.net+'</div></div>'
+      + '<div class="pub-body">'
+      + '<div class="pub-client"><span class="pub-dot" style="background:'+color+'"></span> '+p.clientName+'</div>'
+      + '<div class="pub-desc">'+txt+'</div>'
+      + '<div class="pub-tags"><span class="pub-tag">'+(p.type||'')+'</span><span class="pub-tag '+st.c+'">'+st.l+'</span></div>'
+      + '</div></div>';
+  }).join('');
+}
+
+function dashRenderAlerts(){
+  const box = document.getElementById('dash-alerts');
+  const alerts = [];
+  const now = new Date();
+
+  // Contrats proches de l'échéance (< 30 jours)
+  (dashState.contracts||[]).forEach(ct=>{
+    if(ct.statut === 'resilié' || !ct.dateFin) return;
+    const fin = new Date(ct.dateFin);
+    const jours = Math.ceil((fin - now)/(1000*60*60*24));
+    if(jours >= 0 && jours <= 30){
+      alerts.push('<div class="dash-alert"><i class="ti ti-alert-triangle" style="color:#7a5800"></i><div><strong>Contrat '+ct.clientName+'</strong> arrive à échéance dans '+jours+' jour'+(jours>1?'s':'')+'. <a onclick="showMain(\'contrats\')">Préparer le renouvellement →</a></div></div>');
+    }
+  });
+
+  // Tâches en retard
+  const today = dashDateStr(now);
+  const retard = dashState.tasks.filter(t=>!t.done && t.date && t.date < today).length;
+  if(retard > 0){
+    alerts.push('<div class="dash-alert"><i class="ti ti-clock-exclamation" style="color:var(--dn)"></i><div><strong>'+retard+' tâche'+(retard>1?'s':'')+' en retard.</strong> Pense à les traiter ou à les replanifier.</div></div>');
+  }
+
+  if(alerts.length===0){
+    box.innerHTML = '<div class="dash-alert"><i class="ti ti-circle-check" style="color:var(--up)"></i><div>Rien d\'urgent à signaler. Tout est sous contrôle 👌</div></div>';
+    return;
+  }
+  box.innerHTML = alerts.join('');
+}
+
+/* ══════════════════════════════════════════
+   TÂCHES
+   ══════════════════════════════════════════ */
+async function taskSync(){
+  const token = dashToken();
+  if(!token) return false;
+  try {
+    const r = await fetch('/api/admin/tasks/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, tasks: dashState.tasks })
+    });
+    const d = await r.json();
+    return !!d.success;
+  } catch(e){ return false; }
+}
+
+function taskFilter(f){
+  dashState.taskFilter = f;
+  document.querySelectorAll('#task-filters .filt-mini').forEach(b=>b.classList.remove('act'));
+  const idx = {today:0, week:1, all:2, done:3}[f];
+  document.querySelectorAll('#task-filters .filt-mini')[idx].classList.add('act');
+  taskRender();
+}
+
+function taskFiltered(){
+  const today = dashDateStr(new Date());
+  const now = new Date();
+  const dans7 = new Date(now); dans7.setDate(now.getDate()+7);
+  const f = dashState.taskFilter;
+
+  if(f==='done') return dashState.tasks.filter(t=>t.done);
+  let list = dashState.tasks.filter(t=>!t.done);
+  if(f==='today') list = list.filter(t=>!t.date || t.date <= today);
+  else if(f==='week') list = list.filter(t=>!t.date || (t.date <= dashDateStr(dans7)));
+  return list;
+}
+
+function taskRender(){
+  const box = document.getElementById('dash-tasks');
+  const list = taskFiltered();
+  const today = dashDateStr(new Date());
+
+  if(dashState.tasks.length===0){
+    box.innerHTML = '<div class="dash-empty"><i class="ti ti-checklist"></i><div class="dash-empty-t">Aucune tâche</div><div class="dash-empty-s">Clique sur <a onclick="taskOpenModal()">+ Ajouter</a> pour créer ta première tâche.</div></div>';
+    return;
+  }
+  if(list.length===0){
+    const msg = dashState.taskFilter==='done' ? 'Aucune tâche terminée' : 'Rien à faire sur cette période 🎉';
+    box.innerHTML = '<div class="dash-empty"><i class="ti ti-mood-smile"></i><div class="dash-empty-t">'+msg+'</div></div>';
+    return;
+  }
+
+  // Tri : urgent d'abord, puis par date
+  const prio = {urgent:0, normal:1, low:2};
+  list = list.slice().sort((a,b)=>{
+    const p = (prio[a.priority]??1)-(prio[b.priority]??1);
+    if(p!==0) return p;
+    return String(a.date||'9999').localeCompare(String(b.date||'9999'));
+  });
+
+  const nameByKey = {};
+  dashState.clients.forEach(c=>{ if(c.clientKey) nameByKey[c.clientKey]=c.name; });
+  const PRIO_ICO = {urgent:'🔴 Urgent', normal:'🟠 Normal', low:'🟡 Peut attendre'};
+
+  box.innerHTML = list.map(t=>{
+    const isDone = !!t.done;
+    const late = !isDone && t.date && t.date < today;
+    const dateFr = t.date ? t.date.split('-').reverse().join('/') : 'Sans date';
+    const clientTag = t.clientKey && nameByKey[t.clientKey] ? '<span class="task-client-tag">'+nameByKey[t.clientKey]+'</span>' : '';
+    const meta = (PRIO_ICO[t.priority]||'') + ' · ' + (late ? '<span class="task-overdue">⚠ En retard — '+dateFr+'</span>' : dateFr) + (t.note ? ' · '+t.note.replace(/</g,'&lt;') : '');
+    const safeName = (t.name||'').replace(/</g,'&lt;');
+
+    return '<div class="task-item'+(isDone?' checked':'')+'">'
+      + '<div class="task-prio '+(t.priority||'normal')+'"></div>'
+      + '<div class="task-check'+(isDone?' done':'')+'" onclick="taskToggle(\''+t.id+'\')">'+(isDone?'<i class="ti ti-check"></i>':'')+'</div>'
+      + '<div class="task-body" onclick="taskEdit(\''+t.id+'\')"><div class="task-name">'+safeName+clientTag+'</div><div class="task-meta">'+meta+'</div></div>'
+      + '</div>';
+  }).join('');
+}
+
+async function taskToggle(id){
+  const t = dashState.tasks.find(x=>x.id===id);
+  if(!t) return;
+  t.done = !t.done;
+  t.doneAt = t.done ? Date.now() : null;
+  await taskSync();
+  taskRender(); taskCalRender(); dashRenderStats(); dashRenderAlerts();
+}
+
+function taskOpenModal(){
+  if(!dashToken()){ alert('Valide d\'abord ta clé administrateur dans Gestion des accès.'); return; }
+  document.getElementById('task-modal-title').textContent='Nouvelle tâche';
+  document.getElementById('task-id').value='';
+  document.getElementById('task-name').value='';
+  document.getElementById('task-date').value=dashDateStr(new Date());
+  document.getElementById('task-priority').value='normal';
+  document.getElementById('task-note').value='';
+  document.getElementById('task-delete-btn').style.display='none';
+  taskFillClients();
+  document.getElementById('task-modal').classList.add('show');
+}
+
+function taskEdit(id){
+  const t = dashState.tasks.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('task-modal-title').textContent='Modifier la tâche';
+  document.getElementById('task-id').value=t.id;
+  document.getElementById('task-name').value=t.name||'';
+  document.getElementById('task-date').value=t.date||'';
+  document.getElementById('task-priority').value=t.priority||'normal';
+  document.getElementById('task-note').value=t.note||'';
+  document.getElementById('task-delete-btn').style.display='inline-flex';
+  taskFillClients(t.clientKey);
+  document.getElementById('task-modal').classList.add('show');
+}
+
+function taskFillClients(selected){
+  const sel = document.getElementById('task-client');
+  sel.innerHTML = '<option value="">— Aucun client précis —</option>'
+    + dashState.clients.filter(c=>c.clientKey).map(c=>'<option value="'+c.clientKey+'"'+(c.clientKey===selected?' selected':'')+'>'+c.name+'</option>').join('');
+}
+
+function taskCloseModal(){ document.getElementById('task-modal').classList.remove('show'); }
+function taskModalBg(e){ if(e.target.id==='task-modal') taskCloseModal(); }
+
+async function taskSave(){
+  const name = document.getElementById('task-name').value.trim();
+  if(!name){ alert('Décris la tâche à faire.'); return; }
+  const id = document.getElementById('task-id').value;
+  const existing = id ? dashState.tasks.find(x=>x.id===id) : null;
+
+  const task = {
+    id: id || 't'+Date.now(),
+    name: name,
+    date: document.getElementById('task-date').value || null,
+    priority: document.getElementById('task-priority').value,
+    clientKey: document.getElementById('task-client').value || null,
+    note: document.getElementById('task-note').value.trim(),
+    done: existing ? !!existing.done : false,
+    doneAt: existing ? (existing.doneAt||null) : null
+  };
+
+  if(id){
+    const i = dashState.tasks.findIndex(x=>x.id===id);
+    if(i>=0) dashState.tasks[i]=task;
+  } else {
+    dashState.tasks.push(task);
+  }
+  const ok = await taskSync();
+  if(ok){ taskCloseModal(); taskRender(); taskCalRender(); dashRenderStats(); dashRenderAlerts(); }
+  else alert('✗ Impossible d\'enregistrer. Vérifie ta connexion et ta clé admin.');
+}
+
+async function taskDelete(){
+  const id = document.getElementById('task-id').value;
+  if(!id) return;
+  if(!confirm('Supprimer cette tâche ?')) return;
+  dashState.tasks = dashState.tasks.filter(x=>x.id!==id);
+  const ok = await taskSync();
+  if(ok){ taskCloseModal(); taskRender(); taskCalRender(); dashRenderStats(); dashRenderAlerts(); }
+}
+
+/* ── CALENDRIER DES TÂCHES ── */
+function taskCalPrev(){ dashState.taskCursor.setMonth(dashState.taskCursor.getMonth()-1); dashState.taskCursor=new Date(dashState.taskCursor); taskCalRender(); }
+function taskCalNext(){ dashState.taskCursor.setMonth(dashState.taskCursor.getMonth()+1); dashState.taskCursor=new Date(dashState.taskCursor); taskCalRender(); }
+
+function taskCalRender(){
+  const grid = document.getElementById('taskcal-grid');
+  if(!grid) return;
+  const cur = dashState.taskCursor;
+  const year = cur.getFullYear(), month = cur.getMonth();
+  document.getElementById('taskcal-period').textContent = MOIS_FR[month]+' '+year;
+
+  const first = new Date(year, month, 1);
+  let startDay = first.getDay(); startDay = startDay===0?6:startDay-1;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const prevDays = new Date(year, month, 0).getDate();
+  const todayStr = dashDateStr(new Date());
+
+  let html='';
+  for(let i=startDay-1;i>=0;i--) html += '<div class="cal-day other-month"><div class="cal-day-num">'+(prevDays-i)+'</div></div>';
+
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr = year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isToday = dateStr===todayStr;
+    const dayTasks = dashState.tasks.filter(t=>t.date===dateStr);
+
+    let items='';
+    dayTasks.slice(0,3).forEach(t=>{
+      const cls = t.done ? 'done' : (t.priority||'normal');
+      const safe = (t.name||'').replace(/"/g,'').replace(/</g,'&lt;');
+      items += '<div class="taskcal-item '+cls+'" onclick="event.stopPropagation();taskEdit(\''+t.id+'\')" title="'+safe+'">'+safe+'</div>';
+    });
+    if(dayTasks.length>3) items += '<div class="taskcal-more">+'+(dayTasks.length-3)+'</div>';
+
+    html += '<div class="cal-day'+(isToday?' today':'')+'" onclick="taskQuickAdd(\''+dateStr+'\')">'
+      + '<div class="cal-day-num">'+d+'</div>'
+      + '<div class="cal-day-add"><i class="ti ti-plus"></i></div>'
+      + '<div class="taskcal-day-tasks">'+items+'</div></div>';
+  }
+  const total = startDay + daysInMonth;
+  const remain = (7-(total%7))%7;
+  for(let i=1;i<=remain;i++) html += '<div class="cal-day other-month"><div class="cal-day-num">'+i+'</div></div>';
+
+  grid.innerHTML = html;
+}
+
+function taskQuickAdd(dateStr){
+  taskOpenModal();
+  document.getElementById('task-date').value = dateStr;
 }
 
 /* ══════════════════════════════════════════
@@ -1760,16 +2052,14 @@ const CAL_NETS = {
 };
 
 // Données des clients (durée de contrat)
-const CAL_CLIENTS = {
-  soleil:   { name:'Soleil Communication', color:'#00C6E0', start:'2026-03-14', months:3 },
-  fanta:    { name:'Maquis Chez Fanta',    color:'#F5B731', start:'2026-06-01', months:3 },
-  elegance: { name:'Boutique Élégance CI', color:'#7B61FF', start:'2026-06-15', months:6 }
-};
+// Clients du calendrier : chargés depuis le serveur (vide au départ)
+let CAL_CLIENTS = {};
+const CAL_PALETTE = ['#00C6E0','#F5B731','#7B61FF','#0066CC','#E1306C','#0a6b4f','#d9970a'];
 
 let calState = {
-  client: 'soleil',
+  client: '',
   view: 'month',
-  cursor: new Date(2026, 5, 1), // Juin 2026
+  cursor: new Date(),
   selectedNet: null,
   posts: {}  // { clientKey: [ {id,date,hour,net,type,status,text,note} ] }
 };
@@ -1777,25 +2067,89 @@ let calState = {
 const MOIS_FR = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const JOURS_FR = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 
-// ── Persistance (localStorage) ──
-function calLoad(){
+function calToken(){
+  return accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+}
+
+// ── Charge la liste des clients + leurs contrats depuis le serveur ──
+async function calLoadClients(){
+  const token = calToken();
+  const sel = document.getElementById('cal-client');
+  if(!token){
+    sel.innerHTML = '<option value="">⚠️ Valide ta clé admin (Gestion des accès)</option>';
+    document.getElementById('cal-contract-info').innerHTML = '';
+    document.getElementById('cal-grid').innerHTML = '';
+    return;
+  }
   try {
-    const raw = localStorage.getItem('pm_calendar');
-    if(raw) calState.posts = JSON.parse(raw);
-  } catch(e){ calState.posts = {}; }
-  // Données de démo pour Soleil si vide
-  if(!calState.posts.soleil){
-    calState.posts.soleil = [
-      { id:'d1', date:'2026-06-03', hour:'20:00', net:'TikTok', type:'🎬 Reel / Vidéo', status:'done', text:'Qu\'attends-tu pour venir récupérer ta PS4', note:'' },
-      { id:'d2', date:'2026-06-05', hour:'20:30', net:'Instagram', type:'🖼️ Carrousel', status:'done', text:'Nouveaux iPhone en boutique', note:'' },
-      { id:'d3', date:'2026-06-10', hour:'20:00', net:'TikTok', type:'🎬 Reel / Vidéo', status:'ready', text:'Déballage nouveau stock', note:'Tournage la veille' },
-      { id:'d4', date:'2026-06-12', hour:'19:00', net:'Facebook', type:'📸 Photo simple', status:'idea', text:'Promo week-end', note:'' }
-    ];
-    calSave();
+    const [rc, rk] = await Promise.all([
+      fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } }),
+      fetch('/api/admin/contracts', { headers:{ 'x-admin-token': token } })
+    ]);
+    const dc = await rc.json();
+    const dk = await rk.json().catch(()=>({contracts:[]}));
+
+    if(!dc.success || !dc.clients.length){
+      CAL_CLIENTS = {};
+      sel.innerHTML = '<option value="">Aucun client — crée-en dans Gestion des accès</option>';
+      document.getElementById('cal-contract-info').innerHTML = '';
+      calState.client=''; calRender();
+      return;
+    }
+
+    // Contrats actifs indexés par clientKey
+    const contratParClient = {};
+    (dk.contracts||[]).forEach(ct=>{
+      if(ct.clientKey && ct.statut !== 'resilié') contratParClient[ct.clientKey] = ct;
+    });
+
+    CAL_CLIENTS = {};
+    dc.clients.filter(c=>c.clientKey).forEach((c,i)=>{
+      const ct = contratParClient[c.clientKey];
+      CAL_CLIENTS[c.clientKey] = {
+        name: c.name,
+        color: CAL_PALETTE[i % CAL_PALETTE.length],
+        start: ct ? ct.dateDebut : null,
+        end:   ct ? ct.dateFin   : null
+      };
+    });
+
+    const keys = Object.keys(CAL_CLIENTS);
+    const current = calState.client;
+    sel.innerHTML = keys.map(k=>'<option value="'+k+'">'+CAL_CLIENTS[k].name+'</option>').join('');
+    if(current && keys.includes(current)) sel.value = current;
+    else calState.client = keys[0];
+
+    await calChangeClient();
+  } catch(e){
+    sel.innerHTML = '<option value="">Erreur de chargement</option>';
   }
 }
-function calSave(){
-  try { localStorage.setItem('pm_calendar', JSON.stringify(calState.posts)); } catch(e){}
+
+// ── Charge les publications du client depuis le serveur ──
+async function calLoadEvents(){
+  const token = calToken();
+  if(!token || !calState.client){ calRender(); return; }
+  try {
+    const r = await fetch('/api/admin/calendar/'+encodeURIComponent(calState.client), { headers:{ 'x-admin-token': token } });
+    const d = await r.json();
+    calState.posts[calState.client] = (d.success && d.events) ? d.events : [];
+  } catch(e){ calState.posts[calState.client] = []; }
+  calRender();
+}
+
+// ── Sauvegarde sur le serveur ──
+async function calSave(){
+  const token = calToken();
+  if(!token || !calState.client) return false;
+  try {
+    const r = await fetch('/api/admin/calendar/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, clientKey: calState.client, events: calState.posts[calState.client] || [] })
+    });
+    const d = await r.json();
+    return !!d.success;
+  } catch(e){ return false; }
 }
 
 function calGetPosts(){
@@ -1803,19 +2157,25 @@ function calGetPosts(){
 }
 
 // ── Changement client ──
-function calChangeClient(){
+async function calChangeClient(){
   const sel = document.getElementById('cal-client');
-  calState.client = sel.value;
+  if(sel.value) calState.client = sel.value;
   const c = CAL_CLIENTS[calState.client];
-  // Mettre à jour l'info contrat
-  const start = new Date(c.start);
-  const end = new Date(start); end.setMonth(end.getMonth()+c.months);
-  const fmt = d => d.getDate()+' '+MOIS_FR[d.getMonth()]+' '+d.getFullYear();
-  document.getElementById('cal-contract-info').innerHTML =
-    '<i class="ti ti-file-text"></i> Contrat : <strong>'+fmt(start)+' → '+fmt(end)+'</strong> · '+c.months+' mois';
-  // Se positionner sur le début du contrat
-  calState.cursor = new Date(start.getFullYear(), start.getMonth(), 1);
-  calRender();
+  const info = document.getElementById('cal-contract-info');
+
+  if(!c){ info.innerHTML=''; calRender(); return; }
+
+  if(c.start && c.end){
+    const start = new Date(c.start), end = new Date(c.end);
+    const fmt = d => d.getDate()+' '+MOIS_FR[d.getMonth()]+' '+d.getFullYear();
+    const mois = Math.max(1, Math.round((end-start)/(1000*60*60*24*30)));
+    info.innerHTML = '<i class="ti ti-file-text"></i> Contrat : <strong>'+fmt(start)+' → '+fmt(end)+'</strong> · '+mois+' mois';
+    calState.cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+  } else {
+    info.innerHTML = '<i class="ti ti-info-circle"></i> Aucun contrat actif — toutes les dates sont ouvertes';
+    calState.cursor = new Date();
+  }
+  await calLoadEvents();
 }
 
 // ── Vue ──
@@ -1846,8 +2206,10 @@ function calToday(){ calState.cursor = new Date(); calRender(); }
 // ── Contrat : une date est-elle dans la période ? ──
 function calInContract(dateStr){
   const c = CAL_CLIENTS[calState.client];
+  // Pas de contrat connu → toutes les dates sont ouvertes
+  if(!c || !c.start || !c.end) return true;
   const start = new Date(c.start);
-  const end = new Date(start); end.setMonth(end.getMonth()+c.months);
+  const end = new Date(c.end);
   const d = new Date(dateStr);
   return d >= start && d <= end;
 }
@@ -2009,7 +2371,7 @@ function calPickNet(el){
   calState.selectedNet = el.dataset.net;
 }
 
-function calSavePub(){
+async function calSavePub(){
   const id = document.getElementById('pub-id').value;
   const date = document.getElementById('pub-date').value;
   if(!date){ alert('Choisis une date.'); return; }
@@ -2036,23 +2398,21 @@ function calSavePub(){
   } else {
     calState.posts[calState.client].push(post);
   }
-  calSave();
+  await calSave();
   calCloseModal();
   calRender();
 }
 
-function calDeletePub(){
+async function calDeletePub(){
   const id = document.getElementById('pub-id').value;
   if(!id) return;
   if(!confirm('Supprimer cette publication ?')) return;
   calState.posts[calState.client] = calState.posts[calState.client].filter(x=>x.id!==id);
-  calSave();
+  await calSave();
   calCloseModal();
   calRender();
 }
 
-// Initialiser le calendrier au chargement
-calLoad();
 
 /* ══════════════════════════════════════════
    PERFORMANCE RÉSEAUX
@@ -3968,6 +4328,57 @@ showMain('dashboard', document.querySelector('.ni'));
       <div style="flex:1"></div>
       <button class="btn" onclick="pubCloseModal()">Annuler</button>
       <button class="btn btn-navy" onclick="pubSave()"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL TÂCHE ══ -->
+<div class="cal-modal-overlay" id="task-modal" onclick="taskModalBg(event)">
+  <div class="cal-modal">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title" id="task-modal-title">Nouvelle tâche</div>
+      <button class="cal-modal-close" onclick="taskCloseModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body">
+      <input type="hidden" id="task-id"/>
+
+      <div class="cal-field">
+        <label>Tâche à faire</label>
+        <input type="text" id="task-name" placeholder="Ex: Filmer le contenu déballage iPhone"/>
+      </div>
+
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Date d'échéance</label>
+          <input type="date" id="task-date"/>
+        </div>
+        <div class="cal-field">
+          <label>Priorité</label>
+          <select id="task-priority">
+            <option value="urgent">🔴 Urgent</option>
+            <option value="normal" selected>🟠 Normal</option>
+            <option value="low">🟡 Peut attendre</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="cal-field">
+        <label>Client concerné <span style="font-weight:400;color:var(--hint)">(optionnel)</span></label>
+        <select id="task-client">
+          <option value="">— Aucun client précis —</option>
+        </select>
+      </div>
+
+      <div class="cal-field">
+        <label>Note <span style="font-weight:400;color:var(--hint)">(optionnel)</span></label>
+        <input type="text" id="task-note" placeholder="Ex: avant 18h, matériel à préparer..."/>
+      </div>
+    </div>
+    <div class="cal-modal-foot">
+      <button class="btn" id="task-delete-btn" onclick="taskDelete()" style="color:var(--dn);border-color:rgba(162,45,45,.2);display:none;"><i class="ti ti-trash" style="font-size:13px"></i> Supprimer</button>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="taskCloseModal()">Annuler</button>
+      <button class="btn btn-navy" onclick="taskSave()"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer</button>
     </div>
   </div>
 </div>
