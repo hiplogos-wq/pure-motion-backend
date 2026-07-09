@@ -186,7 +186,7 @@ const INVITES = {};
 // ══════════════════════════════════════════
 app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 app.use(cors({ origin: ALLOWED_ORIGIN === '*' ? '*' : ALLOWED_ORIGIN.split(','), methods: ['GET','POST'] }));
-app.use(express.json());
+app.use(express.json({ limit: '12mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -840,6 +840,101 @@ app.get('/api/admin/social-proof', (req, res) => {
 });
 
 // ══════════════════════════════════════════
+// IA — LECTURE DE CAPTURES D'ÉCRAN DE STATS
+// POST /api/admin/ai/read-stats
+// Body : { adminToken, images:[{media_type, data(base64)}], reseau }
+// Renvoie les chiffres détectés — l'admin valide avant enregistrement
+// ══════════════════════════════════════════
+app.post('/api/admin/ai/read-stats', async (req, res) => {
+  const { adminToken, images, reseau } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!ANTHROPIC_API_KEY) {
+    return res.status(503).json({ success:false, error:'Clé API IA non configurée (ANTHROPIC_API_KEY sur Render).' });
+  }
+  if (!Array.isArray(images) || images.length === 0) {
+    return res.status(400).json({ success:false, error:'Aucune image reçue.' });
+  }
+  if (images.length > 4) {
+    return res.status(400).json({ success:false, error:'4 captures maximum à la fois.' });
+  }
+
+  const ALLOWED = ['image/png','image/jpeg','image/webp','image/gif'];
+  for (const img of images) {
+    if (!img || !img.data || !ALLOWED.includes(img.media_type)) {
+      return res.status(400).json({ success:false, error:'Format d\'image non supporté (PNG, JPEG, WEBP ou GIF).' });
+    }
+  }
+
+  const instruction = `Tu analyses des captures d'écran de statistiques de réseaux sociaux${reseau ? ' ('+reseau+')' : ''}.
+
+Lis attentivement TOUS les chiffres visibles et extrais les métriques. Attention aux abréviations : "137K" = 137000, "1,9K" = 1900, "1.2M" = 1200000. Les espaces et virgules françaises séparent les milliers ("93 900" = 93900).
+
+Si plusieurs captures sont fournies, elles concernent le MÊME compte : combine les informations (une capture peut montrer les vues, une autre les abonnés).
+
+Réponds UNIQUEMENT en JSON valide, sans texte ni backticks autour :
+{
+  "reseau": "TikTok|Instagram|Facebook|YouTube ou null",
+  "date": "AAAA-MM-JJ ou null si non visible",
+  "views": nombre ou null,
+  "followers": nombre ou null,
+  "likes": nombre ou null,
+  "comments": nombre ou null,
+  "reach": nombre ou null,
+  "shares": nombre ou null,
+  "confiance": "haute|moyenne|basse",
+  "remarques": "ce que tu n'as pas pu lire ou ce dont tu n'es pas sûr"
+}
+
+Mets null (pas 0) pour toute métrique absente ou illisible. Ne devine jamais un chiffre.`;
+
+  const content = images.map(img => ({
+    type: 'image',
+    source: { type: 'base64', media_type: img.media_type, data: img.data }
+  }));
+  content.push({ type: 'text', text: instruction });
+
+  try {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content }]
+      })
+    });
+
+    if (!apiRes.ok) {
+      const errText = await apiRes.text();
+      log('ERROR', 'Erreur API vision', { status: apiRes.status, body: errText.slice(0,200) });
+      return res.status(502).json({ success:false, error:'L\'IA n\'a pas pu lire l\'image (erreur '+apiRes.status+'). Vérifie ta clé API et ton crédit.' });
+    }
+
+    const data = await apiRes.json();
+    let text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+    text = text.replace(/```json/g,'').replace(/```/g,'').trim();
+
+    let stats;
+    try { stats = JSON.parse(text); }
+    catch(e){
+      log('WARN', 'Réponse vision non-JSON', { text: text.slice(0,200) });
+      return res.status(502).json({ success:false, error:'L\'IA a répondu dans un format inattendu. Réessaie avec une capture plus nette.' });
+    }
+
+    log('INFO', 'Stats lues depuis capture', { reseau: stats.reseau, confiance: stats.confiance });
+    return res.json({ success:true, stats });
+
+  } catch (e) {
+    log('ERROR', 'Exception lecture capture', { message: e.message });
+    return res.status(500).json({ success:false, error:'Erreur technique lors de l\'analyse de l\'image.' });
+  }
+});
+
+// ══════════════════════════════════════════
 // PAGES TABLEAUX DE BORD
 // ══════════════════════════════════════════
 
@@ -896,4 +991,3 @@ app.listen(PORT, () => {
   console.log('   GET  /api/health');
   console.log('');
 });
-
