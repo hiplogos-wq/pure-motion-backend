@@ -38,7 +38,7 @@ const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'pm_data.json');
 
 // Structure : { clients:{...}, stats:{clientKey:[...]}, calendar:{clientKey:[...]} }
-let STORE = { clients: {}, stats: {}, calendar: {} };
+let STORE = { clients: {}, stats: {}, calendar: {}, publications: {} };
 
 function loadStore() {
   try {
@@ -47,11 +47,13 @@ function loadStore() {
       if (!STORE.clients) STORE.clients = {};
       if (!STORE.stats) STORE.stats = {};
       if (!STORE.calendar) STORE.calendar = {};
+      if (!STORE.posts) STORE.posts = {};
+      if (!STORE.publications) STORE.publications = {};
       console.log('✅ Données chargées depuis le fichier');
     }
   } catch (e) {
     console.warn('⚠️ Impossible de charger les données, démarrage à vide :', e.message);
-    STORE = { clients: {}, stats: {}, calendar: {} };
+    STORE = { clients: {}, stats: {}, calendar: {}, publications: {} };
   }
 }
 
@@ -426,6 +428,7 @@ app.post('/api/admin/clients/delete', (req, res) => {
 
   // 2. Efface ses stats
   if (clientKey && STORE.stats[clientKey]) delete STORE.stats[clientKey];
+  if (clientKey && STORE.posts && STORE.posts[clientKey]) delete STORE.posts[clientKey];
   // 3. Efface son calendrier
   if (clientKey && STORE.calendar[clientKey]) delete STORE.calendar[clientKey];
   // 4. Efface ses contrats
@@ -495,6 +498,42 @@ app.get('/api/client/stats/:clientKey', (req, res) => {
     return res.json({ success:true, entries:[], published:false });
   }
   return res.json({ success:true, entries: s.entries || [], published:true, updatedAt: s.updatedAt || null });
+});
+
+// ══════════════════════════════════════════
+// PUBLICATIONS (liens de posts par réseau)
+// ══════════════════════════════════════════
+
+// Admin enregistre la liste des publications d'un client
+// POST /api/admin/publications/save
+// Body : { adminToken, clientKey, items:[{id,url,reseau,titre,date}] }
+app.post('/api/admin/publications/save', (req, res) => {
+  const { adminToken, clientKey, items } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!clientKey) return res.status(400).json({ success:false, error:'clientKey requis.' });
+  if (!Array.isArray(items)) return res.status(400).json({ success:false, error:'items doit être une liste.' });
+
+  STORE.publications[clientKey] = { items, updatedAt: Date.now() };
+  saveStore();
+  log('INFO', 'Publications sauvegardées', { clientKey, count: items.length });
+  return res.json({ success:true, message:'Publications enregistrées.', count: items.length });
+});
+
+// Admin récupère les publications d'un client
+// GET /api/admin/publications/:clientKey  (header x-admin-token)
+app.get('/api/admin/publications/:clientKey', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+  const p = STORE.publications[req.params.clientKey] || { items:[] };
+  return res.json({ success:true, items: p.items || [] });
+});
+
+// Client récupère SES publications (toujours visibles)
+// GET /api/client/publications/:clientKey
+app.get('/api/client/publications/:clientKey', (req, res) => {
+  const p = STORE.publications[req.params.clientKey] || { items:[] };
+  return res.json({ success:true, items: p.items || [] });
 });
 
 // ══════════════════════════════════════════
@@ -685,6 +724,43 @@ Sois précis, créatif et concret. 3-4 éléments par liste. Adapte au secteur $
 });
 
 // ══════════════════════════════════════════
+// PUBLICATIONS (liens de posts partagés au client)
+// ══════════════════════════════════════════
+
+// Admin enregistre les publications d'un client
+// POST /api/admin/posts/save
+app.post('/api/admin/posts/save', (req, res) => {
+  const { adminToken, clientKey, posts } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!clientKey) return res.status(400).json({ success:false, error:'clientKey requis.' });
+  if (!Array.isArray(posts)) return res.status(400).json({ success:false, error:'posts doit être une liste.' });
+
+  if (!STORE.posts) STORE.posts = {};
+  STORE.posts[clientKey] = { items: posts, updatedAt: Date.now() };
+  saveStore();
+  log('INFO', 'Publications enregistrées', { clientKey, count: posts.length });
+  return res.json({ success:true, message:'Publications enregistrées.', count: posts.length });
+});
+
+// Admin récupère les publications d'un client
+// GET /api/admin/posts/:clientKey  (header x-admin-token)
+app.get('/api/admin/posts/:clientKey', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+  const p = (STORE.posts && STORE.posts[req.params.clientKey]) || { items: [] };
+  return res.json({ success:true, posts: p.items || [] });
+});
+
+// Client récupère SES publications (uniquement celles marquées visibles)
+// GET /api/client/posts/:clientKey
+app.get('/api/client/posts/:clientKey', (req, res) => {
+  const p = (STORE.posts && STORE.posts[req.params.clientKey]) || { items: [] };
+  const visibles = (p.items || []).filter(x => x.published);
+  return res.json({ success:true, posts: visibles });
+});
+
+// ══════════════════════════════════════════
 // PAGES TABLEAUX DE BORD
 // ══════════════════════════════════════════
 
@@ -741,3 +817,4 @@ app.listen(PORT, () => {
   console.log('   GET  /api/health');
   console.log('');
 });
+
