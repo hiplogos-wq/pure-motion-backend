@@ -598,6 +598,43 @@ textarea{resize:none;line-height:1.5;}
 .pub-visible-toggle strong{color:var(--txt);}
 .pub-visible-toggle:has(input:checked){border-color:var(--up);background:rgba(10,107,79,.03);}
 
+/* ══ PREUVES SOCIALES DYNAMIQUES ══ */
+.proof-intro{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.proof-intro-ico{font-size:28px;flex-shrink:0;}
+.proof-intro-title{font-size:15px;font-weight:800;color:var(--txt);}
+.proof-intro-sub{font-size:12px;color:var(--mut);line-height:1.5;margin-top:2px;}
+.proof-intro .btn{flex-shrink:0;margin-left:auto;}
+.proof-updated{font-size:11px;color:var(--hint);margin-bottom:12px;text-align:right;}
+
+.proof-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.proof-sum-card{background:linear-gradient(135deg,var(--navy),#1a3a8a);color:#fff;border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;}
+.proof-sum-card::after{content:'';position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:rgba(0,198,224,.12);}
+.proof-sum-val{font-size:24px;font-weight:800;color:var(--gold);position:relative;}
+.proof-sum-lbl{font-size:11px;color:rgba(255,255,255,.65);margin-top:3px;position:relative;}
+
+.proof-client-card{background:var(--white);border:1px solid var(--bord);border-radius:14px;padding:18px 20px;margin-bottom:12px;}
+.proof-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.proof-ava{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,var(--cyan),var(--blue));color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;flex-shrink:0;}
+.proof-name{font-size:15px;font-weight:800;color:var(--txt);}
+.proof-meta{font-size:11px;color:var(--hint);margin-top:1px;}
+.proof-badge{margin-left:auto;font-size:11px;font-weight:700;padding:4px 12px;border-radius:14px;}
+.proof-badge.hot{background:#e1f5ee;color:var(--up);}
+.proof-badge.good{background:#e6f1fb;color:#185fa5;}
+.proof-badge.flat{background:var(--surf);color:var(--hint);}
+
+.proof-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.proof-stat-box{background:var(--surf);border-radius:9px;padding:11px 13px;}
+.proof-stat-val{font-size:17px;font-weight:800;color:var(--txt);}
+.proof-stat-lbl{font-size:10px;color:var(--hint);margin-top:2px;}
+.proof-stat-growth{font-size:11px;font-weight:700;color:var(--up);margin-top:3px;}
+
+.proof-pitch{background:#fffbf0;border-left:3px solid var(--gold);border-radius:0 9px 9px 0;padding:11px 14px;font-size:12px;color:#7a5800;line-height:1.6;}
+.proof-pitch strong{color:#5a4200;}
+.proof-copy-btn{margin-top:10px;font-size:11px;color:var(--cyan);cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:5px;}
+.proof-copy-btn:hover{text-decoration:underline;}
+
+@media(max-width:900px){.proof-summary-grid{grid-template-columns:1fr 1fr;}.proof-stats-row{grid-template-columns:1fr 1fr;}}
+
 </style>
 </head>
 <body>
@@ -1198,12 +1235,23 @@ function pmLogout(){
     </div>
 
     <div class="panel" id="panel-preuves">
-      <div class="proof-grid">
-        <div class="proof-card"><div class="proof-client">Soleil Communication · TikTok</div><div class="proof-stat">137K vues</div><div class="proof-desc">Boutique téléphones, Abidjan. 3 mois.</div><div class="proof-delta">↑ +3 246% followers</div></div>
-        <div class="proof-card"><div class="proof-client">Soleil Communication · Post viral</div><div class="proof-stat">42K vues</div><div class="proof-desc">Un seul Reel organique — PS4</div><div class="proof-delta">↑ Meilleure portée de la page</div></div>
-        <div class="proof-card"><div class="proof-client">Soleil Communication · Audience</div><div class="proof-stat">93,9K</div><div class="proof-desc">Spectateurs uniques sans budget pub</div><div class="proof-delta">↑ +840% en 60 jours</div></div>
+
+      <div class="proof-intro">
+        <div class="proof-intro-ico">🏆</div>
+        <div>
+          <div class="proof-intro-title">Preuves sociales</div>
+          <div class="proof-intro-sub">Générées automatiquement à partir des vraies statistiques de tes clients. Utilise-les dans tes propositions commerciales pour montrer tes résultats.</div>
+        </div>
+        <button class="btn btn-sm" onclick="proofLoad()"><i class="ti ti-refresh" style="font-size:13px"></i> Actualiser</button>
       </div>
+
+      <div class="perf-hint-box" id="proof-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour charger les preuves sociales.</div>
+
+      <div class="proof-updated" id="proof-updated"></div>
+      <div id="proof-content"></div>
+
     </div>
+
     <div class="panel" id="panel-acces">
 
       <div class="acces-intro">
@@ -1523,6 +1571,10 @@ function showMain(section, el) {
   // Rendu spécial de la performance
   if(section === 'performance'){
     perfLoadClients();
+  }
+  // Rendu spécial des preuves sociales
+  if(section === 'preuves'){
+    proofLoad();
   }
   // Rendu spécial des publications
   if(section === 'publications'){
@@ -3193,6 +3245,99 @@ async function pubDelete(){
   if(ok){ pubCloseModal(); pubRender(); }
 }
 
+/* ══════════════════════════════════════════
+   PREUVES SOCIALES DYNAMIQUES
+   ══════════════════════════════════════════ */
+function proofFmt(n){
+  n=Number(n)||0;
+  if(n>=1000000) return (n/1000000).toFixed(1).replace('.0','')+'M';
+  if(n>=1000) return (n/1000).toFixed(1).replace('.0','')+'K';
+  return String(n);
+}
+
+async function proofLoad(){
+  const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+  const hint = document.getElementById('proof-token-hint');
+  if(!token){ if(hint) hint.style.display='flex'; document.getElementById('proof-content').innerHTML=''; return; }
+  if(hint) hint.style.display='none';
+
+  document.getElementById('proof-content').innerHTML='<div class="ai-loading"><div class="spin-big"></div><div>Calcul des preuves sociales...</div></div>';
+
+  try {
+    const r = await fetch('/api/admin/social-proof', { headers:{ 'x-admin-token': token } });
+    const data = await r.json();
+    if(!data.success){ document.getElementById('proof-content').innerHTML='<div class="perf-empty"><div class="perf-empty-title">Erreur</div><div>'+(data.error||'')+'</div></div>'; return; }
+    proofRender(data);
+  } catch(e){
+    document.getElementById('proof-content').innerHTML='<div class="perf-empty"><i class="ti ti-wifi-off"></i><div class="perf-empty-title">Erreur de connexion</div></div>';
+  }
+}
+
+function proofRender(data){
+  const box = document.getElementById('proof-content');
+  const now = new Date();
+  document.getElementById('proof-updated').textContent = 'Mis à jour le '+now.toLocaleDateString('fr-FR')+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+
+  if(!data.proofs.length){
+    box.innerHTML='<div class="perf-empty"><i class="ti ti-trophy"></i><div class="perf-empty-title">Aucune preuve sociale disponible</div><div>Saisis les statistiques de tes clients dans le module Performance pour générer automatiquement tes preuves sociales.</div></div>';
+    return;
+  }
+
+  const r = data.resume;
+  let html = '<div class="proof-summary-grid">'
+    + '<div class="proof-sum-card"><div class="proof-sum-val">'+r.clientsAccompagnes+'</div><div class="proof-sum-lbl">Clients accompagnés</div></div>'
+    + '<div class="proof-sum-card"><div class="proof-sum-val">'+proofFmt(r.totalVues)+'</div><div class="proof-sum-lbl">Vues générées au total</div></div>'
+    + '<div class="proof-sum-card"><div class="proof-sum-val">'+proofFmt(r.totalAbonnes)+'</div><div class="proof-sum-lbl">Abonnés cumulés</div></div>'
+    + '<div class="proof-sum-card"><div class="proof-sum-val">+'+r.meilleureCroissance+'%</div><div class="proof-sum-lbl">Meilleure croissance</div></div>'
+    + '</div>';
+
+  data.proofs.forEach(p=>{
+    const initial = p.clientName.charAt(0).toUpperCase();
+    let badge, bcls;
+    if(p.croissanceVues > 100){ badge='🔥 Résultat exceptionnel'; bcls='hot'; }
+    else if(p.croissanceVues > 20){ badge='📈 Belle progression'; bcls='good'; }
+    else { badge='➡️ En cours'; bcls='flat'; }
+
+    // Pitch commercial généré automatiquement
+    const moisTxt = p.moisAccompagnement+' mois';
+    let pitch = '<strong>'+p.clientName+'</strong> — en '+moisTxt+' d\'accompagnement sur '+p.reseau+', nous avons porté le compte à <strong>'+proofFmt(p.vues)+' vues</strong>';
+    if(p.croissanceVues > 0) pitch += ' (<strong>+'+p.croissanceVues+'%</strong>)';
+    pitch += ' et <strong>'+proofFmt(p.abonnes)+' abonnés</strong>';
+    if(p.croissanceAbonnes > 0) pitch += ' (+'+p.croissanceAbonnes+'%)';
+    pitch += ', avec un taux d\'engagement de <strong>'+p.tauxEngagement+'%</strong> — sans budget publicitaire.';
+
+    const pitchTexte = p.clientName+' — en '+moisTxt+' sur '+p.reseau+' : '+proofFmt(p.vues)+' vues'
+      +(p.croissanceVues>0?' (+'+p.croissanceVues+'%)':'')+', '+proofFmt(p.abonnes)+' abonnés'
+      +(p.croissanceAbonnes>0?' (+'+p.croissanceAbonnes+'%)':'')+', engagement '+p.tauxEngagement+'%.';
+
+    html += '<div class="proof-client-card">'
+      + '<div class="proof-head"><div class="proof-ava">'+initial+'</div>'
+      + '<div><div class="proof-name">'+p.clientName+'</div><div class="proof-meta">'+p.reseau+' · '+p.nbReleves+' relevé'+(p.nbReleves>1?'s':'')+' · dernière donnée '+(p.derniereMaj||'').split('-').reverse().join('/')+'</div></div>'
+      + '<div class="proof-badge '+bcls+'">'+badge+'</div></div>'
+      + '<div class="proof-stats-row">'
+      + '<div class="proof-stat-box"><div class="proof-stat-val">'+proofFmt(p.vues)+'</div><div class="proof-stat-lbl">Vues</div>'+(p.croissanceVues>0?'<div class="proof-stat-growth">↑ +'+p.croissanceVues+'%</div>':'')+'</div>'
+      + '<div class="proof-stat-box"><div class="proof-stat-val">'+proofFmt(p.abonnes)+'</div><div class="proof-stat-lbl">Abonnés</div>'+(p.croissanceAbonnes>0?'<div class="proof-stat-growth">↑ +'+p.croissanceAbonnes+'%</div>':'')+'</div>'
+      + '<div class="proof-stat-box"><div class="proof-stat-val">'+proofFmt(p.portee)+'</div><div class="proof-stat-lbl">Portée</div></div>'
+      + '<div class="proof-stat-box"><div class="proof-stat-val">'+p.tauxEngagement+'%</div><div class="proof-stat-lbl">Engagement</div></div>'
+      + '</div>'
+      + '<div class="proof-pitch">💬 '+pitch+'</div>'
+      + '<div class="proof-copy-btn" onclick="proofCopy(this,\''+pitchTexte.replace(/'/g,"\\'").replace(/"/g,'&quot;')+'\')"><i class="ti ti-copy"></i> Copier ce pitch pour une proposition</div>'
+      + '</div>';
+  });
+
+  box.innerHTML = html;
+}
+
+function proofCopy(el, texte){
+  const ta = document.createElement('textarea');
+  ta.value = texte;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); el.innerHTML='<i class="ti ti-check"></i> Copié !'; setTimeout(()=>{ el.innerHTML='<i class="ti ti-copy"></i> Copier ce pitch pour une proposition'; },2000); }
+  catch(e){ alert('Copie manuelle :\n\n'+texte); }
+  document.body.removeChild(ta);
+}
+
 /* ── INIT ── */
 document.querySelectorAll('.ni').forEach(n => n.addEventListener('click', function(){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));
@@ -3632,3 +3777,4 @@ showMain('dashboard', document.querySelector('.ni'));
 
 </body>
 </html>
+
