@@ -186,6 +186,17 @@ app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false 
 app.use(cors({ origin: ALLOWED_ORIGIN === '*' ? '*' : ALLOWED_ORIGIN.split(','), methods: ['GET','POST'] }));
 app.use(express.json({ limit: '12mb' }));
 app.use(express.urlencoded({ extended: true }));
+// Le service worker ne doit JAMAIS être mis en cache par le navigateur,
+// sinon les mises à jour de l'application n'arrivent jamais.
+app.get('/sw.js', (req, res) => {
+  const f = path.join(__dirname, 'public', 'sw.js');
+  if (!fs.existsSync(f)) return res.status(404).end();
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.set('Service-Worker-Allowed', '/');
+  res.type('application/javascript');
+  return res.sendFile(f);
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── Rate limiting ──
