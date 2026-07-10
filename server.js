@@ -38,7 +38,7 @@ const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'pm_data.json');
 
 // Structure : { clients:{...}, stats:{clientKey:[...]}, calendar:{clientKey:[...]} }
-let STORE = { clients: {}, stats: {}, calendar: {}, publications: {} };
+let STORE = { clients: {}, stats: {}, calendar: {}, posts: {}, publications: {}, tasks: { items: [] }, prospects: { items: [] } };
 
 function loadStore() {
   try {
@@ -49,12 +49,13 @@ function loadStore() {
       if (!STORE.calendar) STORE.calendar = {};
       if (!STORE.posts) STORE.posts = {};
       if (!STORE.tasks) STORE.tasks = { items: [] };
+      if (!STORE.prospects) STORE.prospects = { items: [] };
       if (!STORE.publications) STORE.publications = {};
       console.log('✅ Données chargées depuis le fichier');
     }
   } catch (e) {
     console.warn('⚠️ Impossible de charger les données, démarrage à vide :', e.message);
-    STORE = { clients: {}, stats: {}, calendar: {}, publications: {} };
+    STORE = { clients: {}, stats: {}, calendar: {}, posts: {}, publications: {}, tasks: { items: [] }, prospects: { items: [] } };
   }
 }
 
@@ -1016,6 +1017,202 @@ app.get('/api/admin/tasks', (req, res) => {
   }
   const t = (STORE.tasks && STORE.tasks.items) ? STORE.tasks.items : [];
   return res.json({ success:true, tasks: t });
+});
+
+// ══════════════════════════════════════════
+// PROSPECTION — base de prospects
+// ══════════════════════════════════════════
+app.post('/api/admin/prospects/save', (req, res) => {
+  const { adminToken, prospects } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!Array.isArray(prospects)) return res.status(400).json({ success:false, error:'prospects doit être une liste.' });
+
+  if (!STORE.prospects) STORE.prospects = {};
+  STORE.prospects.items = prospects;
+  STORE.prospects.updatedAt = Date.now();
+  saveStore();
+  return res.json({ success:true, count: prospects.length });
+});
+
+app.get('/api/admin/prospects', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+  const p = (STORE.prospects && STORE.prospects.items) ? STORE.prospects.items : [];
+  return res.json({ success:true, prospects: p });
+});
+
+// ══════════════════════════════════════════
+// IA — ANALYSE D'UN PROSPECT
+// POST /api/admin/ai/prospect-score
+// L'IA note UNIQUEMENT les informations fournies par l'admin.
+// Elle n'invente aucune coordonnée.
+// ══════════════════════════════════════════
+app.post('/api/admin/ai/prospect-score', async (req, res) => {
+  const { adminToken, prospect } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!ANTHROPIC_API_KEY) return res.status(503).json({ success:false, error:'Clé API IA non configurée (ANTHROPIC_API_KEY sur Render).' });
+  if (!prospect || !prospect.nom || !prospect.secteur) {
+    return res.status(400).json({ success:false, error:'Nom et secteur du prospect requis.' });
+  }
+
+  const p = prospect;
+  const oui = (v) => v ? 'Oui' : 'Non';
+
+  const prompt = `Tu es expert en prospection commerciale pour PURE MOTION, agence Creative Tech à Abidjan (Côte d'Ivoire), spécialisée en vidéo social-first et Community Management.
+
+PROSPECT À ÉVALUER (informations relevées sur le terrain) :
+- Nom : ${p.nom}
+- Secteur : ${p.secteur}
+- Commune : ${p.commune || 'non précisée'}
+- Site web : ${oui(p.hasSite)}
+- Facebook : ${oui(p.hasFacebook)}
+- Instagram : ${oui(p.hasInstagram)}
+- TikTok : ${oui(p.hasTiktok)}
+- LinkedIn : ${oui(p.hasLinkedin)}
+- Nombre d'abonnés (approx.) : ${p.abonnes || 'inconnu'}
+- Dernière publication : ${p.dernierPost || 'inconnue'}
+- Fréquence de publication : ${p.frequence || 'inconnue'}
+- Qualité des visuels : ${p.qualiteVisuels || 'inconnue'}
+- Contenu vidéo : ${oui(p.hasVideo)}
+- Engagement observé : ${p.engagement || 'inconnu'}
+- Note Google : ${p.noteGoogle || 'inconnue'}
+- Identité visuelle cohérente : ${oui(p.brandingCoherent)}
+- Observations : ${p.notes || 'aucune'}
+
+RÈGLES STRICTES :
+- N'invente AUCUNE coordonnée (téléphone, email, nom de dirigeant, adresse).
+- Base-toi UNIQUEMENT sur les informations ci-dessus.
+- Si une information manque, dis-le dans "informations_manquantes".
+- Un prospect avec une présence digitale faible ou abandonnée = forte opportunité pour nous.
+
+Réponds UNIQUEMENT en JSON valide, sans backticks ni texte autour :
+{
+  "score": nombre entre 0 et 100,
+  "etoiles": nombre entre 1 et 5,
+  "niveau": "Très forte opportunité|Bonne opportunité|Opportunité moyenne|Faible|Très faible",
+  "pourquoi": "2-3 phrases expliquant pourquoi c'est (ou non) un bon prospect",
+  "faiblesses_detectees": ["...", "..."],
+  "services_recommandes": ["...", "...", "..."],
+  "priorite": "Cette semaine|Ce mois|Plus tard",
+  "budget_estime": "fourchette en FCFA/mois selon nos formules Bronze 50K / Platinum 80K / Gold 150K",
+  "angle_approche": "l'accroche à utiliser pour capter son attention",
+  "message_approche": "un message WhatsApp court (4-5 lignes max), professionnel et chaleureux, adapté au contexte ivoirien",
+  "informations_manquantes": ["...", "..."]
+}
+
+Sois honnête : si le prospect a déjà une excellente présence digitale, le score doit être bas (il a moins besoin de nous).`;
+
+  try {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!apiRes.ok) {
+      const t = await apiRes.text();
+      log('ERROR', 'Erreur IA prospect', { status: apiRes.status, body: t.slice(0,200) });
+      return res.status(502).json({ success:false, error:'L\'IA n\'a pas pu analyser (erreur '+apiRes.status+').' });
+    }
+
+    const data = await apiRes.json();
+    let text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+    text = text.replace(/```json/g,'').replace(/```/g,'').trim();
+
+    let analyse;
+    try { analyse = JSON.parse(text); }
+    catch(e){ return res.status(502).json({ success:false, error:'Réponse IA inattendue. Réessaie.' }); }
+
+    log('INFO', 'Prospect analysé', { nom: p.nom, score: analyse.score });
+    return res.json({ success:true, analyse });
+
+  } catch (e) {
+    log('ERROR', 'Exception analyse prospect', { message: e.message });
+    return res.status(500).json({ success:false, error:'Erreur technique.' });
+  }
+});
+
+// ══════════════════════════════════════════
+// IA — STRATÉGIE DE MARCHÉ (Abidjan)
+// POST /api/admin/ai/market-strategy
+// ══════════════════════════════════════════
+app.post('/api/admin/ai/market-strategy', async (req, res) => {
+  const { adminToken, secteursCibles } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!ANTHROPIC_API_KEY) return res.status(503).json({ success:false, error:'Clé API IA non configurée.' });
+
+  const prompt = `Tu es expert en intelligence économique et prospection B2B sur le marché ivoirien.
+
+CONTEXTE : PURE MOTION est une agence Creative Tech à Abidjan, spécialisée en vidéo social-first et Community Management. Formules : Bronze 50 000 FCFA/mois, Platinum 80 000 FCFA/mois, Gold 150 000 FCFA/mois.
+
+${secteursCibles ? 'SECTEURS QUI M\'INTÉRESSENT : ' + secteursCibles : ''}
+
+Donne une stratégie de prospection concrète, réaliste et adaptée à Abidjan.
+
+RÈGLE STRICTE : ne cite AUCUN nom d'entreprise réelle, aucun numéro, aucun email. Reste au niveau des secteurs, des communes et des méthodes.
+
+Réponds UNIQUEMENT en JSON valide, sans backticks :
+{
+  "secteurs_rentables": [
+    { "secteur": "...", "pourquoi": "...", "budget_type": "Bronze|Platinum|Gold", "difficulte": "Facile|Moyenne|Difficile" }
+  ],
+  "communes_prioritaires": [
+    { "commune": "...", "profil": "...", "secteurs_dominants": "..." }
+  ],
+  "ou_trouver_prospects": [
+    { "methode": "...", "comment": "..." }
+  ],
+  "signaux_bon_prospect": ["...", "..."],
+  "conseils_conversion": [
+    { "conseil": "...", "detail": "..." }
+  ],
+  "erreurs_a_eviter": ["...", "..."]
+}
+
+4-5 éléments par liste. Sois précis sur les réalités d'Abidjan (Cocody, Plateau, Yopougon, Marcory, Treichville, Abobo, Koumassi, Port-Bouët, Bingerville...).`;
+
+  try {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!apiRes.ok) {
+      const t = await apiRes.text();
+      return res.status(502).json({ success:false, error:'L\'IA n\'a pas pu répondre (erreur '+apiRes.status+').' });
+    }
+    const data = await apiRes.json();
+    let text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+    text = text.replace(/```json/g,'').replace(/```/g,'').trim();
+
+    let strategie;
+    try { strategie = JSON.parse(text); }
+    catch(e){ return res.status(502).json({ success:false, error:'Réponse IA inattendue. Réessaie.' }); }
+
+    log('INFO', 'Stratégie de marché générée');
+    return res.json({ success:true, strategie });
+
+  } catch (e) {
+    return res.status(500).json({ success:false, error:'Erreur technique.' });
+  }
 });
 
 // ══════════════════════════════════════════
