@@ -795,6 +795,64 @@ textarea{resize:none;line-height:1.5;}
   .ni,.cl-item,.task-item,.pub-card{-webkit-tap-highlight-color:rgba(0,198,224,.15);}
 }
 
+/* ══ PROSPECTION / ÉTUDE DE MARCHÉ ══ */
+.pro-intro{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.pro-intro-ico{font-size:28px;flex-shrink:0;}
+.pro-intro-title{font-size:15px;font-weight:800;color:var(--txt);}
+.pro-intro-sub{font-size:12px;color:var(--mut);line-height:1.5;margin-top:2px;}
+.pro-warning{background:#fffbf0;border:1px solid rgba(245,183,49,.4);border-radius:10px;padding:11px 14px;display:flex;gap:9px;font-size:11px;color:#7a5800;line-height:1.6;margin-bottom:16px;}
+.pro-warning i{font-size:15px;flex-shrink:0;margin-top:1px;}
+.pro-warning strong{color:#5a4200;}
+
+.pro-section-t{font-size:12px;font-weight:800;color:var(--navy);margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--bord);}
+.pro-section-t:first-child{margin-top:0;}
+.pro-section-h{font-weight:400;color:var(--hint);font-size:10px;}
+.pro-checks{display:flex;flex-wrap:wrap;gap:7px;}
+.pro-chk{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt);cursor:pointer;padding:7px 11px;border:1px solid var(--bord);border-radius:8px;}
+.pro-chk input{width:auto;margin:0;}
+.pro-chk:has(input:checked){border-color:var(--cyan);background:rgba(0,198,224,.05);font-weight:600;}
+
+.pro-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:15px 17px;margin-bottom:10px;}
+.pro-card-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
+.pro-score-ring{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;}
+.pro-name{font-size:14px;font-weight:800;color:var(--txt);}
+.pro-sub{font-size:11px;color:var(--mut);margin-top:2px;}
+.pro-stars{font-size:13px;color:var(--gold);letter-spacing:1px;}
+.pro-prio{margin-left:auto;font-size:10px;font-weight:700;padding:4px 11px;border-radius:12px;flex-shrink:0;}
+.pro-prio.semaine{background:#fcebeb;color:var(--dn);}
+.pro-prio.mois{background:#faeeda;color:#7a5800;}
+.pro-prio.tard{background:var(--surf);color:var(--hint);}
+.pro-prio.none{background:var(--surf);color:var(--hint);}
+
+.pro-why{background:var(--surf);border-radius:9px;padding:10px 13px;font-size:12px;color:var(--txt);line-height:1.6;margin-bottom:10px;}
+.pro-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.pro-tag{font-size:10px;font-weight:600;padding:3px 9px;border-radius:10px;background:#e6f1fb;color:#185fa5;}
+.pro-tag.weak{background:#fcebeb;color:var(--dn);}
+.pro-contacts{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--mut);margin-bottom:10px;}
+.pro-contacts span{display:flex;align-items:center;gap:4px;}
+.pro-msg{background:#e1f5ee;border-left:3px solid var(--up);border-radius:0 8px 8px 0;padding:10px 13px;font-size:12px;color:#085041;line-height:1.6;white-space:pre-line;}
+.pro-actions{display:flex;gap:7px;margin-top:11px;padding-top:11px;border-top:1px solid var(--bord);flex-wrap:wrap;}
+.pro-btn-sm{font-size:11px;font-weight:600;padding:6px 12px;border-radius:7px;border:1px solid var(--bord);background:var(--white);color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;}
+.pro-btn-sm:hover{background:var(--surf);color:var(--navy);}
+.pro-noanalysis{font-size:11px;color:var(--hint);font-style:italic;}
+
+.pro-strategy-form{display:flex;gap:9px;margin-bottom:6px;flex-wrap:wrap;}
+.pro-strategy-form input{flex:1;min-width:220px;padding:10px 13px;font-size:13px;border:1px solid var(--bord);border-radius:9px;outline:none;font-family:inherit;}
+.pro-strategy-form input:focus{border-color:var(--cyan);}
+.pro-strat-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:18px 20px;margin-top:14px;}
+.pro-strat-sect{margin-bottom:18px;}
+.pro-strat-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.pro-strat-item{background:var(--surf);border-radius:9px;padding:11px 14px;margin-bottom:7px;}
+.pro-strat-item-t{font-size:12px;font-weight:700;color:var(--txt);}
+.pro-strat-item-d{font-size:11px;color:var(--mut);line-height:1.5;margin-top:3px;}
+.pro-strat-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;margin-left:6px;}
+.pro-strat-list li{font-size:12px;color:var(--mut);line-height:1.7;}
+
+@media(max-width:820px){
+  .pro-strategy-form{flex-direction:column;}
+  .pro-strategy-form input,.pro-strategy-form .btn{width:100%;}
+}
+
 </style>
 </head>
 <body>
@@ -1410,7 +1468,64 @@ function pmLogout(){
 
     </div>
 
-    <div class="panel" id="panel-marche"><div class="alert info"><i class="ti ti-telescope"></i> Module Étude de marché — analyse concurrentielle par secteur.</div></div>
+    <div class="panel" id="panel-marche">
+
+      <div class="pro-intro">
+        <div class="pro-intro-ico">🎯</div>
+        <div>
+          <div class="pro-intro-title">Prospection & étude de marché</div>
+          <div class="pro-intro-sub">Saisis les entreprises que tu repères sur le terrain. L'IA analyse leur présence digitale, attribue un score, recommande les services à vendre et rédige ton message d'approche.</div>
+        </div>
+      </div>
+
+      <div class="pro-warning">
+        <i class="ti ti-info-circle"></i>
+        <div><strong>Les coordonnées viennent de toi, pas de l'IA.</strong> L'IA n'invente jamais un numéro ou un email — elle analyse et note ce que tu as réellement observé (Google Maps, réseaux sociaux, terrain).</div>
+      </div>
+
+      <div class="perf-hint-box" id="pro-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour utiliser ce module.</div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid" id="pro-kpis"></div>
+
+      <!-- Barre d'outils -->
+      <div class="perf-toolbar">
+        <div class="perf-period-select">
+          <label>Priorité</label>
+          <select id="pro-filter-prio" onchange="proRender()">
+            <option value="all">Toutes</option>
+            <option value="Cette semaine">Cette semaine</option>
+            <option value="Ce mois">Ce mois</option>
+            <option value="Plus tard">Plus tard</option>
+          </select>
+        </div>
+        <div class="perf-period-select">
+          <label>Secteur</label>
+          <select id="pro-filter-sect" onchange="proRender()">
+            <option value="all">Tous secteurs</option>
+          </select>
+        </div>
+        <div style="flex:1"></div>
+        <div class="perf-sync-status" id="pro-sync-status"></div>
+        <button class="btn" onclick="proExportCSV()"><i class="ti ti-download" style="font-size:13px"></i> Export CSV</button>
+        <button class="btn btn-gold" onclick="proOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau prospect</button>
+      </div>
+
+      <div id="pro-list"></div>
+
+      <!-- STRATÉGIE DE MARCHÉ IA -->
+      <div class="dash-block-title" style="margin-top:26px;">
+        <span><i class="ti ti-map-2" style="color:#7B61FF"></i> Stratégie de marché — Abidjan</span>
+      </div>
+      <div class="pro-strategy-form">
+        <input type="text" id="pro-strat-secteurs" placeholder="Secteurs qui t'intéressent (optionnel) — ex: restaurants, cliniques, boutiques"/>
+        <button class="btn btn-navy" id="pro-strat-btn" onclick="proStrategy()"><i class="ti ti-sparkles" style="font-size:14px"></i> Générer la stratégie</button>
+      </div>
+      <div class="ai-cost-note">💡 Environ 40 FCFA par génération. L'IA ne se déclenche qu'au clic.</div>
+      <div id="pro-strategy-result"></div>
+
+    </div>
+
     <div class="panel" id="panel-objectifs"><div class="alert info"><i class="ti ti-target"></i> Module Objectifs stratégiques — définition et suivi des KPIs par client.</div></div>
     <div class="panel" id="panel-settings"><div class="alert info"><i class="ti ti-settings"></i> Paramètres Pure Motion — infos de l'agence, coordonnées, logo.</div></div>
     <div class="panel" id="panel-calendrier">
@@ -1672,6 +1787,10 @@ function showMain(section, el) {
   // Rendu spécial de la performance
   if(section === 'performance'){
     perfLoadClients();
+  }
+  // Rendu spécial de l'étude de marché
+  if(section === 'marche'){
+    proLoad();
   }
   // Rendu spécial des preuves sociales
   if(section === 'preuves'){
@@ -4007,6 +4126,401 @@ function mobCloseMenu(){
   document.body.style.overflow = '';
 }
 
+/* ══════════════════════════════════════════
+   PROSPECTION / ÉTUDE DE MARCHÉ
+   ══════════════════════════════════════════ */
+let proState = { items:[] };
+
+function proToken(){
+  return accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+}
+function proShowSync(msg,type){
+  const el=document.getElementById('pro-sync-status');
+  if(!el)return;
+  el.textContent=msg;
+  el.style.color = type==='ok'?'var(--up)':(type==='err'?'var(--dn)':'var(--mut)');
+  if(type==='ok') setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; },3000);
+}
+
+async function proLoad(){
+  const token = proToken();
+  const hint = document.getElementById('pro-token-hint');
+  if(!token){ if(hint) hint.style.display='flex'; document.getElementById('pro-list').innerHTML=''; document.getElementById('pro-kpis').innerHTML=''; return; }
+  if(hint) hint.style.display='none';
+  try {
+    const r = await fetch('/api/admin/prospects', { headers:{ 'x-admin-token': token } });
+    const d = await r.json();
+    proState.items = (d.success && d.prospects) ? d.prospects : [];
+  } catch(e){ proState.items=[]; }
+  proFillSectorFilter();
+  proRender();
+}
+
+async function proSync(){
+  const token = proToken();
+  if(!token) return false;
+  try {
+    const r = await fetch('/api/admin/prospects/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, prospects: proState.items })
+    });
+    const d = await r.json();
+    if(d.success){ proShowSync('✓ Enregistré','ok'); return true; }
+    proShowSync('✗ '+(d.error||'Erreur'),'err'); return false;
+  } catch(e){ proShowSync('✗ Erreur de connexion','err'); return false; }
+}
+
+function proFillSectorFilter(){
+  const sel = document.getElementById('pro-filter-sect');
+  const current = sel.value;
+  const secteurs = Array.from(new Set(proState.items.map(p=>p.secteur).filter(Boolean))).sort();
+  sel.innerHTML = '<option value="all">Tous secteurs</option>' + secteurs.map(s=>'<option>'+s+'</option>').join('');
+  if(current && (current==='all' || secteurs.includes(current))) sel.value = current;
+}
+
+function proScoreColor(s){
+  if(s>=75) return 'linear-gradient(135deg,#0a6b4f,#1D9E75)';
+  if(s>=50) return 'linear-gradient(135deg,#0066CC,#00C6E0)';
+  if(s>=30) return 'linear-gradient(135deg,#d9970a,#F5B731)';
+  return 'linear-gradient(135deg,#8a8fa3,#b5bac9)';
+}
+function proPrioClass(p){
+  if(p==='Cette semaine') return 'semaine';
+  if(p==='Ce mois') return 'mois';
+  if(p==='Plus tard') return 'tard';
+  return 'none';
+}
+
+function proRender(){
+  const box = document.getElementById('pro-list');
+  const fPrio = document.getElementById('pro-filter-prio').value;
+  const fSect = document.getElementById('pro-filter-sect').value;
+
+  // KPIs
+  const analyses = proState.items.filter(p=>p.analyse);
+  const moy = analyses.length ? Math.round(analyses.reduce((s,p)=>s+(p.analyse.score||0),0)/analyses.length) : 0;
+  const chauds = analyses.filter(p=>(p.analyse.score||0)>=75).length;
+  const semaine = analyses.filter(p=>p.analyse.priorite==='Cette semaine').length;
+
+  document.getElementById('pro-kpis').innerHTML =
+    '<div class="kpi"><div class="kpi-ico" style="background:#e6f1fb">🏢</div><div class="kpi-val">'+proState.items.length+'</div><div class="kpi-lbl">Prospects enregistrés</div></div>'
+    + '<div class="kpi"><div class="kpi-ico" style="background:#e1f5ee">🔥</div><div class="kpi-val">'+chauds+'</div><div class="kpi-lbl">Très forte opportunité</div></div>'
+    + '<div class="kpi"><div class="kpi-ico" style="background:#fcebeb">📞</div><div class="kpi-val">'+semaine+'</div><div class="kpi-lbl">À contacter cette semaine</div></div>'
+    + '<div class="kpi"><div class="kpi-ico" style="background:#faeeda">📊</div><div class="kpi-val">'+moy+'/100</div><div class="kpi-lbl">Score moyen</div></div>';
+
+  // Filtrage
+  let list = proState.items.slice();
+  if(fPrio!=='all') list = list.filter(p=>p.analyse && p.analyse.priorite===fPrio);
+  if(fSect!=='all') list = list.filter(p=>p.secteur===fSect);
+
+  // Tri : score décroissant, non analysés à la fin
+  list.sort((a,b)=>{
+    const sa = a.analyse ? (a.analyse.score||0) : -1;
+    const sb = b.analyse ? (b.analyse.score||0) : -1;
+    return sb-sa;
+  });
+
+  if(proState.items.length===0){
+    box.innerHTML = '<div class="perf-empty"><i class="ti ti-target"></i><div class="perf-empty-title">Aucun prospect</div><div>Repère une entreprise sur Google Maps ou sur le terrain, puis clique « Nouveau prospect ».</div></div>';
+    return;
+  }
+  if(list.length===0){
+    box.innerHTML = '<div class="perf-empty"><i class="ti ti-filter-off"></i><div class="perf-empty-title">Aucun prospect sur ce filtre</div></div>';
+    return;
+  }
+
+  box.innerHTML = list.map(p=>{
+    const a = p.analyse;
+    const esc = s => String(s||'').replace(/</g,'&lt;');
+
+    let head = '<div class="pro-card-head">';
+    if(a){
+      head += '<div class="pro-score-ring" style="background:'+proScoreColor(a.score)+'">'+a.score+'</div>';
+    } else {
+      head += '<div class="pro-score-ring" style="background:var(--surf);color:var(--hint);font-size:18px;">?</div>';
+    }
+    head += '<div><div class="pro-name">'+esc(p.nom)+'</div>'
+      + '<div class="pro-sub">'+esc(p.secteur)+(p.commune?' · '+esc(p.commune):'')+(p.adresse?' · '+esc(p.adresse):'')+'</div>'
+      + (a ? '<div class="pro-stars">'+'★'.repeat(a.etoiles||0)+'☆'.repeat(5-(a.etoiles||0))+' <span style="color:var(--mut);font-size:11px;">'+esc(a.niveau)+'</span></div>' : '<div class="pro-noanalysis">Pas encore analysé par l\'IA</div>')
+      + '</div>';
+    if(a && a.priorite) head += '<div class="pro-prio '+proPrioClass(a.priorite)+'">'+esc(a.priorite)+'</div>';
+    head += '</div>';
+
+    let body = '';
+    if(a){
+      body += '<div class="pro-why">💡 '+esc(a.pourquoi)+'</div>';
+      if(a.faiblesses_detectees && a.faiblesses_detectees.length){
+        body += '<div class="pro-tags">'+a.faiblesses_detectees.map(f=>'<span class="pro-tag weak">⚠ '+esc(f)+'</span>').join('')+'</div>';
+      }
+      if(a.services_recommandes && a.services_recommandes.length){
+        body += '<div class="pro-tags">'+a.services_recommandes.map(s=>'<span class="pro-tag">'+esc(s)+'</span>').join('')+'</div>';
+      }
+      if(a.budget_estime) body += '<div style="font-size:11px;color:var(--mut);margin-bottom:9px;">💰 Budget estimé : <strong style="color:var(--navy)">'+esc(a.budget_estime)+'</strong></div>';
+    }
+
+    // Coordonnées saisies par l'admin
+    const cts = [];
+    if(p.tel) cts.push('<span><i class="ti ti-phone" style="font-size:12px"></i> '+esc(p.tel)+'</span>');
+    if(p.email) cts.push('<span><i class="ti ti-mail" style="font-size:12px"></i> '+esc(p.email)+'</span>');
+    if(p.responsable) cts.push('<span><i class="ti ti-user" style="font-size:12px"></i> '+esc(p.responsable)+'</span>');
+    if(cts.length) body += '<div class="pro-contacts">'+cts.join('')+'</div>';
+
+    if(a && a.message_approche){
+      body += '<div class="pro-msg">💬 '+esc(a.message_approche)+'</div>';
+    }
+
+    let acts = '<div class="pro-actions">';
+    acts += '<button class="pro-btn-sm" onclick="proAnalyze(\''+p.id+'\')"><i class="ti ti-sparkles"></i> '+(a?'Ré-analyser':'Analyser avec l\'IA')+'</button>';
+    if(a && a.message_approche) acts += '<button class="pro-btn-sm" onclick="proCopyMsg(this,\''+p.id+'\')"><i class="ti ti-copy"></i> Copier le message</button>';
+    if(p.tel) acts += '<a class="pro-btn-sm" href="https://wa.me/'+String(p.tel).replace(/[^0-9]/g,'')+'" target="_blank" rel="noopener" style="text-decoration:none;"><i class="ti ti-brand-whatsapp"></i> WhatsApp</a>';
+    acts += '<button class="pro-btn-sm" onclick="proEdit(\''+p.id+'\')"><i class="ti ti-edit"></i> Modifier</button>';
+    acts += '</div>';
+
+    return '<div class="pro-card">'+head+body+acts+'</div>';
+  }).join('');
+}
+
+function proCopyMsg(el, id){
+  const p = proState.items.find(x=>x.id===id);
+  if(!p || !p.analyse) return;
+  const ta = document.createElement('textarea');
+  ta.value = p.analyse.message_approche;
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); el.innerHTML='<i class="ti ti-check"></i> Copié !'; setTimeout(()=>{ el.innerHTML='<i class="ti ti-copy"></i> Copier le message'; },2000); }
+  catch(e){ alert(p.analyse.message_approche); }
+  document.body.removeChild(ta);
+}
+
+/* ── Modal prospect ── */
+function proOpenModal(){
+  if(!proToken()){ alert('Valide d\'abord ta clé administrateur dans Gestion des accès.'); return; }
+  document.getElementById('pro-modal-title').textContent='Nouveau prospect';
+  document.getElementById('pro-id').value='';
+  ['pro-nom','pro-secteur','pro-adresse','pro-tel','pro-email','pro-responsable','pro-abonnes','pro-note-google','pro-notes'].forEach(i=>document.getElementById(i).value='');
+  ['pro-commune','pro-dernier','pro-frequence','pro-qualite','pro-engagement'].forEach(i=>document.getElementById(i).value='');
+  ['pro-has-site','pro-has-fb','pro-has-ig','pro-has-tt','pro-has-li','pro-has-video','pro-branding'].forEach(i=>document.getElementById(i).checked=false);
+  document.getElementById('pro-delete-btn').style.display='none';
+  document.getElementById('pro-modal').classList.add('show');
+}
+
+function proEdit(id){
+  const p = proState.items.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('pro-modal-title').textContent='Modifier le prospect';
+  document.getElementById('pro-id').value=p.id;
+  document.getElementById('pro-nom').value=p.nom||'';
+  document.getElementById('pro-secteur').value=p.secteur||'';
+  document.getElementById('pro-commune').value=p.commune||'';
+  document.getElementById('pro-adresse').value=p.adresse||'';
+  document.getElementById('pro-tel').value=p.tel||'';
+  document.getElementById('pro-email').value=p.email||'';
+  document.getElementById('pro-responsable').value=p.responsable||'';
+  document.getElementById('pro-abonnes').value=p.abonnes||'';
+  document.getElementById('pro-note-google').value=p.noteGoogle||'';
+  document.getElementById('pro-notes').value=p.notes||'';
+  document.getElementById('pro-dernier').value=p.dernierPost||'';
+  document.getElementById('pro-frequence').value=p.frequence||'';
+  document.getElementById('pro-qualite').value=p.qualiteVisuels||'';
+  document.getElementById('pro-engagement').value=p.engagement||'';
+  document.getElementById('pro-has-site').checked=!!p.hasSite;
+  document.getElementById('pro-has-fb').checked=!!p.hasFacebook;
+  document.getElementById('pro-has-ig').checked=!!p.hasInstagram;
+  document.getElementById('pro-has-tt').checked=!!p.hasTiktok;
+  document.getElementById('pro-has-li').checked=!!p.hasLinkedin;
+  document.getElementById('pro-has-video').checked=!!p.hasVideo;
+  document.getElementById('pro-branding').checked=!!p.brandingCoherent;
+  document.getElementById('pro-delete-btn').style.display='inline-flex';
+  document.getElementById('pro-modal').classList.add('show');
+}
+
+function proCloseModal(){ document.getElementById('pro-modal').classList.remove('show'); }
+function proModalBg(e){ if(e.target.id==='pro-modal') proCloseModal(); }
+
+function proFormData(){
+  return {
+    nom: document.getElementById('pro-nom').value.trim(),
+    secteur: document.getElementById('pro-secteur').value.trim(),
+    commune: document.getElementById('pro-commune').value,
+    adresse: document.getElementById('pro-adresse').value.trim(),
+    tel: document.getElementById('pro-tel').value.trim(),
+    email: document.getElementById('pro-email').value.trim(),
+    responsable: document.getElementById('pro-responsable').value.trim(),
+    hasSite: document.getElementById('pro-has-site').checked,
+    hasFacebook: document.getElementById('pro-has-fb').checked,
+    hasInstagram: document.getElementById('pro-has-ig').checked,
+    hasTiktok: document.getElementById('pro-has-tt').checked,
+    hasLinkedin: document.getElementById('pro-has-li').checked,
+    hasVideo: document.getElementById('pro-has-video').checked,
+    brandingCoherent: document.getElementById('pro-branding').checked,
+    abonnes: document.getElementById('pro-abonnes').value.trim(),
+    dernierPost: document.getElementById('pro-dernier').value,
+    frequence: document.getElementById('pro-frequence').value,
+    qualiteVisuels: document.getElementById('pro-qualite').value,
+    engagement: document.getElementById('pro-engagement').value,
+    noteGoogle: document.getElementById('pro-note-google').value.trim(),
+    notes: document.getElementById('pro-notes').value.trim()
+  };
+}
+
+async function proSave(analyser){
+  const d = proFormData();
+  if(!d.nom || !d.secteur){ alert('Le nom et le secteur sont obligatoires.'); return; }
+  const id = document.getElementById('pro-id').value;
+  const existing = id ? proState.items.find(x=>x.id===id) : null;
+
+  const prospect = Object.assign({ id: id || 'pr'+Date.now(), analyse: existing ? existing.analyse : null, createdAt: existing ? existing.createdAt : Date.now() }, d);
+
+  if(id){
+    const i = proState.items.findIndex(x=>x.id===id);
+    if(i>=0) proState.items[i]=prospect;
+  } else {
+    proState.items.push(prospect);
+  }
+  const ok = await proSync();
+  if(!ok) return;
+  proCloseModal();
+  proFillSectorFilter();
+  proRender();
+  if(analyser) proAnalyze(prospect.id);
+}
+
+async function proDelete(){
+  const id = document.getElementById('pro-id').value;
+  if(!id) return;
+  if(!confirm('Supprimer ce prospect ?')) return;
+  proState.items = proState.items.filter(x=>x.id!==id);
+  const ok = await proSync();
+  if(ok){ proCloseModal(); proFillSectorFilter(); proRender(); }
+}
+
+/* ── Analyse IA d'un prospect ── */
+async function proAnalyze(id){
+  const token = proToken();
+  const p = proState.items.find(x=>x.id===id);
+  if(!p || !token) return;
+
+  proShowSync('L\'IA analyse '+p.nom+'...','');
+  try {
+    const r = await fetch('/api/admin/ai/prospect-score', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, prospect: p })
+    });
+    const d = await r.json();
+    if(!d.success){ proShowSync('✗ '+(d.error||'Erreur'),'err'); return; }
+    p.analyse = d.analyse;
+    p.analyseAt = Date.now();
+    await proSync();
+    proRender();
+    proShowSync('✓ '+p.nom+' analysé — score '+d.analyse.score+'/100','ok');
+  } catch(e){ proShowSync('✗ Erreur de connexion','err'); }
+}
+
+/* ── Export CSV ── */
+function proExportCSV(){
+  if(!proState.items.length){ alert('Aucun prospect à exporter.'); return; }
+  const q = v => '"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const head = ['Nom','Secteur','Commune','Adresse','Téléphone','Email','Responsable','Site','Facebook','Instagram','TikTok','Score','Étoiles','Niveau','Priorité','Budget estimé','Services recommandés','Pourquoi'];
+  const rows = proState.items.slice().sort((a,b)=>((b.analyse?b.analyse.score:0)-(a.analyse?a.analyse.score:0))).map(p=>{
+    const a = p.analyse || {};
+    return [p.nom,p.secteur,p.commune,p.adresse,p.tel,p.email,p.responsable,
+      p.hasSite?'Oui':'Non', p.hasFacebook?'Oui':'Non', p.hasInstagram?'Oui':'Non', p.hasTiktok?'Oui':'Non',
+      a.score||'', a.etoiles||'', a.niveau||'', a.priorite||'', a.budget_estime||'',
+      (a.services_recommandes||[]).join(' / '), a.pourquoi||''].map(q).join(';');
+  });
+  // BOM pour qu'Excel lise bien les accents
+  const csv = '\uFEFF' + head.map(q).join(';') + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'prospects_pure_motion_'+new Date().toISOString().split('T')[0]+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+/* ── Stratégie de marché IA ── */
+async function proStrategy(){
+  const token = proToken();
+  if(!token){ document.getElementById('pro-token-hint').style.display='flex'; return; }
+  const secteurs = document.getElementById('pro-strat-secteurs').value.trim();
+  const btn = document.getElementById('pro-strat-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin" style="width:14px;height:14px;border-width:2px;"></div> Analyse du marché...';
+  document.getElementById('pro-strategy-result').innerHTML = '<div class="ai-loading"><div class="spin-big"></div><div>L\'IA étudie le marché abidjanais...</div></div>';
+
+  try {
+    const r = await fetch('/api/admin/ai/market-strategy', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, secteursCibles: secteurs })
+    });
+    const d = await r.json();
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-sparkles" style="font-size:14px"></i> Générer la stratégie';
+    if(!d.success){ document.getElementById('pro-strategy-result').innerHTML='<div class="pro-strat-card" style="border-color:rgba(162,45,45,.3);color:var(--dn);font-size:13px;"><i class="ti ti-alert-circle"></i> '+(d.error||'Erreur')+'</div>'; return; }
+    proRenderStrategy(d.strategie);
+  } catch(e){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-sparkles" style="font-size:14px"></i> Générer la stratégie';
+    document.getElementById('pro-strategy-result').innerHTML='<div class="pro-strat-card" style="color:var(--dn);font-size:13px;">Erreur de connexion.</div>';
+  }
+}
+
+function proRenderStrategy(s){
+  const esc = v => String(v||'').replace(/</g,'&lt;');
+  const safe = a => Array.isArray(a) ? a : [];
+  const BADGE = { Bronze:'#a86428', Platinum:'#5a6b7d', Gold:'#d9970a' };
+  let h = '<div class="pro-strat-card">';
+
+  if(safe(s.secteurs_rentables).length){
+    h += '<div class="pro-strat-sect"><div class="pro-strat-title"><i class="ti ti-coin" style="color:var(--gold)"></i> Secteurs les plus rentables</div>';
+    s.secteurs_rentables.forEach(x=>{
+      const col = BADGE[x.budget_type] || '#888';
+      h += '<div class="pro-strat-item"><div class="pro-strat-item-t">'+esc(x.secteur)
+        + '<span class="pro-strat-badge" style="background:'+col+';color:#fff">'+esc(x.budget_type)+'</span>'
+        + '<span class="pro-strat-badge" style="background:var(--white);color:var(--mut);border:1px solid var(--bord)">'+esc(x.difficulte)+'</span></div>'
+        + '<div class="pro-strat-item-d">'+esc(x.pourquoi)+'</div></div>';
+    });
+    h += '</div>';
+  }
+
+  if(safe(s.communes_prioritaires).length){
+    h += '<div class="pro-strat-sect"><div class="pro-strat-title"><i class="ti ti-map-pin" style="color:var(--cyan)"></i> Communes prioritaires</div>';
+    s.communes_prioritaires.forEach(x=>{
+      h += '<div class="pro-strat-item"><div class="pro-strat-item-t">'+esc(x.commune)+'</div><div class="pro-strat-item-d">'+esc(x.profil)+'<br><em>Secteurs dominants : '+esc(x.secteurs_dominants)+'</em></div></div>';
+    });
+    h += '</div>';
+  }
+
+  if(safe(s.ou_trouver_prospects).length){
+    h += '<div class="pro-strat-sect"><div class="pro-strat-title"><i class="ti ti-search" style="color:#7B61FF"></i> Où trouver des prospects</div>';
+    s.ou_trouver_prospects.forEach(x=>{
+      h += '<div class="pro-strat-item"><div class="pro-strat-item-t">'+esc(x.methode)+'</div><div class="pro-strat-item-d">'+esc(x.comment)+'</div></div>';
+    });
+    h += '</div>';
+  }
+
+  if(safe(s.signaux_bon_prospect).length){
+    h += '<div class="pro-strat-sect"><div class="pro-strat-title"><i class="ti ti-eye" style="color:var(--up)"></i> Signaux d\'un bon prospect</div><ul class="pro-strat-list">'
+      + s.signaux_bon_prospect.map(x=>'<li>'+esc(x)+'</li>').join('') + '</ul></div>';
+  }
+
+  if(safe(s.conseils_conversion).length){
+    h += '<div class="pro-strat-sect"><div class="pro-strat-title"><i class="ti ti-target-arrow" style="color:var(--dn)"></i> Maximiser la conversion</div>';
+    s.conseils_conversion.forEach(x=>{
+      h += '<div class="pro-strat-item"><div class="pro-strat-item-t">'+esc(x.conseil)+'</div><div class="pro-strat-item-d">'+esc(x.detail)+'</div></div>';
+    });
+    h += '</div>';
+  }
+
+  if(safe(s.erreurs_a_eviter).length){
+    h += '<div class="pro-strat-sect"><div class="pro-strat-title"><i class="ti ti-alert-triangle" style="color:#7a5800"></i> Erreurs à éviter</div><ul class="pro-strat-list">'
+      + s.erreurs_a_eviter.map(x=>'<li>'+esc(x)+'</li>').join('') + '</ul></div>';
+  }
+
+  h += '<div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--bord);"><button class="btn btn-sm" onclick="proStrategy()"><i class="ti ti-refresh" style="font-size:13px"></i> Régénérer</button><button class="btn btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px"></i> Imprimer</button></div>';
+  h += '</div>';
+  document.getElementById('pro-strategy-result').innerHTML = h;
+}
+
 /* ── INIT ── */
 document.querySelectorAll('.ni').forEach(n => n.addEventListener('click', function(){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));
@@ -4526,5 +5040,148 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<!-- ══ MODAL PROSPECT ══ -->
+<div class="cal-modal-overlay" id="pro-modal" onclick="proModalBg(event)">
+  <div class="cal-modal" style="max-width:600px;">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title" id="pro-modal-title">Nouveau prospect</div>
+      <button class="cal-modal-close" onclick="proCloseModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body">
+      <input type="hidden" id="pro-id"/>
+
+      <div class="pro-section-t">📋 Identité</div>
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Nom de l'entreprise *</label>
+          <input type="text" id="pro-nom" placeholder="Ex: Restaurant Le Baobab"/>
+        </div>
+        <div class="cal-field">
+          <label>Secteur *</label>
+          <input type="text" id="pro-secteur" list="pro-secteurs-list" placeholder="Ex: Restaurant"/>
+          <datalist id="pro-secteurs-list">
+            <option>Restaurant</option><option>Fast-food</option><option>Maquis</option><option>Bar</option>
+            <option>Hôtel</option><option>Café</option><option>Boulangerie / Pâtisserie</option>
+            <option>Pharmacie</option><option>Clinique</option><option>Cabinet médical</option><option>Cabinet dentaire</option>
+            <option>Boutique de vêtements</option><option>Chaussures</option><option>Bijouterie</option><option>Parfumerie</option>
+            <option>Supermarché</option><option>Épicerie</option><option>Électronique</option><option>Boutique de téléphones</option>
+            <option>Concessionnaire auto</option><option>Garage</option><option>Salle de sport</option>
+            <option>Institut de beauté</option><option>Salon de coiffure</option><option>Spa</option>
+            <option>Agence immobilière</option><option>École privée</option><option>Centre de formation</option>
+            <option>Cabinet d'avocats</option><option>Cabinet comptable</option><option>Banque</option><option>Assurance</option>
+            <option>Microfinance</option><option>Agence de voyage</option><option>BTP</option><option>Transport</option>
+            <option>Startup</option><option>PME</option>
+          </datalist>
+        </div>
+      </div>
+
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Commune</label>
+          <select id="pro-commune">
+            <option value="">— Choisir —</option>
+            <option>Cocody</option><option>Plateau</option><option>Yopougon</option><option>Marcory</option>
+            <option>Treichville</option><option>Adjamé</option><option>Abobo</option><option>Koumassi</option>
+            <option>Port-Bouët</option><option>Attécoubé</option><option>Bingerville</option><option>Songon</option>
+            <option>Anyama</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="cal-field">
+          <label>Quartier / Adresse</label>
+          <input type="text" id="pro-adresse" placeholder="Ex: Angré 8e tranche"/>
+        </div>
+      </div>
+
+      <div class="pro-section-t">📞 Coordonnées <span class="pro-section-h">(que TU as vérifiées)</span></div>
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Téléphone / WhatsApp</label>
+          <input type="tel" id="pro-tel" placeholder="+225 ..."/>
+        </div>
+        <div class="cal-field">
+          <label>Email</label>
+          <input type="email" id="pro-email" placeholder="contact@..."/>
+        </div>
+      </div>
+      <div class="cal-field">
+        <label>Responsable / Dirigeant</label>
+        <input type="text" id="pro-responsable" placeholder="Nom du gérant si tu le connais"/>
+      </div>
+
+      <div class="pro-section-t">🌐 Présence digitale observée</div>
+      <div class="pro-checks">
+        <label class="pro-chk"><input type="checkbox" id="pro-has-site"> Site web</label>
+        <label class="pro-chk"><input type="checkbox" id="pro-has-fb"> Facebook</label>
+        <label class="pro-chk"><input type="checkbox" id="pro-has-ig"> Instagram</label>
+        <label class="pro-chk"><input type="checkbox" id="pro-has-tt"> TikTok</label>
+        <label class="pro-chk"><input type="checkbox" id="pro-has-li"> LinkedIn</label>
+        <label class="pro-chk"><input type="checkbox" id="pro-has-video"> Contenu vidéo</label>
+        <label class="pro-chk"><input type="checkbox" id="pro-branding"> Identité visuelle cohérente</label>
+      </div>
+
+      <div class="cal-frow c2" style="margin-top:12px;">
+        <div class="cal-field">
+          <label>Abonnés (approx.)</label>
+          <input type="text" id="pro-abonnes" placeholder="Ex: 1200"/>
+        </div>
+        <div class="cal-field">
+          <label>Dernière publication</label>
+          <select id="pro-dernier">
+            <option value="">— Inconnue —</option>
+            <option>Cette semaine</option><option>Ce mois</option>
+            <option>Il y a 2-6 mois</option><option>Il y a plus de 6 mois</option>
+            <option>Compte abandonné</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Fréquence de publication</label>
+          <select id="pro-frequence">
+            <option value="">— Inconnue —</option>
+            <option>Quotidienne</option><option>Plusieurs fois/semaine</option>
+            <option>Hebdomadaire</option><option>Mensuelle</option><option>Rare / irrégulière</option><option>Aucune</option>
+          </select>
+        </div>
+        <div class="cal-field">
+          <label>Qualité des visuels</label>
+          <select id="pro-qualite">
+            <option value="">— Inconnue —</option>
+            <option>Professionnelle</option><option>Correcte</option>
+            <option>Amateur</option><option>Très mauvaise</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Engagement observé</label>
+          <select id="pro-engagement">
+            <option value="">— Inconnu —</option>
+            <option>Fort</option><option>Moyen</option><option>Faible</option><option>Quasi nul</option>
+          </select>
+        </div>
+        <div class="cal-field">
+          <label>Note Google</label>
+          <input type="text" id="pro-note-google" placeholder="Ex: 4,2 (38 avis)"/>
+        </div>
+      </div>
+
+      <div class="cal-field">
+        <label>Observations</label>
+        <textarea id="pro-notes" rows="2" placeholder="Ex: beaucoup de monde le midi, aucune vidéo, photos prises au téléphone..."></textarea>
+      </div>
+    </div>
+    <div class="cal-modal-foot">
+      <button class="btn" id="pro-delete-btn" onclick="proDelete()" style="color:var(--dn);border-color:rgba(162,45,45,.2);display:none;"><i class="ti ti-trash" style="font-size:13px"></i> Supprimer</button>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="proCloseModal()">Annuler</button>
+      <button class="btn btn-navy" onclick="proSave(false)"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer</button>
+      <button class="btn btn-gold" onclick="proSave(true)"><i class="ti ti-sparkles" style="font-size:13px"></i> Enregistrer + analyser</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
