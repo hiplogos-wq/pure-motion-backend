@@ -2,7 +2,16 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#12205A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pure Motion">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="/icons/favicon.png">
+
 <title>Pure Motion — Espace Client</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.2.0/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -425,6 +434,14 @@ function cliRenderPubs(){
 
 cliFetchData();
 cliFetchPubs();
+</script>
+<script>
+// Enregistrement du service worker (application installable)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/sw.js').catch(function(){});
+  });
+}
 </script>
 </body>
 </html>
