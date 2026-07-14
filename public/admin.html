@@ -853,6 +853,49 @@ textarea{resize:none;line-height:1.5;}
   .pro-strategy-form input,.pro-strategy-form .btn{width:100%;}
 }
 
+/* ══ OBJECTIFS ══ */
+.obj-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.obj-sum{background:var(--white);border:1px solid var(--bord);border-radius:11px;padding:13px 15px;text-align:center;}
+.obj-sum-num{font-size:22px;font-weight:800;color:var(--navy);}
+.obj-sum-lbl{font-size:10px;color:var(--hint);margin-top:2px;}
+.obj-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:15px 17px;margin-bottom:11px;}
+.obj-head{display:flex;align-items:center;gap:11px;margin-bottom:11px;}
+.obj-cat-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;background:var(--surf);}
+.obj-titre{font-size:14px;font-weight:700;color:var(--txt);}
+.obj-meta{font-size:11px;color:var(--hint);margin-top:1px;}
+.obj-edit-btn{margin-left:auto;flex-shrink:0;}
+.obj-progress-wrap{margin-top:8px;}
+.obj-progress-info{display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px;}
+.obj-progress-cur{font-weight:700;color:var(--navy);}
+.obj-progress-pct{font-weight:700;}
+.obj-bar{height:9px;background:var(--surf);border-radius:6px;overflow:hidden;}
+.obj-bar-fill{height:100%;border-radius:6px;transition:width .6s cubic-bezier(.16,1,.3,1);}
+.obj-note{font-size:11px;color:var(--mut);margin-top:9px;font-style:italic;}
+.obj-deadline{font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px;}
+.obj-deadline.soon{background:#faeeda;color:#7a5800;}
+.obj-deadline.done{background:#e1f5ee;color:var(--up);}
+.obj-deadline.late{background:#fcebeb;color:var(--dn);}
+
+/* ══ PARAMÈTRES ══ */
+.set-section{margin-bottom:22px;}
+.set-section-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:11px;display:flex;align-items:center;gap:8px;justify-content:space-between;}
+.set-section-title>span{display:flex;align-items:center;gap:8px;}
+.set-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:18px 20px;}
+.set-card .btn{margin-top:6px;}
+.set-hint{font-size:12px;color:var(--mut);line-height:1.5;margin-bottom:13px;}
+.set-status{font-size:12px;margin-top:10px;font-weight:600;}
+.set-status.ok{color:var(--up);}
+.set-status.err{color:var(--dn);}
+.set-collab-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--bord);}
+.set-collab-item:first-child{border-top:none;}
+.set-collab-ava{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--cyan),var(--blue));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;}
+.set-collab-info{flex:1;min-width:0;}
+.set-collab-name{font-size:13px;font-weight:700;color:var(--txt);}
+.set-collab-contact{font-size:11px;color:var(--hint);}
+.set-collab-empty{font-size:12px;color:var(--hint);font-style:italic;padding:8px 0;}
+
+@media(max-width:820px){.obj-summary{grid-template-columns:1fr 1fr;}}
+
 </style>
 </head>
 <body>
@@ -1526,8 +1569,83 @@ function pmLogout(){
 
     </div>
 
-    <div class="panel" id="panel-objectifs"><div class="alert info"><i class="ti ti-target"></i> Module Objectifs stratégiques — définition et suivi des KPIs par client.</div></div>
-    <div class="panel" id="panel-settings"><div class="alert info"><i class="ti ti-settings"></i> Paramètres Pure Motion — infos de l'agence, coordonnées, logo.</div></div>
+    <div class="panel" id="panel-objectifs">
+
+      <div class="pro-intro">
+        <div class="pro-intro-ico">🎯</div>
+        <div>
+          <div class="pro-intro-title">Objectifs Pure Motion</div>
+          <div class="pro-intro-sub">Fixe tes objectifs d'agence (clients, revenus, contenus, croissance) et suis leur progression. Ils restent affichés pour te garder concentré sur l'essentiel.</div>
+        </div>
+        <button class="btn btn-gold" onclick="objOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Nouvel objectif</button>
+      </div>
+
+      <div class="perf-hint-box" id="obj-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour gérer tes objectifs.</div>
+
+      <div class="obj-summary" id="obj-summary"></div>
+      <div id="obj-list"></div>
+
+    </div>
+
+    <div class="panel" id="panel-settings">
+
+      <div class="perf-hint-box" id="set-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour accéder aux paramètres.</div>
+
+      <!-- CONNEXION / MOT DE PASSE -->
+      <div class="set-section">
+        <div class="set-section-title"><i class="ti ti-lock" style="color:var(--navy)"></i> Mon mot de passe administrateur</div>
+        <div class="set-card">
+          <div class="cal-field">
+            <label>Mot de passe actuel</label>
+            <input type="password" id="set-current-pw" placeholder="Ton mot de passe actuel"/>
+          </div>
+          <div class="cal-frow c2">
+            <div class="cal-field">
+              <label>Nouveau mot de passe</label>
+              <input type="password" id="set-new-pw" placeholder="Au moins 6 caractères"/>
+            </div>
+            <div class="cal-field">
+              <label>Confirmer</label>
+              <input type="password" id="set-confirm-pw" placeholder="Retape le nouveau"/>
+            </div>
+          </div>
+          <button class="btn btn-navy" onclick="setChangePassword()"><i class="ti ti-check" style="font-size:13px"></i> Changer mon mot de passe</button>
+          <div class="set-status" id="set-pw-status"></div>
+        </div>
+      </div>
+
+      <!-- COLLABORATEURS -->
+      <div class="set-section">
+        <div class="set-section-title">
+          <span><i class="ti ti-users" style="color:var(--cyan)"></i> Collaborateurs</span>
+          <button class="btn btn-sm" onclick="setAddCollab()"><i class="ti ti-plus" style="font-size:12px"></i> Ajouter</button>
+        </div>
+        <div class="set-card">
+          <div class="set-hint">Les collaborateurs ont accès à l'espace de travail (comme toi), pour t'aider à gérer les clients. Ils se créent via « Gestion des accès » en choisissant le rôle Collaborateur.</div>
+          <div id="set-collab-list"></div>
+        </div>
+      </div>
+
+      <!-- GESTION DES CLIENTS -->
+      <div class="set-section">
+        <div class="set-section-title"><i class="ti ti-briefcase" style="color:var(--gold)"></i> Gestion des clients</div>
+        <div class="set-card">
+          <div class="set-hint">Pour créer, réinitialiser ou supprimer un client et toutes ses données, rends-toi dans le module dédié.</div>
+          <button class="btn" onclick="showMain('acces')"><i class="ti ti-arrow-right" style="font-size:13px"></i> Ouvrir la Gestion des accès</button>
+        </div>
+      </div>
+
+      <!-- DÉCONNEXION -->
+      <div class="set-section">
+        <div class="set-section-title"><i class="ti ti-logout" style="color:var(--dn)"></i> Session</div>
+        <div class="set-card">
+          <div class="set-hint">Ferme ta session sur cet appareil. Tu devras te reconnecter.</div>
+          <button class="btn" onclick="logout()" style="color:var(--dn);border-color:rgba(162,45,45,.25);"><i class="ti ti-logout" style="font-size:13px"></i> Me déconnecter</button>
+        </div>
+      </div>
+
+    </div>
+
     <div class="panel" id="panel-calendrier">
 
       <!-- BARRE D'OUTILS CALENDRIER -->
@@ -1807,6 +1925,14 @@ function showMain(section, el) {
   // Rendu spécial de la grille tarifaire
   if(section === 'tarifs'){
     tarifLoad();
+  }
+  // Rendu spécial des objectifs
+  if(section === 'objectifs'){
+    objLoad();
+  }
+  // Rendu spécial des paramètres
+  if(section === 'settings'){
+    setLoad();
   }
   // Rendu spécial des contrats
   if(section === 'contrats'){
@@ -4521,6 +4647,262 @@ function proRenderStrategy(s){
   document.getElementById('pro-strategy-result').innerHTML = h;
 }
 
+/* ══════════════════════════════════════════
+   OBJECTIFS PURE MOTION
+   ══════════════════════════════════════════ */
+let objState = { items:[] };
+const OBJ_CAT = {
+  clients:    { ico:'👥', label:'Clients',    color:'#00C6E0' },
+  revenus:    { ico:'💰', label:'Revenus',    color:'#0a6b4f' },
+  contenu:    { ico:'🎬', label:'Contenu',    color:'#E1306C' },
+  croissance: { ico:'📈', label:'Croissance', color:'#7B61FF' },
+  autre:      { ico:'🎯', label:'Autre',      color:'#F5B731' }
+};
+
+function objToken(){
+  return accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+}
+
+async function objLoad(){
+  const token = objToken();
+  const hint = document.getElementById('obj-token-hint');
+  if(!token){ if(hint) hint.style.display='flex'; document.getElementById('obj-list').innerHTML=''; document.getElementById('obj-summary').innerHTML=''; return; }
+  if(hint) hint.style.display='none';
+  try {
+    const r = await fetch('/api/admin/objectives', { headers:{ 'x-admin-token': token } });
+    const d = await r.json();
+    objState.items = (d.success && d.objectives) ? d.objectives : [];
+  } catch(e){ objState.items=[]; }
+  objRender();
+}
+
+async function objSync(){
+  const token = objToken();
+  if(!token) return false;
+  try {
+    const r = await fetch('/api/admin/objectives/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, objectives: objState.items })
+    });
+    const d = await r.json();
+    return !!d.success;
+  } catch(e){ return false; }
+}
+
+function objRender(){
+  const box = document.getElementById('obj-list');
+  const today = new Date().toISOString().split('T')[0];
+
+  // Résumé
+  const total = objState.items.length;
+  const atteints = objState.items.filter(o=>Number(o.actuel)>=Number(o.cible) && Number(o.cible)>0).length;
+  const enCours = total - atteints;
+  const progGlobal = total ? Math.round(objState.items.reduce((s,o)=>{
+    const p = Number(o.cible)>0 ? Math.min(100, (Number(o.actuel)/Number(o.cible))*100) : 0;
+    return s+p;
+  },0)/total) : 0;
+
+  document.getElementById('obj-summary').innerHTML =
+    '<div class="obj-sum"><div class="obj-sum-num">'+total+'</div><div class="obj-sum-lbl">Objectifs fixés</div></div>'
+    + '<div class="obj-sum"><div class="obj-sum-num">'+atteints+'</div><div class="obj-sum-lbl">Atteints</div></div>'
+    + '<div class="obj-sum"><div class="obj-sum-num">'+enCours+'</div><div class="obj-sum-lbl">En cours</div></div>'
+    + '<div class="obj-sum"><div class="obj-sum-num">'+progGlobal+'%</div><div class="obj-sum-lbl">Progression moyenne</div></div>';
+
+  if(total===0){
+    box.innerHTML='<div class="perf-empty"><i class="ti ti-target"></i><div class="perf-empty-title">Aucun objectif défini</div><div>Clique sur « Nouvel objectif » pour fixer ton premier cap.</div></div>';
+    return;
+  }
+
+  box.innerHTML = objState.items.map(o=>{
+    const cat = OBJ_CAT[o.cat] || OBJ_CAT.autre;
+    const cible = Number(o.cible)||0, actuel = Number(o.actuel)||0;
+    const pct = cible>0 ? Math.min(100, Math.round((actuel/cible)*100)) : 0;
+    const done = pct>=100;
+
+    let deadline='';
+    if(o.echeance){
+      const dFr = o.echeance.split('-').reverse().join('/');
+      if(done) deadline='<span class="obj-deadline done">✓ Atteint</span>';
+      else if(o.echeance < today) deadline='<span class="obj-deadline late">⚠ Échéance dépassée — '+dFr+'</span>';
+      else deadline='<span class="obj-deadline soon">📅 '+dFr+'</span>';
+    } else if(done){
+      deadline='<span class="obj-deadline done">✓ Atteint</span>';
+    }
+
+    const barColor = done ? 'var(--up)' : cat.color;
+    const safeTitre = (o.titre||'').replace(/</g,'&lt;');
+
+    return '<div class="obj-card">'
+      + '<div class="obj-head">'
+      + '<div class="obj-cat-ico">'+cat.ico+'</div>'
+      + '<div><div class="obj-titre">'+safeTitre+'</div><div class="obj-meta">'+cat.label+(deadline?' · ':'')+deadline+'</div></div>'
+      + '<button class="acc-btn obj-edit-btn" onclick="objEdit(\''+o.id+'\')"><i class="ti ti-edit"></i></button>'
+      + '</div>'
+      + '<div class="obj-progress-wrap">'
+      + '<div class="obj-progress-info"><span class="obj-progress-cur">'+actuel+' / '+cible+'</span><span class="obj-progress-pct" style="color:'+barColor+'">'+pct+'%</span></div>'
+      + '<div class="obj-bar"><div class="obj-bar-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>'
+      + '</div>'
+      + (o.note ? '<div class="obj-note">💡 '+o.note.replace(/</g,'&lt;')+'</div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+function objOpenModal(){
+  if(!objToken()){ alert('Valide d\'abord ta clé administrateur dans Gestion des accès.'); return; }
+  document.getElementById('obj-modal-title').textContent='Nouvel objectif';
+  document.getElementById('obj-id').value='';
+  document.getElementById('obj-titre').value='';
+  document.getElementById('obj-cat').value='clients';
+  document.getElementById('obj-echeance').value='';
+  document.getElementById('obj-cible').value='';
+  document.getElementById('obj-actuel').value='0';
+  document.getElementById('obj-note').value='';
+  document.getElementById('obj-delete-btn').style.display='none';
+  document.getElementById('obj-modal').classList.add('show');
+}
+
+function objEdit(id){
+  const o = objState.items.find(x=>x.id===id);
+  if(!o) return;
+  document.getElementById('obj-modal-title').textContent='Modifier l\'objectif';
+  document.getElementById('obj-id').value=o.id;
+  document.getElementById('obj-titre').value=o.titre||'';
+  document.getElementById('obj-cat').value=o.cat||'autre';
+  document.getElementById('obj-echeance').value=o.echeance||'';
+  document.getElementById('obj-cible').value=o.cible||'';
+  document.getElementById('obj-actuel').value=o.actuel||'0';
+  document.getElementById('obj-note').value=o.note||'';
+  document.getElementById('obj-delete-btn').style.display='inline-flex';
+  document.getElementById('obj-modal').classList.add('show');
+}
+
+function objCloseModal(){ document.getElementById('obj-modal').classList.remove('show'); }
+function objModalBg(e){ if(e.target.id==='obj-modal') objCloseModal(); }
+
+async function objSave(){
+  const titre = document.getElementById('obj-titre').value.trim();
+  if(!titre){ alert('Donne un intitulé à ton objectif.'); return; }
+  const id = document.getElementById('obj-id').value;
+  const obj = {
+    id: id || 'ob'+Date.now(),
+    titre,
+    cat: document.getElementById('obj-cat').value,
+    echeance: document.getElementById('obj-echeance').value || null,
+    cible: document.getElementById('obj-cible').value || 0,
+    actuel: document.getElementById('obj-actuel').value || 0,
+    note: document.getElementById('obj-note').value.trim()
+  };
+  if(id){
+    const i = objState.items.findIndex(x=>x.id===id);
+    if(i>=0) objState.items[i]=obj;
+  } else {
+    objState.items.push(obj);
+  }
+  const ok = await objSync();
+  if(ok){ objCloseModal(); objRender(); }
+  else alert('✗ Impossible d\'enregistrer. Vérifie ta connexion et ta clé admin.');
+}
+
+async function objDelete(){
+  const id = document.getElementById('obj-id').value;
+  if(!id) return;
+  if(!confirm('Supprimer cet objectif ?')) return;
+  objState.items = objState.items.filter(x=>x.id!==id);
+  const ok = await objSync();
+  if(ok){ objCloseModal(); objRender(); }
+}
+
+/* ══════════════════════════════════════════
+   PARAMÈTRES
+   ══════════════════════════════════════════ */
+function setToken(){
+  return accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+}
+
+function setLoad(){
+  const token = setToken();
+  const hint = document.getElementById('set-token-hint');
+  if(!token){ if(hint) hint.style.display='flex'; document.getElementById('set-collab-list').innerHTML=''; return; }
+  if(hint) hint.style.display='none';
+  setLoadCollabs();
+}
+
+async function setChangePassword(){
+  const token = setToken();
+  const status = document.getElementById('set-pw-status');
+  if(!token){ status.className='set-status err'; status.textContent='⚠️ Valide ta clé admin d\'abord.'; return; }
+
+  const current = document.getElementById('set-current-pw').value;
+  const nw = document.getElementById('set-new-pw').value;
+  const confirm = document.getElementById('set-confirm-pw').value;
+
+  if(!current || !nw){ status.className='set-status err'; status.textContent='Remplis tous les champs.'; return; }
+  if(nw.length < 6){ status.className='set-status err'; status.textContent='Le nouveau mot de passe doit faire au moins 6 caractères.'; return; }
+  if(nw !== confirm){ status.className='set-status err'; status.textContent='Les deux nouveaux mots de passe ne correspondent pas.'; return; }
+
+  status.className='set-status'; status.textContent='Changement en cours...';
+  try {
+    const r = await fetch('/api/admin/change-password', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, currentPassword: current, newPassword: nw })
+    });
+    const d = await r.json();
+    if(d.success){
+      status.className='set-status ok'; status.textContent='✓ Mot de passe changé avec succès !';
+      document.getElementById('set-current-pw').value='';
+      document.getElementById('set-new-pw').value='';
+      document.getElementById('set-confirm-pw').value='';
+    } else {
+      status.className='set-status err'; status.textContent='✗ '+(d.error||'Erreur');
+    }
+  } catch(e){ status.className='set-status err'; status.textContent='✗ Erreur de connexion.'; }
+}
+
+async function setLoadCollabs(){
+  const token = setToken();
+  const box = document.getElementById('set-collab-list');
+  if(!token){ box.innerHTML=''; return; }
+  try {
+    const r = await fetch('/api/admin/collaborators', { headers:{ 'x-admin-token': token } });
+    const d = await r.json();
+    const collabs = (d.success && d.collaborators) ? d.collaborators : [];
+    if(collabs.length===0){
+      box.innerHTML='<div class="set-collab-empty">Aucun collaborateur pour le moment.</div>';
+      return;
+    }
+    box.innerHTML = collabs.map(c=>{
+      const initial = (c.name||'?').charAt(0).toUpperCase();
+      const contact = c.email || c.phone || '';
+      const statut = c.activated ? '' : ' · <span style="color:#7a5800">en attente d\'activation</span>';
+      return '<div class="set-collab-item">'
+        + '<div class="set-collab-ava">'+initial+'</div>'
+        + '<div class="set-collab-info"><div class="set-collab-name">'+c.name+'</div><div class="set-collab-contact">'+contact+statut+'</div></div>'
+        + '<button class="acc-btn" title="Supprimer" onclick="setDeleteCollab(\''+c.id.replace(/'/g,"\\'")+'\',\''+(c.name||'').replace(/'/g,"\\'")+'\')" style="color:var(--dn);border-color:rgba(162,45,45,.3);"><i class="ti ti-trash"></i></button>'
+        + '</div>';
+    }).join('');
+  } catch(e){ box.innerHTML='<div class="set-collab-empty">Erreur de chargement.</div>'; }
+}
+
+async function setDeleteCollab(id, name){
+  if(!confirm('Supprimer le collaborateur « '+name+' » ? Il perdra son accès à l\'espace de travail.')) return;
+  const token = setToken();
+  try {
+    const r = await fetch('/api/admin/collaborators/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: token, id })
+    });
+    const d = await r.json();
+    if(d.success){ setLoadCollabs(); }
+    else alert('✗ '+(d.error||'Erreur'));
+  } catch(e){ alert('✗ Erreur de connexion.'); }
+}
+
+function setAddCollab(){
+  // Redirige vers Gestion des accès où la création (avec rôle) existe déjà
+  alert('Pour ajouter un collaborateur : va dans Gestion des accès, crée un compte et choisis le rôle « Collaborateur ».');
+  showMain('acces');
+}
+
 /* ── INIT ── */
 document.querySelectorAll('.ni').forEach(n => n.addEventListener('click', function(){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));
@@ -5179,6 +5561,63 @@ if ('serviceWorker' in navigator) {
       <button class="btn" onclick="proCloseModal()">Annuler</button>
       <button class="btn btn-navy" onclick="proSave(false)"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer</button>
       <button class="btn btn-gold" onclick="proSave(true)"><i class="ti ti-sparkles" style="font-size:13px"></i> Enregistrer + analyser</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL OBJECTIF ══ -->
+<div class="cal-modal-overlay" id="obj-modal" onclick="objModalBg(event)">
+  <div class="cal-modal">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title" id="obj-modal-title">Nouvel objectif</div>
+      <button class="cal-modal-close" onclick="objCloseModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body">
+      <input type="hidden" id="obj-id"/>
+
+      <div class="cal-field">
+        <label>Intitulé de l'objectif</label>
+        <input type="text" id="obj-titre" placeholder="Ex: Atteindre 10 clients actifs"/>
+      </div>
+
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Catégorie</label>
+          <select id="obj-cat">
+            <option value="clients">👥 Clients</option>
+            <option value="revenus">💰 Revenus</option>
+            <option value="contenu">🎬 Contenu</option>
+            <option value="croissance">📈 Croissance</option>
+            <option value="autre">🎯 Autre</option>
+          </select>
+        </div>
+        <div class="cal-field">
+          <label>Échéance</label>
+          <input type="date" id="obj-echeance"/>
+        </div>
+      </div>
+
+      <div class="cal-frow c2">
+        <div class="cal-field">
+          <label>Valeur cible</label>
+          <input type="number" id="obj-cible" placeholder="Ex: 10"/>
+        </div>
+        <div class="cal-field">
+          <label>Où j'en suis</label>
+          <input type="number" id="obj-actuel" placeholder="Ex: 3"/>
+        </div>
+      </div>
+
+      <div class="cal-field">
+        <label>Note <span style="font-weight:400;color:var(--hint)">(optionnel)</span></label>
+        <input type="text" id="obj-note" placeholder="Ex: cibler les restaurants de Cocody"/>
+      </div>
+    </div>
+    <div class="cal-modal-foot">
+      <button class="btn" id="obj-delete-btn" onclick="objDelete()" style="color:var(--dn);border-color:rgba(162,45,45,.2);display:none;"><i class="ti ti-trash" style="font-size:13px"></i> Supprimer</button>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="objCloseModal()">Annuler</button>
+      <button class="btn btn-navy" onclick="objSave()"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer</button>
     </div>
   </div>
 </div>
