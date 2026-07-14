@@ -97,6 +97,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cpub-title{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:3px;}
 .cpub-date{font-size:11px;color:var(--hint);}
 .cpub-open{color:var(--cyan);font-size:18px;flex-shrink:0;}
+/* Calendrier éditorial client */
+.cli-cal-nav{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--txt);text-transform:none;letter-spacing:0;}
+.cli-cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;}
+.cli-cal-weekdays div{text-align:center;font-size:10px;font-weight:700;color:var(--hint);text-transform:uppercase;padding:4px 0;}
+.cli-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cli-cal-day{background:var(--white);border:1px solid var(--bord);border-radius:8px;min-height:60px;padding:4px;display:flex;flex-direction:column;gap:2px;}
+.cli-cal-day.other{opacity:.35;}
+.cli-cal-day.today{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan);}
+.cli-cal-daynum{font-size:10px;font-weight:700;color:var(--mut);}
+.cli-cal-pub{font-size:8px;font-weight:600;color:#fff;padding:2px 4px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;}
+.cli-cal-more{font-size:8px;color:var(--hint);text-align:center;}
+.cli-cal-detail-card{background:var(--white);border:1px solid var(--bord);border-radius:12px;padding:14px 16px;margin-top:12px;}
+.cli-cal-detail-date{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px;}
+.cli-cal-detail-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--bord);}
+.cli-cal-detail-net{font-size:9px;font-weight:800;color:#fff;padding:3px 8px;border-radius:6px;flex-shrink:0;}
+.cli-cal-detail-txt{font-size:12px;color:var(--txt);flex:1;}
+.cli-cal-detail-hour{font-size:11px;color:var(--hint);}
 </style>
 </head>
 <body>
@@ -175,6 +192,19 @@ function pmLogout(){ try{ sessionStorage.removeItem('pm_session'); }catch(e){} w
     <div class="filt" id="cli-pub-filters"></div>
   </div>
   <div id="cli-pub-list"></div>
+
+  <!-- CALENDRIER ÉDITORIAL -->
+  <div class="section-label">
+    <span>🗓️ Votre calendrier éditorial</span>
+    <span class="cli-cal-nav">
+      <button class="filt-btn" onclick="cliCalPrev()"><i class="ti ti-chevron-left"></i></button>
+      <span id="cli-cal-period" style="min-width:120px;text-align:center;text-transform:capitalize;"></span>
+      <button class="filt-btn" onclick="cliCalNext()"><i class="ti ti-chevron-right"></i></button>
+    </span>
+  </div>
+  <div class="cli-cal-weekdays"><div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div></div>
+  <div class="cli-cal-grid" id="cli-cal-grid"></div>
+  <div id="cli-cal-detail"></div>
 
   <div class="section-label">📄 Vos fiches de statistiques</div>
   <div class="report-card">
@@ -432,8 +462,88 @@ function cliRenderPubs(){
   }).join('');
 }
 
+/* ── CALENDRIER ÉDITORIAL CLIENT ── */
+const CLI_MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+let cliCal={ events:[], cursor:new Date(), selected:null };
+
+async function cliFetchCalendar(){
+  if(!cliState.clientKey){ cliCal.events=[]; cliCalRender(); return; }
+  try{
+    const r=await fetch('/api/client/calendar/'+encodeURIComponent(cliState.clientKey));
+    const d=await r.json();
+    cliCal.events=(d.success&&d.events)?d.events:[];
+  }catch(e){ cliCal.events=[]; }
+  cliCalRender();
+}
+
+function cliCalPrev(){ cliCal.cursor.setMonth(cliCal.cursor.getMonth()-1); cliCal.cursor=new Date(cliCal.cursor); cliCal.selected=null; cliCalRender(); }
+function cliCalNext(){ cliCal.cursor.setMonth(cliCal.cursor.getMonth()+1); cliCal.cursor=new Date(cliCal.cursor); cliCal.selected=null; cliCalRender(); }
+
+function cliCalRender(){
+  const grid=document.getElementById('cli-cal-grid');
+  if(!grid) return;
+  const cur=cliCal.cursor, year=cur.getFullYear(), month=cur.getMonth();
+  document.getElementById('cli-cal-period').textContent=CLI_MOIS[month]+' '+year;
+
+  const first=new Date(year,month,1);
+  let startDay=first.getDay(); startDay=startDay===0?6:startDay-1;
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const prevDays=new Date(year,month,0).getDate();
+  const now=new Date();
+  const todayStr=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+
+  let html='';
+  for(let i=startDay-1;i>=0;i--) html+='<div class="cli-cal-day other"><div class="cli-cal-daynum">'+(prevDays-i)+'</div></div>';
+
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isToday=dateStr===todayStr;
+    const dayEvents=cliCal.events.filter(e=>e.date===dateStr);
+    let items='';
+    dayEvents.slice(0,2).forEach(e=>{
+      const color=CLI_NETS[e.net]||'#888';
+      const safe=(e.net||'Post').replace(/"/g,'');
+      items+='<div class="cli-cal-pub" style="background:'+color+'" onclick="cliCalSelect(\''+dateStr+'\')">'+safe+'</div>';
+    });
+    if(dayEvents.length>2) items+='<div class="cli-cal-more">+'+(dayEvents.length-2)+'</div>';
+    const clickable = dayEvents.length ? 'onclick="cliCalSelect(\''+dateStr+'\')"' : '';
+    html+='<div class="cli-cal-day'+(isToday?' today':'')+'" '+clickable+'><div class="cli-cal-daynum">'+d+'</div>'+items+'</div>';
+  }
+  const total=startDay+daysInMonth, remain=(7-(total%7))%7;
+  for(let i=1;i<=remain;i++) html+='<div class="cli-cal-day other"><div class="cli-cal-daynum">'+i+'</div></div>';
+  grid.innerHTML=html;
+
+  if(cliCal.selected) cliCalRenderDetail(cliCal.selected);
+  else document.getElementById('cli-cal-detail').innerHTML='';
+}
+
+function cliCalSelect(dateStr){
+  cliCal.selected=dateStr;
+  cliCalRenderDetail(dateStr);
+}
+
+function cliCalRenderDetail(dateStr){
+  const box=document.getElementById('cli-cal-detail');
+  const events=cliCal.events.filter(e=>e.date===dateStr).sort((a,b)=>String(a.hour||'').localeCompare(String(b.hour||'')));
+  if(!events.length){ box.innerHTML=''; return; }
+  const dateFr=dateStr.split('-').reverse().join('/');
+  let html='<div class="cli-cal-detail-card"><div class="cli-cal-detail-date">📅 '+dateFr+' — '+events.length+' publication'+(events.length>1?'s':'')+' prévue'+(events.length>1?'s':'')+'</div>';
+  events.forEach(e=>{
+    const color=CLI_NETS[e.net]||'#888';
+    const txt=(e.text||e.type||'Publication').replace(/</g,'&lt;');
+    html+='<div class="cli-cal-detail-item">'
+      +'<span class="cli-cal-detail-net" style="background:'+color+'">'+(e.net||'')+'</span>'
+      +'<span class="cli-cal-detail-txt">'+txt+'</span>'
+      +(e.hour?'<span class="cli-cal-detail-hour">'+e.hour+'</span>':'')
+      +'</div>';
+  });
+  html+='</div>';
+  box.innerHTML=html;
+}
+
 cliFetchData();
 cliFetchPubs();
+cliFetchCalendar();
 </script>
 <script>
 // Enregistrement du service worker (application installable)
