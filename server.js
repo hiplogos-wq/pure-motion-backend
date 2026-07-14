@@ -30,50 +30,105 @@ const {
 } = process.env;
 
 // ══════════════════════════════════════════
-// STOCKAGE FICHIER JSON (persistance simple)
-// ⚠️ Sur Render gratuit, effacé à chaque redéploiement.
-//    Pour la production durable → migrer vers PostgreSQL.
+// STOCKAGE — PostgreSQL (durable) avec repli fichier
+// Si DATABASE_URL est défini → PostgreSQL (données permanentes).
+// Sinon → fichier local (utile en développement).
 // ══════════════════════════════════════════
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'pm_data.json');
+const DATABASE_URL = process.env.DATABASE_URL || '';
+const USE_PG = !!DATABASE_URL;
 
-// Structure : { clients:{...}, stats:{clientKey:[...]}, calendar:{clientKey:[...]} }
 let STORE = { clients: {}, stats: {}, calendar: {}, posts: {}, publications: {}, tasks: { items: [] }, prospects: { items: [] } };
 
-function loadStore() {
+// Complète les clés manquantes (migration douce)
+function ensureShape() {
+  if (!STORE.clients) STORE.clients = {};
+  if (!STORE.stats) STORE.stats = {};
+  if (!STORE.calendar) STORE.calendar = {};
+  if (!STORE.posts) STORE.posts = {};
+  if (!STORE.tasks) STORE.tasks = { items: [] };
+  if (!STORE.prospects) STORE.prospects = { items: [] };
+  if (!STORE.publications) STORE.publications = {};
+  if (!STORE.objectives) STORE.objectives = { items: [] };
+}
+
+// ── Connexion PostgreSQL ──
+let pool = null;
+if (USE_PG) {
+  const { Pool } = require('pg');
+  pool = new Pool({
+    connectionString: DATABASE_URL,
+    ssl: { rejectUnauthorized: false }  // requis par la plupart des hébergeurs (Render, Neon, Supabase)
+  });
+  pool.on('error', (e) => console.error('❌ Erreur pool PostgreSQL :', e.message));
+}
+
+// ── Chargement initial ──
+async function loadStore() {
+  if (USE_PG) {
+    try {
+      // Crée la table si elle n'existe pas
+      await pool.query('CREATE TABLE IF NOT EXISTS pm_store (id INT PRIMARY KEY, data JSONB NOT NULL, updated_at TIMESTAMPTZ DEFAULT now())');
+      const r = await pool.query('SELECT data FROM pm_store WHERE id = 1');
+      if (r.rows.length && r.rows[0].data) {
+        STORE = r.rows[0].data;
+        ensureShape();
+        console.log('✅ Données chargées depuis PostgreSQL');
+      } else {
+        ensureShape();
+        await savePgNow();
+        console.log('🆕 Base PostgreSQL initialisée (vide)');
+      }
+    } catch (e) {
+      console.error('❌ Erreur chargement PostgreSQL :', e.message);
+      ensureShape();
+    }
+    return;
+  }
+  // Repli fichier
   try {
     if (fs.existsSync(DATA_FILE)) {
       STORE = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-      if (!STORE.clients) STORE.clients = {};
-      if (!STORE.stats) STORE.stats = {};
-      if (!STORE.calendar) STORE.calendar = {};
-      if (!STORE.posts) STORE.posts = {};
-      if (!STORE.tasks) STORE.tasks = { items: [] };
-      if (!STORE.prospects) STORE.prospects = { items: [] };
-      if (!STORE.publications) STORE.publications = {};
-      console.log('✅ Données chargées depuis le fichier');
+      ensureShape();
+      console.log('✅ Données chargées depuis le fichier (mode local)');
+    } else {
+      ensureShape();
     }
   } catch (e) {
-    console.warn('⚠️ Impossible de charger les données, démarrage à vide :', e.message);
-    STORE = { clients: {}, stats: {}, calendar: {}, posts: {}, publications: {}, tasks: { items: [] }, prospects: { items: [] } };
+    console.warn('⚠️ Fichier illisible, démarrage à vide :', e.message);
+    ensureShape();
   }
 }
 
+// ── Sauvegarde immédiate en base ──
+async function savePgNow() {
+  if (!pool) return;
+  await pool.query(
+    'INSERT INTO pm_store (id, data, updated_at) VALUES (1, $1, now()) ON CONFLICT (id) DO UPDATE SET data = $1, updated_at = now()',
+    [JSON.stringify(STORE)]
+  );
+}
+
+// ── Sauvegarde différée (regroupe les écritures) ──
 let saveTimer = null;
 function saveStore() {
-  // Sauvegarde différée (évite d'écrire trop souvent)
   if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
+  saveTimer = setTimeout(async () => {
     try {
-      if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-      fs.writeFileSync(DATA_FILE, JSON.stringify(STORE, null, 2), 'utf8');
+      if (USE_PG) {
+        await savePgNow();
+      } else {
+        if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+        fs.writeFileSync(DATA_FILE, JSON.stringify(STORE, null, 2), 'utf8');
+      }
     } catch (e) {
-      console.error('❌ Erreur sauvegarde données :', e.message);
+      console.error('❌ Erreur sauvegarde :', e.message);
     }
   }, 400);
 }
 
-loadStore();
+// loadStore() est appelé dans start() en fin de fichier (asynchrone)
 
 // ══════════════════════════════════════════
 // HACHAGE DES MOTS DE PASSE (sans dépendance externe)
@@ -135,12 +190,23 @@ function makeClient({ name, clientKey, email, phone, password }) {
 // Aucun client par défaut — tu les crées depuis "Gestion des accès".
 // (makeClient reste disponible si tu veux en pré-remplir un jour.)
 
-// Restaure les clients créés précédemment (persistés dans le fichier)
-if (STORE.clients && typeof STORE.clients === 'object') {
-  Object.entries(STORE.clients).forEach(([id, u]) => {
-    USERS[id] = u;
-  });
-  console.log(`✅ ${Object.keys(STORE.clients).length} compte(s) client restauré(s)`);
+// Restaure les clients créés précédemment (appelé au démarrage après loadStore)
+function restoreClients() {
+  if (STORE.clients && typeof STORE.clients === 'object') {
+    Object.entries(STORE.clients).forEach(([id, u]) => {
+      USERS[id] = u;
+    });
+    console.log(`✅ ${Object.keys(STORE.clients).length} compte(s) client restauré(s)`);
+  }
+  // Restaure le mot de passe admin personnalisé (s'il a été changé dans les paramètres)
+  if (STORE.adminOverride && STORE.adminOverride.passwordHash) {
+    const adminEntry = Object.entries(USERS).find(([id, u]) => u.role === 'admin');
+    if (adminEntry) {
+      adminEntry[1].passwordHash = STORE.adminOverride.passwordHash;
+      console.log('✅ Mot de passe admin personnalisé restauré');
+    }
+  }
+  reindexAll();
 }
 
 // Persiste l'état actuel des clients (hors admin) dans STORE
@@ -1216,6 +1282,100 @@ Réponds UNIQUEMENT en JSON valide, sans backticks :
 });
 
 // ══════════════════════════════════════════
+// OBJECTIFS PURE MOTION
+// ══════════════════════════════════════════
+app.post('/api/admin/objectives/save', (req, res) => {
+  const { adminToken, objectives } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!Array.isArray(objectives)) return res.status(400).json({ success:false, error:'objectives doit être une liste.' });
+  if (!STORE.objectives) STORE.objectives = {};
+  STORE.objectives.items = objectives;
+  STORE.objectives.updatedAt = Date.now();
+  saveStore();
+  return res.json({ success:true, count: objectives.length });
+});
+
+app.get('/api/admin/objectives', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+  const o = (STORE.objectives && STORE.objectives.items) ? STORE.objectives.items : [];
+  return res.json({ success:true, objectives: o });
+});
+
+// ══════════════════════════════════════════
+// PARAMÈTRES — Mot de passe admin & collaborateurs
+// ══════════════════════════════════════════
+
+// Changer le mot de passe administrateur
+// POST /api/admin/change-password
+// Body : { adminToken, currentPassword, newPassword }
+app.post('/api/admin/change-password', (req, res) => {
+  const { adminToken, currentPassword, newPassword } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!currentPassword || !newPassword) return res.status(400).json({ success:false, error:'Ancien et nouveau mot de passe requis.' });
+  if (!validPw(newPassword)) return res.status(400).json({ success:false, error:'Le nouveau mot de passe doit faire au moins 6 caractères.' });
+
+  // Retrouve le compte admin
+  const adminEntry = Object.entries(USERS).find(([id, u]) => u.role === 'admin');
+  if (!adminEntry) return res.status(500).json({ success:false, error:'Compte admin introuvable.' });
+  const [adminId, adminUser] = adminEntry;
+
+  if (!verifyPassword(currentPassword, adminUser.passwordHash)) {
+    log('WARN', 'Échec changement mot de passe admin (ancien incorrect)');
+    return res.status(401).json({ success:false, error:'Mot de passe actuel incorrect.' });
+  }
+
+  adminUser.passwordHash = hashPassword(newPassword);
+  // Persiste le hash admin dans STORE pour survivre aux redémarrages
+  if (!STORE.adminOverride) STORE.adminOverride = {};
+  STORE.adminOverride.passwordHash = adminUser.passwordHash;
+  saveStore();
+
+  log('INFO', 'Mot de passe admin changé');
+  return res.json({ success:true, message:'Mot de passe administrateur mis à jour.' });
+});
+
+// Lister les collaborateurs
+// GET /api/admin/collaborators  (header x-admin-token)
+app.get('/api/admin/collaborators', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+  const collabs = Object.entries(USERS)
+    .filter(([id, u]) => u.role === 'collaborateur')
+    .map(([id, u]) => ({
+      id,
+      name: u.name,
+      email: u.email || null,
+      phone: u.phone || null,
+      activated: !!u.activated
+    }));
+  return res.json({ success:true, collaborators: collabs });
+});
+
+// Supprimer un collaborateur
+// POST /api/admin/collaborators/delete
+// Body : { adminToken, id }
+app.post('/api/admin/collaborators/delete', (req, res) => {
+  const { adminToken, id } = req.body;
+  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  if (!id) return res.status(400).json({ success:false, error:'Identifiant requis.' });
+
+  const user = USERS[id];
+  if (!user || user.role !== 'collaborateur') {
+    return res.status(404).json({ success:false, error:'Collaborateur introuvable.' });
+  }
+  const name = user.name;
+  delete USERS[id];
+  persistClients();
+  reindexAll();
+
+  log('INFO', 'Collaborateur supprimé', { name });
+  return res.json({ success:true, message:'Collaborateur « '+name+' » supprimé.' });
+});
+
+// ══════════════════════════════════════════
 // PAGES TABLEAUX DE BORD
 // ══════════════════════════════════════════
 
@@ -1250,25 +1410,25 @@ app.use((err, req, res, next) => {
 });
 
 // ══════════════════════════════════════════
-// DÉMARRAGE
+// DÉMARRAGE (asynchrone : attend la base de données)
 // ══════════════════════════════════════════
-app.listen(PORT, () => {
-  console.log('');
-  console.log('╔══════════════════════════════════════════╗');
-  console.log('║   🚀 PURE MOTION Backend démarré         ║');
-  console.log(`║   → Port    : ${PORT}`);
-  console.log(`║   → Env     : ${NODE_ENV}`);
-  console.log(`║   → Clients : numéro + mot de passe`);
-  console.log(`║   → Admin   : email + mot de passe (simple)`);
-  console.log('╚══════════════════════════════════════════╝');
-  console.log('');
-  console.log('📡 Routes :');
-  console.log('   POST /api/client/check          (statut numéro)');
-  console.log('   POST /api/client/set-password   (1ère connexion)');
-  console.log('   POST /api/client/login          (connexion client)');
-  console.log('   POST /api/admin/login           (connexion admin)');
-  console.log('   POST /api/admin/clients/create  (ajouter un client)');
-  console.log('   GET  /api/admin/clients         (liste clients)');
-  console.log('   GET  /api/health');
-  console.log('');
+async function start() {
+  await loadStore();      // charge depuis PostgreSQL (ou fichier)
+  restoreClients();       // réinjecte les comptes clients + réindexe
+
+  app.listen(PORT, () => {
+    console.log('');
+    console.log('╔══════════════════════════════════════════╗');
+    console.log('║   🚀 PURE MOTION Backend démarré         ║');
+    console.log(`║   → Port    : ${PORT}`);
+    console.log(`║   → Env     : ${NODE_ENV}`);
+    console.log(`║   → Stockage: ${USE_PG ? 'PostgreSQL (durable ✅)' : 'Fichier local (dev)'}`);
+    console.log('╚══════════════════════════════════════════╝');
+    console.log('');
+  });
+}
+
+start().catch((e) => {
+  console.error('❌ Démarrage impossible :', e.message);
+  process.exit(1);
 });
