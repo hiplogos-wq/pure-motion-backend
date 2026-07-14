@@ -1062,6 +1062,32 @@ app.get('/api/admin/calendar-day/:date', (req, res) => {
   return res.json({ success:true, date, items });
 });
 
+// Admin récupère TOUTES les publications de tous les clients (pour le calendrier du dashboard)
+// GET /api/admin/calendar-all   (header x-admin-token)
+app.get('/api/admin/calendar-all', (req, res) => {
+  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  }
+  const nameByKey = {};
+  Object.values(USERS).forEach(u => { if (u.clientKey) nameByKey[u.clientKey] = u.name; });
+
+  const items = [];
+  Object.entries(STORE.calendar || {}).forEach(([key, c]) => {
+    if (!nameByKey[key]) return; // ignore les clients supprimés
+    (c.events || []).forEach(e => {
+      items.push({ ...e, clientKey: key, clientName: nameByKey[key] });
+    });
+  });
+  return res.json({ success:true, items });
+});
+
+// Client récupère SON calendrier éditorial (toutes ses publications planifiées)
+// GET /api/client/calendar/:clientKey
+app.get('/api/client/calendar/:clientKey', (req, res) => {
+  const c = STORE.calendar[req.params.clientKey] || { events: [] };
+  return res.json({ success:true, events: c.events || [] });
+});
+
 // ══════════════════════════════════════════
 // TÂCHES (à faire, avec dates)
 // ══════════════════════════════════════════
