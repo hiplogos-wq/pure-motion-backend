@@ -912,6 +912,16 @@ textarea{resize:none;line-height:1.5;}
 .doc-meta{font-size:11px;color:var(--hint);margin-top:2px;}
 .doc-actions{display:flex;gap:6px;flex-shrink:0;}
 .doc-upload-progress{font-size:12px;color:var(--cyan);padding:14px;text-align:center;}
+/* ══ PERFORMANCE : actions sur relevé + messages graphiques ══ */
+.perf-hrow-actions{display:flex;gap:6px;flex-shrink:0;}
+.perf-hrow-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--bord);background:var(--white);color:var(--mut);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;}
+.perf-hrow-btn:hover{background:var(--surf);color:var(--navy);}
+.perf-hrow-btn.del{color:var(--dn);border-color:rgba(162,45,45,.25);}
+.perf-hrow-btn.del:hover{background:#fcebeb;border-color:var(--dn);}
+.perf-chart-msg{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--hint);padding:10px;}
+.perf-chart-msg i{font-size:26px;opacity:.45;margin-bottom:8px;}
+.perf-chart-msg-t{font-size:12px;font-weight:700;color:var(--mut);margin-bottom:4px;}
+.perf-chart-msg div:last-child{font-size:11px;line-height:1.5;max-width:230px;}
 </style>
 </head>
 <body>
@@ -1764,21 +1774,21 @@ function pmLogout(){
       <div class="perf-charts">
         <div class="perf-chart-card">
           <div class="perf-chart-title"><i class="ti ti-eye" style="color:var(--cyan)"></i> Évolution des vues</div>
-          <div class="perf-chart-wrap"><canvas id="perf-chart-views"></canvas></div>
+          <div class="perf-chart-wrap" data-chart="perf-chart-views"><canvas id="perf-chart-views"></canvas></div>
         </div>
         <div class="perf-chart-card">
           <div class="perf-chart-title"><i class="ti ti-users" style="color:var(--gold)"></i> Croissance des abonnés</div>
-          <div class="perf-chart-wrap"><canvas id="perf-chart-followers"></canvas></div>
+          <div class="perf-chart-wrap" data-chart="perf-chart-followers"><canvas id="perf-chart-followers"></canvas></div>
         </div>
       </div>
       <div class="perf-charts">
         <div class="perf-chart-card">
           <div class="perf-chart-title"><i class="ti ti-heart" style="color:#E1306C"></i> Engagement (likes + commentaires)</div>
-          <div class="perf-chart-wrap"><canvas id="perf-chart-engage"></canvas></div>
+          <div class="perf-chart-wrap" data-chart="perf-chart-engage"><canvas id="perf-chart-engage"></canvas></div>
         </div>
         <div class="perf-chart-card">
           <div class="perf-chart-title"><i class="ti ti-percentage" style="color:var(--up)"></i> Taux d'engagement (%)</div>
-          <div class="perf-chart-wrap"><canvas id="perf-chart-rate"></canvas></div>
+          <div class="perf-chart-wrap" data-chart="perf-chart-rate"><canvas id="perf-chart-rate"></canvas></div>
         </div>
       </div>
 
@@ -2858,8 +2868,9 @@ function perfLoad(){
 }
 function perfSave(){
   try{ localStorage.setItem('pm_performance', JSON.stringify(perfState.data)); }catch(e){}
-  // Sauvegarde aussi sur le serveur (brouillon, non publié) si on a le token
-  perfSyncToServer(false);
+  // Conserve l'état de publication : corriger un relevé ne doit pas
+  // retirer les stats déjà visibles par le client.
+  perfSyncToServer(perfState.published === true);
 }
 
 // Synchronise les stats du client courant vers le serveur
@@ -3106,7 +3117,43 @@ function perfChart(canvasId, labels, dataset, color, fill){
 }
 
 function perfRenderCharts(data){
-  if(typeof Chart==='undefined') return;
+  const wraps = ['perf-chart-views','perf-chart-followers','perf-chart-engage','perf-chart-rate'];
+
+  // Message affiché à la place d'un graphique impossible à tracer
+  function chartMessage(icone, titre, texte){
+    wraps.forEach(id=>{
+      const wrap = document.querySelector('[data-chart="'+id+'"]');
+      if(!wrap) return;
+      if(perfState.charts[id]){ try{ perfState.charts[id].destroy(); }catch(e){} delete perfState.charts[id]; }
+      wrap.innerHTML = '<div class="perf-chart-msg"><i class="ti '+icone+'"></i><div class="perf-chart-msg-t">'+titre+'</div><div>'+texte+'</div></div>';
+    });
+  }
+
+  // Remet un canvas vierge dans les conteneurs (après un message)
+  function restoreCanvas(){
+    wraps.forEach(id=>{
+      if(document.getElementById(id)) return;
+      const wrap = document.querySelector('[data-chart="'+id+'"]');
+      if(wrap) wrap.innerHTML = '<canvas id="'+id+'"></canvas>';
+    });
+  }
+
+  // Chart.js absent (connexion coupée au chargement, CDN bloqué...)
+  if(typeof Chart === 'undefined'){
+    chartMessage('ti-wifi-off', 'Graphiques indisponibles', 'La librairie des graphiques n\'a pas pu se charger. Vérifie ta connexion et recharge la page.');
+    return;
+  }
+
+  if(data.length === 0){
+    chartMessage('ti-chart-line', 'Aucune donnée', 'Saisis un relevé pour voir apparaître tes courbes.');
+    return;
+  }
+  if(data.length === 1){
+    chartMessage('ti-chart-dots', 'Un seul relevé', 'Une courbe a besoin d\'au moins 2 relevés. Ajoute un second relevé à une autre date pour voir l\'évolution.');
+    return;
+  }
+
+  restoreCanvas();
   const labels = data.map(e=>{ const p=e.date.split('-'); return p[2]+'/'+p[1]; });
   perfChart('perf-chart-views', labels, data.map(e=>Number(e.views)||0), '#00C6E0');
   perfChart('perf-chart-followers', labels, data.map(e=>Number(e.followers)||0), '#F5B731');
@@ -3138,9 +3185,22 @@ function perfRenderHistory(data){
       + '<div class="perf-hrow-stat">Portée<b>'+perfFmt(e.reach)+'</b></div>'
       + '<div class="perf-hrow-stat">Engag.<b>'+perfRate(e).toFixed(1)+'%</b></div>'
       + '</div>'
-      + '<i class="ti ti-edit perf-hrow-edit"></i>'
+      + '<div class="perf-hrow-actions">'
+      + '<button class="perf-hrow-btn" title="Modifier ce relevé" onclick="event.stopPropagation();perfEditEntry(\''+e.id+'\')"><i class="ti ti-edit"></i></button>'
+      + '<button class="perf-hrow-btn del" title="Supprimer ce relevé" onclick="event.stopPropagation();perfDeleteRow(\''+e.id+'\',\''+p[2]+'/'+p[1]+'/'+p[0]+'\')"><i class="ti ti-trash"></i></button>'
+      + '</div>'
       + '</div>';
   }).join('');
+}
+
+// Supprime un relevé directement depuis l'historique
+async function perfDeleteRow(id, dateFr){
+  const e = (perfState.data[perfState.client]||[]).find(x=>x.id===id);
+  const detail = e ? ' ('+e.net+' — '+perfFmt(e.views)+' vues)' : '';
+  if(!confirm('Supprimer le relevé du '+dateFr+detail+' ?\n\nCette action est définitive.')) return;
+  perfState.data[perfState.client] = (perfState.data[perfState.client]||[]).filter(x=>x.id!==id);
+  perfRender();
+  await perfSyncToServer(perfState.published);
 }
 
 // ── Modal ──
