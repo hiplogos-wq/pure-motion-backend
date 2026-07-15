@@ -900,6 +900,18 @@ textarea{resize:none;line-height:1.5;}
 .taskcal-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-size:11px;color:var(--mut);}
 .tcl-item{display:flex;align-items:center;gap:5px;}
 .tcl-dot{width:9px;height:9px;border-radius:3px;display:inline-block;}
+/* ══ DOCUMENTS ══ */
+.doc-hint{font-size:11px;color:var(--hint);margin:12px 0 14px;}
+.doc-card{background:var(--white);border:1px solid var(--bord);border-radius:11px;padding:13px 15px;margin-bottom:9px;display:flex;align-items:center;gap:13px;transition:box-shadow .15s;}
+.doc-card:hover{box-shadow:0 4px 14px rgba(18,32,90,.07);}
+.doc-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.doc-icon.pdf{background:#fcebeb;color:#c0392b;}
+.doc-icon.img{background:#e6f1fb;color:#185fa5;}
+.doc-body{flex:1;min-width:0;}
+.doc-name{font-size:13px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.doc-meta{font-size:11px;color:var(--hint);margin-top:2px;}
+.doc-actions{display:flex;gap:6px;flex-shrink:0;}
+.doc-upload-progress{font-size:12px;color:var(--cyan);padding:14px;text-align:center;}
 </style>
 </head>
 <body>
@@ -936,6 +948,7 @@ function pmLogout(){
     <div class="ni" onclick="showMain('calendrier',this)"><i class="ti ti-calendar-event"></i> Calendrier éditorial</div>
     <div class="ni" onclick="showMain('performance',this)"><i class="ti ti-chart-line"></i> Performance réseaux</div>
     <div class="ni" onclick="showMain('publications',this)"><i class="ti ti-link"></i> Publications</div>
+    <div class="ni" onclick="showMain('documents',this)"><i class="ti ti-folder"></i> Documents</div>
     <div class="ns">Commercial — Admin uniquement</div>
     <div class="ni" onclick="showMain('contrats',this)"><i class="ti ti-file-text"></i> Contrats <span class="ni-badge">3</span></div>
     <div class="ni" onclick="showMain('propositions',this)"><i class="ti ti-file-plus"></i> Propositions <span class="ni-badge gold">2</span></div>
@@ -1818,6 +1831,37 @@ function pmLogout(){
 
     </div>
 
+    <!-- ══ MODULE DOCUMENTS ══ -->
+    <div class="panel" id="panel-documents">
+
+      <div class="pub-intro">
+        <div class="pub-intro-ico">📁</div>
+        <div>
+          <div class="pub-intro-title">Documents clients</div>
+          <div class="pub-intro-sub">Ajoute les contrats, factures ou fichiers que tu as déjà préparés. Chaque document est privé et visible uniquement par le client concerné, dans son espace.</div>
+        </div>
+      </div>
+
+      <div class="perf-hint-box" id="doc-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour gérer les documents.</div>
+
+      <div class="perf-toolbar">
+        <div class="perf-client-select">
+          <label>Client</label>
+          <select id="doc-client" onchange="docChangeClient()">
+            <option value="">— Chargement... —</option>
+          </select>
+        </div>
+        <div style="flex:1"></div>
+        <div class="perf-sync-status" id="doc-sync-status"></div>
+        <button class="btn btn-gold" onclick="docPick()"><i class="ti ti-upload" style="font-size:13px"></i> Ajouter un document</button>
+        <input type="file" id="doc-file" accept="application/pdf,image/png,image/jpeg,image/webp" onchange="docUpload(event)" style="display:none;"/>
+      </div>
+
+      <div class="doc-hint">📎 Formats acceptés : PDF, PNG, JPEG, WEBP · 5 Mo maximum par fichier</div>
+      <div id="doc-list"></div>
+
+    </div>
+
 
   </div><!-- /body -->
 
@@ -1857,7 +1901,7 @@ function showMain(section, el) {
     preuves:'panel-preuves', marche:'panel-marche',
     objectifs:'panel-objectifs', acces:'panel-acces',
     settings:'panel-settings', calendrier:'panel-calendrier',
-    performance:'panel-performance', publications:'panel-publications'
+    performance:'panel-performance', publications:'panel-publications', documents:'panel-documents'
   };
 
   const titleMap = {
@@ -1866,7 +1910,7 @@ function showMain(section, el) {
     preuves:'Preuves sociales', marche:'Étude de marché',
     objectifs:'Objectifs stratégiques', acces:'Gestion des accès',
     settings:'Paramètres', calendrier:'Calendrier éditorial',
-    performance:'Performance réseaux', publications:'Publications partagées'
+    performance:'Performance réseaux', publications:'Publications partagées', documents:'Documents clients'
   };
 
   const subMap = {
@@ -1927,6 +1971,10 @@ function showMain(section, el) {
   // Rendu spécial des publications
   if(section === 'publications'){
     pubLoadClients();
+  }
+  // Rendu spécial des documents
+  if(section === 'documents'){
+    docLoadClients();
   }
   // Rendu spécial de la gestion des accès
   if(section === 'acces'){
@@ -2236,7 +2284,7 @@ function taskFiltered(){
 
 function taskRender(){
   const box = document.getElementById('dash-tasks');
-  const list = taskFiltered();
+  let list = taskFiltered();
   const today = dashDateStr(new Date());
 
   if(dashState.tasks.length===0){
@@ -4925,6 +4973,138 @@ function setAddCollab(){
   // Redirige vers Gestion des accès où la création (avec rôle) existe déjà
   alert('Pour ajouter un collaborateur : va dans Gestion des accès, crée un compte et choisis le rôle « Collaborateur ».');
   showMain('acces');
+}
+
+/* ══════════════════════════════════════════
+   DOCUMENTS (contrats, factures par client)
+   ══════════════════════════════════════════ */
+let docState = { client:'', items:[] };
+
+function docToken(){
+  return accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
+}
+
+async function docLoadClients(){
+  const token = docToken();
+  const sel = document.getElementById('doc-client');
+  const hint = document.getElementById('doc-token-hint');
+  if(!token){ if(hint) hint.style.display='flex'; sel.innerHTML='<option value="">⚠️ Valide ta clé admin</option>'; return; }
+  if(hint) hint.style.display='none';
+  try {
+    const r = await fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } });
+    const data = await r.json();
+    if(!data.success || !data.clients.length){ sel.innerHTML='<option value="">Aucun client</option>'; return; }
+    const withKey = data.clients.filter(c=>c.clientKey);
+    const current = docState.client;
+    sel.innerHTML = withKey.map(c=>'<option value="'+c.clientKey+'">'+c.name+'</option>').join('');
+    if(current && withKey.some(c=>c.clientKey===current)) sel.value = current;
+    else docState.client = withKey.length ? withKey[0].clientKey : '';
+    docLoadDocs();
+  } catch(e){ sel.innerHTML='<option value="">Erreur de chargement</option>'; }
+}
+
+function docChangeClient(){
+  docState.client = document.getElementById('doc-client').value;
+  docLoadDocs();
+}
+
+async function docLoadDocs(){
+  const token = docToken();
+  if(!token || !docState.client){ docState.items=[]; docRender(); return; }
+  try {
+    const r = await fetch('/api/admin/documents/'+encodeURIComponent(docState.client), { headers:{ 'x-admin-token': token } });
+    const data = await r.json();
+    docState.items = (data.success && data.documents) ? data.documents : [];
+  } catch(e){ docState.items=[]; }
+  docRender();
+}
+
+function docPick(){
+  if(!docToken()){ alert('Valide d\'abord ta clé administrateur dans Gestion des accès.'); return; }
+  if(!docState.client){ alert('Sélectionne un client.'); return; }
+  document.getElementById('doc-file').click();
+}
+
+function docShowSync(msg,type){
+  const el=document.getElementById('doc-sync-status');
+  if(!el)return;
+  el.textContent=msg;
+  el.style.color = type==='ok'?'var(--up)':(type==='err'?'var(--dn)':'var(--mut)');
+  if(type==='ok') setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; },3000);
+}
+
+async function docUpload(ev){
+  const file = ev.target.files && ev.target.files[0];
+  ev.target.value = '';
+  if(!file) return;
+
+  const MAX = 5*1024*1024;
+  if(file.size > MAX){ docShowSync('✗ Fichier trop lourd (5 Mo max)','err'); return; }
+  const ALLOWED = ['application/pdf','image/png','image/jpeg','image/webp'];
+  if(!ALLOWED.includes(file.type)){ docShowSync('✗ Format non supporté','err'); return; }
+
+  document.getElementById('doc-list').insertAdjacentHTML('afterbegin','<div class="doc-upload-progress" id="doc-uploading"><div class="spin" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;"></div> Envoi de « '+file.name.replace(/</g,'&lt;')+' »...</div>');
+
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    const base64 = e.target.result.split(',')[1];
+    try {
+      const r = await fetch('/api/admin/documents/add', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ adminToken: docToken(), clientKey: docState.client, name: file.name, mediaType: file.type, data: base64 })
+      });
+      const d = await r.json();
+      const up = document.getElementById('doc-uploading'); if(up) up.remove();
+      if(!d.success){ docShowSync('✗ '+(d.error||'Erreur'),'err'); return; }
+      docShowSync('✓ Document ajouté','ok');
+      docLoadDocs();
+    } catch(err){
+      const up = document.getElementById('doc-uploading'); if(up) up.remove();
+      docShowSync('✗ Erreur de connexion','err');
+    }
+  };
+  reader.onerror = function(){ const up=document.getElementById('doc-uploading'); if(up) up.remove(); docShowSync('✗ Lecture du fichier impossible','err'); };
+  reader.readAsDataURL(file);
+}
+
+function docFmtSize(bytes){
+  if(bytes >= 1024*1024) return (bytes/(1024*1024)).toFixed(1)+' Mo';
+  return Math.round(bytes/1024)+' Ko';
+}
+
+function docRender(){
+  const box = document.getElementById('doc-list');
+  if(docState.items.length===0){
+    box.innerHTML='<div class="perf-empty"><i class="ti ti-folder-open"></i><div class="perf-empty-title">Aucun document</div><div>Ajoute un contrat ou un fichier pour ce client — il pourra le consulter dans son espace.</div></div>';
+    return;
+  }
+  const sorted = docState.items.slice().sort((a,b)=>(b.uploadedAt||0)-(a.uploadedAt||0));
+  box.innerHTML = sorted.map(d=>{
+    const isPdf = d.type==='application/pdf';
+    const ico = isPdf ? '<div class="doc-icon pdf">📄</div>' : '<div class="doc-icon img">🖼️</div>';
+    const dateFr = d.uploadedAt ? new Date(d.uploadedAt).toLocaleDateString('fr-FR') : '';
+    const safe = (d.name||'Document').replace(/</g,'&lt;');
+    const url = '/api/documents/download/'+encodeURIComponent(docState.client)+'/'+d.id+'?admin='+encodeURIComponent(docToken());
+    return '<div class="doc-card">'+ico
+      + '<div class="doc-body"><div class="doc-name">'+safe+'</div><div class="doc-meta">'+docFmtSize(d.size||0)+' · Ajouté le '+dateFr+'</div></div>'
+      + '<div class="doc-actions">'
+      + '<a class="acc-btn" href="'+url+'" target="_blank" rel="noopener" title="Ouvrir"><i class="ti ti-eye"></i></a>'
+      + '<button class="acc-btn" title="Supprimer" onclick="docDelete(\''+d.id+'\',\''+safe.replace(/'/g,"\\'")+'\')" style="color:var(--dn);border-color:rgba(162,45,45,.2);"><i class="ti ti-trash"></i></button>'
+      + '</div></div>';
+  }).join('');
+}
+
+async function docDelete(id, name){
+  if(!confirm('Supprimer le document « '+name+' » ? Le client n\'y aura plus accès.')) return;
+  try {
+    const r = await fetch('/api/admin/documents/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ adminToken: docToken(), clientKey: docState.client, id })
+    });
+    const d = await r.json();
+    if(d.success){ docShowSync('✓ Document supprimé','ok'); docLoadDocs(); }
+    else docShowSync('✗ '+(d.error||'Erreur'),'err');
+  } catch(e){ docShowSync('✗ Erreur de connexion','err'); }
 }
 
 /* ── INIT ── */
