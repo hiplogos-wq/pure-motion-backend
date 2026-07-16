@@ -922,6 +922,17 @@ textarea{resize:none;line-height:1.5;}
 .perf-chart-msg i{font-size:26px;opacity:.45;margin-bottom:8px;}
 .perf-chart-msg-t{font-size:12px;font-weight:700;color:var(--mut);margin-bottom:4px;}
 .perf-chart-msg div:last-child{font-size:11px;line-height:1.5;max-width:230px;}
+/* ══ MODE COLLABORATEUR ══ */
+body.is-collab .admin-only{display:none!important;}
+body.is-collab .collab-note{display:flex;}
+.collab-note{display:none;align-items:center;gap:9px;background:#e6f1fb;border:1px solid rgba(24,95,165,.2);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#0c447c;line-height:1.5;}
+.collab-note i{font-size:16px;flex-shrink:0;}
+.set-collab-clients{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;}
+.set-collab-tag{font-size:10px;font-weight:600;background:rgba(0,198,224,.12);color:#0c6b7d;padding:2px 8px;border-radius:10px;}
+.set-collab-tag.none{background:var(--surf);color:var(--hint);font-weight:400;font-style:italic;}
+.assign-row{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--bord);border-radius:9px;margin-bottom:7px;cursor:pointer;font-size:13px;color:var(--txt);}
+.assign-row input{width:auto;margin:0;}
+.assign-row:has(input:checked){border-color:var(--cyan);background:rgba(0,198,224,.05);font-weight:600;}
 </style>
 </head>
 <body>
@@ -936,10 +947,8 @@ textarea{resize:none;line-height:1.5;}
     }
   } catch(e){ window.location.href = '/'; }
 })();
-function pmLogout(){
-  try { sessionStorage.removeItem('pm_session'); } catch(e){}
-  window.location.href = '/';
-}
+// pmLogout() est défini plus bas (script principal) : il prévient aussi le serveur
+// pour invalider la session, au lieu de seulement vider le navigateur.
 </script>
 <div class="shell">
 
@@ -948,8 +957,8 @@ function pmLogout(){
   <div class="side-brand">
     <div class="brand-row">
       <div class="brand-logo"><span>P</span></div>
-      <div><div class="brand-name">PURE MOTION</div><div class="brand-sub">Espace Admin</div></div>
-      <div class="admin-pill">ADMIN</div>
+      <div><div class="brand-name">PURE MOTION</div><div class="brand-sub" id="side-role-sub">Espace Admin</div></div>
+      <div class="admin-pill" id="side-role-badge">ADMIN</div>
     </div>
   </div>
   <div class="side-nav">
@@ -959,23 +968,23 @@ function pmLogout(){
     <div class="ni" onclick="showMain('performance',this)"><i class="ti ti-chart-line"></i> Performance réseaux</div>
     <div class="ni" onclick="showMain('publications',this)"><i class="ti ti-link"></i> Publications</div>
     <div class="ni" onclick="showMain('documents',this)"><i class="ti ti-folder"></i> Documents</div>
-    <div class="ns">Commercial — Admin uniquement</div>
-    <div class="ni" onclick="showMain('contrats',this)"><i class="ti ti-file-text"></i> Contrats <span class="ni-badge">3</span></div>
-    <div class="ni" onclick="showMain('propositions',this)"><i class="ti ti-file-plus"></i> Propositions <span class="ni-badge gold">2</span></div>
+    <div class="ns" data-ns-commercial>Commercial</div>
+    <div class="ni" onclick="showMain('contrats',this)"><i class="ti ti-file-text"></i> Contrats</div>
+    <div class="ni admin-only" onclick="showMain('propositions',this)"><i class="ti ti-file-plus"></i> Propositions</div>
     <div class="ni" onclick="showMain('tarifs',this)"><i class="ti ti-coin"></i> Grille tarifaire</div>
     <div class="ni" onclick="showMain('preuves',this)"><i class="ti ti-star"></i> Preuves sociales</div>
-    <div class="ns">Stratégie — Admin uniquement</div>
+    <div class="ns">Stratégie</div>
     <div class="ni" onclick="showMain('marche',this)"><i class="ti ti-telescope"></i> Étude de marché</div>
     <div class="ni" onclick="showMain('objectifs',this)"><i class="ti ti-target"></i> Objectifs</div>
     <div class="ns">Accès</div>
-    <div class="ni" onclick="showMain('acces',this)"><i class="ti ti-shield-lock"></i> Gestion des accès</div>
+    <div class="ni admin-only" onclick="showMain('acces',this)"><i class="ti ti-shield-lock"></i> Gestion des accès</div>
     <div class="ni" onclick="showMain('settings',this)"><i class="ti ti-settings"></i> Paramètres</div>
     <div class="ni" onclick="pmLogout()" style="color:rgba(255,150,150,.7);"><i class="ti ti-logout"></i> Déconnexion</div>
   </div>
   <div class="side-clients">
-    <div class="ns">Clients actifs</div>
+    <div class="ns" id="side-clients-title">Clients actifs</div>
     <div id="side-clients-list"></div>
-    <div class="cl-add" onclick="showMain('acces',null)"><i class="ti ti-plus" style="font-size:11px"></i> Nouveau client</div>
+    <div class="cl-add admin-only" onclick="showMain('acces',null)"><i class="ti ti-plus" style="font-size:11px"></i> Nouveau client</div>
   </div>
 </div>
 
@@ -1008,6 +1017,7 @@ function pmLogout(){
 
     <!-- ════ PANEL LISTE ════ -->
     <div class="panel act" id="panel-list">
+      <div class="collab-note"><i class="ti ti-eye"></i><div>Consultation seule — seul l'administrateur peut modifier cette section.</div></div>
 
       <div class="perf-hint-box" id="ct-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour charger et gérer tes contrats.</div>
 
@@ -1017,7 +1027,7 @@ function pmLogout(){
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
         <div style="font-size:13px;font-weight:700;color:var(--txt);"><i class="ti ti-file-text" style="color:var(--cyan)"></i> Contrats clients</div>
-        <button class="btn btn-gold" onclick="ctOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau contrat</button>
+        <button class="btn btn-gold admin-only" onclick="ctOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau contrat</button>
       </div>
 
       <div id="ct-list"></div>
@@ -1467,6 +1477,7 @@ function pmLogout(){
     </div>
 
     <div class="panel" id="panel-preuves">
+      <div class="collab-note"><i class="ti ti-eye"></i><div>Consultation seule — seul l'administrateur peut modifier cette section.</div></div>
 
       <div class="proof-intro">
         <div class="proof-intro-ico">🏆</div>
@@ -1513,6 +1524,7 @@ function pmLogout(){
     </div>
 
     <div class="panel" id="panel-tarifs">
+      <div class="collab-note"><i class="ti ti-eye"></i><div>Consultation seule — seul l'administrateur peut modifier cette section.</div></div>
 
       <div class="perf-hint-box" id="tarif-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour charger la grille tarifaire.</div>
 
@@ -1545,6 +1557,7 @@ function pmLogout(){
     </div>
 
     <div class="panel" id="panel-marche">
+      <div class="collab-note"><i class="ti ti-eye"></i><div>Consultation seule — seul l'administrateur peut modifier cette section.</div></div>
 
       <div class="pro-intro">
         <div class="pro-intro-ico">🎯</div>
@@ -1584,7 +1597,7 @@ function pmLogout(){
         <div style="flex:1"></div>
         <div class="perf-sync-status" id="pro-sync-status"></div>
         <button class="btn" onclick="proExportCSV()"><i class="ti ti-download" style="font-size:13px"></i> Export CSV</button>
-        <button class="btn btn-gold" onclick="proOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau prospect</button>
+        <button class="btn btn-gold admin-only" onclick="proOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Nouveau prospect</button>
       </div>
 
       <div id="pro-list"></div>
@@ -1595,7 +1608,7 @@ function pmLogout(){
       </div>
       <div class="pro-strategy-form">
         <input type="text" id="pro-strat-secteurs" placeholder="Secteurs qui t'intéressent (optionnel) — ex: restaurants, cliniques, boutiques"/>
-        <button class="btn btn-navy" id="pro-strat-btn" onclick="proStrategy()"><i class="ti ti-sparkles" style="font-size:14px"></i> Générer la stratégie</button>
+        <button class="btn btn-navy admin-only" id="pro-strat-btn" onclick="proStrategy()"><i class="ti ti-sparkles" style="font-size:14px"></i> Générer la stratégie</button>
       </div>
       <div class="ai-cost-note">💡 Environ 40 FCFA par génération. L'IA ne se déclenche qu'au clic.</div>
       <div id="pro-strategy-result"></div>
@@ -1603,6 +1616,7 @@ function pmLogout(){
     </div>
 
     <div class="panel" id="panel-objectifs">
+      <div class="collab-note"><i class="ti ti-eye"></i><div>Consultation seule — seul l'administrateur peut modifier cette section.</div></div>
 
       <div class="pro-intro">
         <div class="pro-intro-ico">🎯</div>
@@ -1610,7 +1624,7 @@ function pmLogout(){
           <div class="pro-intro-title">Objectifs Pure Motion</div>
           <div class="pro-intro-sub">Fixe tes objectifs d'agence (clients, revenus, contenus, croissance) et suis leur progression. Ils restent affichés pour te garder concentré sur l'essentiel.</div>
         </div>
-        <button class="btn btn-gold" onclick="objOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Nouvel objectif</button>
+        <button class="btn btn-gold admin-only" onclick="objOpenModal()"><i class="ti ti-plus" style="font-size:13px"></i> Nouvel objectif</button>
       </div>
 
       <div class="perf-hint-box" id="obj-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour gérer tes objectifs.</div>
@@ -1896,7 +1910,74 @@ let currentStep = 2;
 let selectedTarif = {name:'Platinum', price:'80 000', lettres:'Quatre-vingt mille'};
 
 /* ── NAVIGATION PRINCIPALE ── */
+/* ══════════════════════════════════════════
+   AUTHENTIFICATION — clé admin OU session individuelle
+   ══════════════════════════════════════════ */
+function pmSessionToken(){
+  try { const s = JSON.parse(sessionStorage.getItem('pm_session')||'null'); return (s && s.token) || ''; }
+  catch(e){ return ''; }
+}
+function pmAdminKey(){
+  if (typeof accToken !== 'undefined' && accToken) return accToken;
+  try { return sessionStorage.getItem('pm_admin_token') || ''; } catch(e){ return ''; }
+}
+// En-têtes envoyés au serveur : il choisit lui-même quelle identité fait foi.
+function pmHeaders(extra){
+  const h = Object.assign({}, extra || {});
+  const a = pmAdminKey();  if (a) h['x-admin-token'] = a;
+  const s = pmSessionToken(); if (s) h['x-session-token'] = s;
+  return h;
+}
+
+/* ── Rôle de l'utilisateur connecté ── */
+let pmMe = { role:'admin', name:'', allClients:true, clientKeys:[], clients:[] };
+
+async function pmLoadMe(){
+  try {
+    const r = await fetch('/api/me', { headers: pmHeaders() });
+    if(!r.ok) return;              // pas de session : on reste en mode clé admin
+    const d = await r.json();
+    if(d && d.success){ pmMe = d; pmApplyRole(); }
+  } catch(e){}
+}
+
+function pmApplyRole(){
+  const collab = pmMe.role === 'collaborateur';
+  document.body.classList.toggle('is-collab', collab);
+
+  // Badge de rôle en haut à gauche
+  const badge = document.getElementById('side-role-badge');
+  if(badge) badge.textContent = collab ? 'COLLAB' : 'ADMIN';
+  const sub = document.getElementById('side-role-sub');
+  if(sub) sub.textContent = collab ? 'Espace collaborateur' : 'Espace Admin';
+
+  if(collab){
+    // Le commercial devient consultable, jamais modifiable
+    const t = document.getElementById('side-clients-title');
+    if(t) t.textContent = 'Mes clients';
+    // Si le collaborateur est sur un module qui lui est fermé, on le ramène au dashboard
+    const fermes = ['propositions','acces'];
+    const actif = document.querySelector('.panel.act');
+    if(actif && fermes.some(f=>actif.id === 'panel-'+f)) showMain('dashboard');
+  }
+}
+
+// Un collaborateur ne doit pas pouvoir forcer l'ouverture d'un module admin
+function pmBlocked(section){
+  if(pmMe.role !== 'collaborateur') return false;
+  return ['propositions','acces'].includes(section);
+}
+
+async function pmLogout(){
+  try {
+    await fetch('/api/logout', { method:'POST', headers: pmHeaders({'Content-Type':'application/json'}), body: JSON.stringify({ sessionToken: pmSessionToken() }) });
+  } catch(e){}
+  try { sessionStorage.removeItem('pm_session'); sessionStorage.removeItem('pm_admin_token'); } catch(e){}
+  window.location.href = '/';
+}
+
 function showMain(section, el) {
+  if (pmBlocked(section)) { section = 'dashboard'; el = null; }
   // Ferme le tiroir mobile
   if(typeof mobCloseMenu === 'function') mobCloseMenu();
   // hide all panels
@@ -2155,11 +2236,11 @@ async function dashLoad(){
 
   try {
     const [rp, rt, rc, rk, ra] = await Promise.all([
-      fetch('/api/admin/calendar-day/'+today, { headers:{ 'x-admin-token': token } }),
-      fetch('/api/admin/tasks', { headers:{ 'x-admin-token': token } }),
-      fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } }),
-      fetch('/api/admin/contracts', { headers:{ 'x-admin-token': token } }),
-      fetch('/api/admin/calendar-all', { headers:{ 'x-admin-token': token } })
+      fetch('/api/admin/calendar-day/'+today, { headers: pmHeaders() }),
+      fetch('/api/admin/tasks', { headers: pmHeaders() }),
+      fetch('/api/admin/clients', { headers: pmHeaders() }),
+      fetch('/api/admin/contracts', { headers: pmHeaders() }),
+      fetch('/api/admin/calendar-all', { headers: pmHeaders() })
     ]);
     const dp = await rp.json();
     const dt = await rt.json();
@@ -2264,7 +2345,7 @@ async function taskSync(){
   try {
     const r = await fetch('/api/admin/tasks/save', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, tasks: dashState.tasks })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), tasks: dashState.tasks })
     });
     const d = await r.json();
     return !!d.success;
@@ -2521,8 +2602,8 @@ async function calLoadClients(){
   }
   try {
     const [rc, rk] = await Promise.all([
-      fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } }),
-      fetch('/api/admin/contracts', { headers:{ 'x-admin-token': token } })
+      fetch('/api/admin/clients', { headers: pmHeaders() }),
+      fetch('/api/admin/contracts', { headers: pmHeaders() })
     ]);
     const dc = await rc.json();
     const dk = await rk.json().catch(()=>({contracts:[]}));
@@ -2569,7 +2650,7 @@ async function calLoadEvents(){
   const token = calToken();
   if(!token || !calState.client){ calRender(); return; }
   try {
-    const r = await fetch('/api/admin/calendar/'+encodeURIComponent(calState.client), { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/calendar/'+encodeURIComponent(calState.client), { headers: pmHeaders() });
     const d = await r.json();
     calState.posts[calState.client] = (d.success && d.events) ? d.events : [];
   } catch(e){ calState.posts[calState.client] = []; }
@@ -2583,7 +2664,7 @@ async function calSave(){
   try {
     const r = await fetch('/api/admin/calendar/save', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, clientKey: calState.client, events: calState.posts[calState.client] || [] })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), clientKey: calState.client, events: calState.posts[calState.client] || [] })
     });
     const d = await r.json();
     return !!d.success;
@@ -2881,7 +2962,7 @@ async function perfSyncToServer(publish){
   try {
     const r = await fetch('/api/admin/stats/save', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, clientKey: perfState.client, entries, published: publish })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), clientKey: perfState.client, entries, published: publish })
     });
     const data = await r.json();
     if(data.success){
@@ -2936,7 +3017,7 @@ async function perfLoadClients(){
     return;
   }
   try {
-    const r = await fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/clients', { headers: pmHeaders() });
     const data = await r.json();
     if(!data.success || !data.clients.length){
       sel.innerHTML = '<option value="">Aucun client — crée-en dans Gestion des accès</option>';
@@ -2964,7 +3045,7 @@ async function perfLoadFromServer(){
   const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
   if(!token || !perfState.client){ perfRender(); return; }
   try {
-    const r = await fetch('/api/admin/stats/'+encodeURIComponent(perfState.client), { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/stats/'+encodeURIComponent(perfState.client), { headers: pmHeaders() });
     const data = await r.json();
     if(data.success){
       perfState.data[perfState.client] = data.entries || [];
@@ -3297,7 +3378,7 @@ async function accLoadClients(){
   if(!accToken) return;
   const list = document.getElementById('acc-list');
   try {
-    const r = await fetch('/api/admin/clients', { headers:{ 'x-admin-token': accToken } });
+    const r = await fetch('/api/admin/clients', { headers: pmHeaders() });
     const data = await r.json();
     if(!data.success){
       document.getElementById('acc-token-status').className='acces-token-status err';
@@ -3388,7 +3469,7 @@ async function accSaveClient(){
   if(!email && !phone){ alert('Renseigne au moins un email ou un numéro.'); return; }
   if(pwMode==='admin' && password.length<6){ alert('Le mot de passe doit faire au moins 6 caractères.'); return; }
 
-  const body = { adminToken: accToken, name };
+  const body = { adminToken: accToken, sessionToken: pmSessionToken(), name };
   if(email) body.email = email;
   if(phone) body.phone = phone;
   if(password) body.password = password;
@@ -3415,7 +3496,7 @@ async function accQuickReset(identifier, name){
   try {
     const r = await fetch('/api/admin/clients/reset', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: accToken, identifier })
+      body:JSON.stringify({ adminToken: accToken, sessionToken: pmSessionToken(), identifier })
     });
     const data = await r.json();
     if(data.success){ alert('✓ '+data.message); accLoadClients(); }
@@ -3436,7 +3517,7 @@ async function accDelete(identifier, name){
   try {
     const r = await fetch('/api/admin/clients/delete', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: accToken, identifier })
+      body:JSON.stringify({ adminToken: accToken, sessionToken: pmSessionToken(), identifier })
     });
     const data = await r.json();
     if(data.success){ alert('✓ '+data.message); accLoadClients(); }
@@ -3458,7 +3539,7 @@ async function accPreview(clientKey, name){
   const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
   let entries = [], published = false;
   try {
-    const r = await fetch('/api/admin/stats/'+encodeURIComponent(clientKey), { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/stats/'+encodeURIComponent(clientKey), { headers: pmHeaders() });
     const data = await r.json();
     if(data.success){ entries = data.entries||[]; published = data.published; }
   } catch(e){}
@@ -3534,13 +3615,13 @@ async function accPreviewPublish(){
   const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
   // Récupère les entries actuelles puis republie en "published:true"
   try {
-    const r = await fetch('/api/admin/stats/'+encodeURIComponent(previewClientKey), { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/stats/'+encodeURIComponent(previewClientKey), { headers: pmHeaders() });
     const data = await r.json();
     const entries = (data.success && data.entries) ? data.entries : [];
     if(entries.length===0){ alert('Aucune stat à publier.'); return; }
     const r2 = await fetch('/api/admin/stats/save', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, clientKey: previewClientKey, entries, published:true })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), clientKey: previewClientKey, entries, published:true })
     });
     const d2 = await r2.json();
     if(d2.success){ alert('✓ Statistiques publiées ! Le client peut maintenant les voir.'); accPreview(previewClientKey, document.getElementById('preview-title').textContent.replace('Tableau de bord — ','')); }
@@ -3576,11 +3657,11 @@ async function ctLoad(){
   document.getElementById('ct-token-hint').style.display='none';
   try {
     // Charge les contrats
-    const r = await fetch('/api/admin/contracts', { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/contracts', { headers: pmHeaders() });
     const data = await r.json();
     ctContracts = data.success ? data.contracts : [];
     // Charge la liste des clients (pour le sélecteur)
-    const r2 = await fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } });
+    const r2 = await fetch('/api/admin/clients', { headers: pmHeaders() });
     const d2 = await r2.json();
     ctClientsList = (d2.success ? d2.clients : []).filter(c=>c.clientKey);
     ctRender();
@@ -3709,7 +3790,7 @@ async function ctSave(){
     statut: document.getElementById('ct-statut').value
   };
   try {
-    const r=await fetch('/api/admin/contracts/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(),contract})});
+    const r=await fetch('/api/admin/contracts/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(), sessionToken: pmSessionToken(),contract})});
     const d=await r.json();
     if(d.success){ ctCloseModal(); ctLoad(); }
     else alert('✗ '+(d.error||'Erreur'));
@@ -3738,7 +3819,7 @@ async function ctTerminate(){
   const motif = sel==='autre' ? document.getElementById('ct-term-motif').value.trim() : sel;
   if(sel==='autre' && !motif){ alert('Précise le motif.'); return; }
   try {
-    const r=await fetch('/api/admin/contracts/terminate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(),id,motif})});
+    const r=await fetch('/api/admin/contracts/terminate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(), sessionToken: pmSessionToken(),id,motif})});
     const d=await r.json();
     if(d.success){ ctTermClose(); ctLoad(); alert('✓ Contrat résilié.'); }
     else alert('✗ '+(d.error||'Erreur'));
@@ -3772,7 +3853,7 @@ async function ctRenewSend(){
   };
   if(!renouvellement.nouvelleDateFin){ alert('Indique la nouvelle date de fin.'); return; }
   try {
-    const r=await fetch('/api/admin/contracts/renew',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(),id,renouvellement})});
+    const r=await fetch('/api/admin/contracts/renew',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(), sessionToken: pmSessionToken(),id,renouvellement})});
     const d=await r.json();
     if(d.success){ ctRenewClose(); ctLoad(); alert('✓ Proposition de renouvellement envoyée au client !'); }
     else alert('✗ '+(d.error||'Erreur'));
@@ -3782,7 +3863,7 @@ async function ctRenewSend(){
 async function ctDelete(id){
   if(!confirm('Supprimer définitivement ce contrat ?')) return;
   try {
-    const r=await fetch('/api/admin/contracts/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(),id})});
+    const r=await fetch('/api/admin/contracts/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminToken:ctToken(), sessionToken: pmSessionToken(),id})});
     const d=await r.json();
     if(d.success){ ctLoad(); }
     else alert('✗ '+(d.error||'Erreur'));
@@ -3804,7 +3885,7 @@ async function tarifLoad(){
   if(!token){ if(hint) hint.style.display='flex'; document.getElementById('tarif-list').innerHTML=''; document.getElementById('tarif-kpis').innerHTML=''; return; }
   if(hint) hint.style.display='none';
   try {
-    const r = await fetch('/api/admin/contracts', { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/contracts', { headers: pmHeaders() });
     const data = await r.json();
     if(data.success) tarifRender(data.contracts||[]);
   } catch(e){
@@ -3882,7 +3963,7 @@ async function aiGenerate(){
   try {
     const r = await fetch('/api/admin/ai/proposal', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, clientName, secteur, reseaux, objectif, contexte })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), clientName, secteur, reseaux, objectif, contexte })
     });
     const data = await r.json();
     btn.disabled = false;
@@ -3979,7 +4060,7 @@ async function pubLoadClients(){
   if(!token){ if(hint) hint.style.display='flex'; sel.innerHTML='<option value="">⚠️ Valide ta clé admin</option>'; return; }
   if(hint) hint.style.display='none';
   try {
-    const r = await fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/clients', { headers: pmHeaders() });
     const data = await r.json();
     if(!data.success || !data.clients.length){ sel.innerHTML='<option value="">Aucun client</option>'; return; }
     const withKey = data.clients.filter(c=>c.clientKey);
@@ -4000,7 +4081,7 @@ async function pubLoadPosts(){
   const token = pubToken();
   if(!token || !pubState.client){ pubState.items=[]; pubRender(); return; }
   try {
-    const r = await fetch('/api/admin/posts/'+encodeURIComponent(pubState.client), { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/posts/'+encodeURIComponent(pubState.client), { headers: pmHeaders() });
     const data = await r.json();
     pubState.items = (data.success && data.posts) ? data.posts : [];
   } catch(e){ pubState.items=[]; }
@@ -4013,7 +4094,7 @@ async function pubSyncToServer(){
   try {
     const r = await fetch('/api/admin/posts/save', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, clientKey: pubState.client, posts: pubState.items })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), clientKey: pubState.client, posts: pubState.items })
     });
     const data = await r.json();
     if(data.success){ pubShowSync('✓ Enregistré','ok'); return true; }
@@ -4151,7 +4232,7 @@ async function proofLoad(){
   document.getElementById('proof-content').innerHTML='<div class="ai-loading"><div class="spin-big"></div><div>Calcul des preuves sociales...</div></div>';
 
   try {
-    const r = await fetch('/api/admin/social-proof', { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/social-proof', { headers: pmHeaders() });
     const data = await r.json();
     if(!data.success){ document.getElementById('proof-content').innerHTML='<div class="perf-empty"><div class="perf-empty-title">Erreur</div><div>'+(data.error||'')+'</div></div>'; return; }
     proofRender(data);
@@ -4308,7 +4389,7 @@ async function ocrAnalyze(){
     const r = await fetch('/api/admin/ai/read-stats', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        adminToken: token,
+        adminToken: token, sessionToken: pmSessionToken(),
         reseau: reseau,
         images: ocrImages.map(i=>({ media_type:i.media_type, data:i.data }))
       })
@@ -4406,7 +4487,7 @@ async function proLoad(){
   if(!token){ if(hint) hint.style.display='flex'; document.getElementById('pro-list').innerHTML=''; document.getElementById('pro-kpis').innerHTML=''; return; }
   if(hint) hint.style.display='none';
   try {
-    const r = await fetch('/api/admin/prospects', { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/prospects', { headers: pmHeaders() });
     const d = await r.json();
     proState.items = (d.success && d.prospects) ? d.prospects : [];
   } catch(e){ proState.items=[]; }
@@ -4420,7 +4501,7 @@ async function proSync(){
   try {
     const r = await fetch('/api/admin/prospects/save', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, prospects: proState.items })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), prospects: proState.items })
     });
     const d = await r.json();
     if(d.success){ proShowSync('✓ Enregistré','ok'); return true; }
@@ -4661,7 +4742,7 @@ async function proAnalyze(id){
   try {
     const r = await fetch('/api/admin/ai/prospect-score', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, prospect: p })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), prospect: p })
     });
     const d = await r.json();
     if(!d.success){ proShowSync('✗ '+(d.error||'Erreur'),'err'); return; }
@@ -4708,7 +4789,7 @@ async function proStrategy(){
   try {
     const r = await fetch('/api/admin/ai/market-strategy', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, secteursCibles: secteurs })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), secteursCibles: secteurs })
     });
     const d = await r.json();
     btn.disabled = false;
@@ -4801,7 +4882,7 @@ async function objLoad(){
   if(!token){ if(hint) hint.style.display='flex'; document.getElementById('obj-list').innerHTML=''; document.getElementById('obj-summary').innerHTML=''; return; }
   if(hint) hint.style.display='none';
   try {
-    const r = await fetch('/api/admin/objectives', { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/objectives', { headers: pmHeaders() });
     const d = await r.json();
     objState.items = (d.success && d.objectives) ? d.objectives : [];
   } catch(e){ objState.items=[]; }
@@ -4814,7 +4895,7 @@ async function objSync(){
   try {
     const r = await fetch('/api/admin/objectives/save', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, objectives: objState.items })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), objectives: objState.items })
     });
     const d = await r.json();
     return !!d.success;
@@ -4976,7 +5057,7 @@ async function setChangePassword(){
   try {
     const r = await fetch('/api/admin/change-password', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, currentPassword: current, newPassword: nw })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), currentPassword: current, newPassword: nw })
     });
     const d = await r.json();
     if(d.success){
@@ -4995,7 +5076,7 @@ async function setLoadCollabs(){
   const box = document.getElementById('set-collab-list');
   if(!token){ box.innerHTML=''; return; }
   try {
-    const r = await fetch('/api/admin/collaborators', { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/collaborators', { headers: pmHeaders() });
     const d = await r.json();
     const collabs = (d.success && d.collaborators) ? d.collaborators : [];
     if(collabs.length===0){
@@ -5006,13 +5087,73 @@ async function setLoadCollabs(){
       const initial = (c.name||'?').charAt(0).toUpperCase();
       const contact = c.email || c.phone || '';
       const statut = c.activated ? '' : ' · <span style="color:#7a5800">en attente d\'activation</span>';
+      const keys = Array.isArray(c.clientKeys) ? c.clientKeys : [];
+      const noms = keys.map(k=>{ const cl=(setClientsCache||[]).find(x=>x.clientKey===k); return cl?cl.name:k; });
+      const assign = keys.length
+        ? '<div class="set-collab-clients">'+noms.map(n=>'<span class="set-collab-tag">'+n+'</span>').join('')+'</div>'
+        : '<div class="set-collab-clients"><span class="set-collab-tag none">Aucun client assigné — il ne verra rien</span></div>';
       return '<div class="set-collab-item">'
         + '<div class="set-collab-ava">'+initial+'</div>'
-        + '<div class="set-collab-info"><div class="set-collab-name">'+c.name+'</div><div class="set-collab-contact">'+contact+statut+'</div></div>'
+        + '<div class="set-collab-info"><div class="set-collab-name">'+c.name+'</div><div class="set-collab-contact">'+contact+statut+'</div>'+assign+'</div>'
+        + '<button class="acc-btn" title="Assigner des clients" onclick="setAssignOpen(\''+c.id.replace(/'/g,"\\'")+'\',\''+(c.name||'').replace(/'/g,"\\'")+'\')" style="color:var(--cyan);border-color:rgba(0,198,224,.3);"><i class="ti ti-users-plus"></i></button>'
         + '<button class="acc-btn" title="Supprimer" onclick="setDeleteCollab(\''+c.id.replace(/'/g,"\\'")+'\',\''+(c.name||'').replace(/'/g,"\\'")+'\')" style="color:var(--dn);border-color:rgba(162,45,45,.3);"><i class="ti ti-trash"></i></button>'
         + '</div>';
     }).join('');
   } catch(e){ box.innerHTML='<div class="set-collab-empty">Erreur de chargement.</div>'; }
+}
+
+/* ── Assignation des clients à un collaborateur ── */
+let setClientsCache = [];
+let setAssignId = '';
+
+// Charge la liste complète des clients (pour proposer l'assignation)
+async function setLoadClientsCache(){
+  try {
+    const r = await fetch('/api/admin/clients', { headers: pmHeaders() });
+    const d = await r.json();
+    setClientsCache = (d.success && d.clients) ? d.clients.filter(c=>c.clientKey && c.role !== 'collaborateur') : [];
+  } catch(e){ setClientsCache = []; }
+}
+
+async function setAssignOpen(id, name){
+  setAssignId = id;
+  await setLoadClientsCache();
+  // Clients déjà assignés à ce collaborateur
+  let dejaAssignes = [];
+  try {
+    const r = await fetch('/api/admin/collaborators', { headers: pmHeaders() });
+    const d = await r.json();
+    const c = (d.collaborators||[]).find(x=>x.id===id);
+    dejaAssignes = (c && c.clientKeys) ? c.clientKeys : [];
+  } catch(e){}
+
+  document.getElementById('assign-title').textContent = 'Clients de '+name;
+  const box = document.getElementById('assign-list');
+  if(setClientsCache.length===0){
+    box.innerHTML = '<div class="set-collab-empty">Aucun client à assigner. Crée d\'abord un client dans Gestion des accès.</div>';
+  } else {
+    box.innerHTML = setClientsCache.map(c=>
+      '<label class="assign-row"><input type="checkbox" value="'+c.clientKey+'"'+(dejaAssignes.includes(c.clientKey)?' checked':'')+'> <span>'+c.name+'</span></label>'
+    ).join('');
+  }
+  document.getElementById('assign-modal').classList.add('show');
+}
+
+function setAssignClose(){ document.getElementById('assign-modal').classList.remove('show'); }
+function setAssignBg(e){ if(e.target.id==='assign-modal') setAssignClose(); }
+
+async function setAssignSave(){
+  const keys = Array.from(document.querySelectorAll('#assign-list input:checked')).map(i=>i.value);
+  try {
+    const r = await fetch('/api/admin/collaborators/assign', {
+      method:'POST',
+      headers: pmHeaders({'Content-Type':'application/json'}),
+      body: JSON.stringify({ adminToken: setToken(), sessionToken: pmSessionToken(), id: setAssignId, clientKeys: keys })
+    });
+    const d = await r.json();
+    if(d.success){ setAssignClose(); setLoadCollabs(); }
+    else alert('✗ '+(d.error||'Erreur'));
+  } catch(e){ alert('✗ Erreur de connexion.'); }
 }
 
 async function setDeleteCollab(id, name){
@@ -5021,7 +5162,7 @@ async function setDeleteCollab(id, name){
   try {
     const r = await fetch('/api/admin/collaborators/delete', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, id })
+      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), id })
     });
     const d = await r.json();
     if(d.success){ setLoadCollabs(); }
@@ -5051,7 +5192,7 @@ async function docLoadClients(){
   if(!token){ if(hint) hint.style.display='flex'; sel.innerHTML='<option value="">⚠️ Valide ta clé admin</option>'; return; }
   if(hint) hint.style.display='none';
   try {
-    const r = await fetch('/api/admin/clients', { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/clients', { headers: pmHeaders() });
     const data = await r.json();
     if(!data.success || !data.clients.length){ sel.innerHTML='<option value="">Aucun client</option>'; return; }
     const withKey = data.clients.filter(c=>c.clientKey);
@@ -5072,7 +5213,7 @@ async function docLoadDocs(){
   const token = docToken();
   if(!token || !docState.client){ docState.items=[]; docRender(); return; }
   try {
-    const r = await fetch('/api/admin/documents/'+encodeURIComponent(docState.client), { headers:{ 'x-admin-token': token } });
+    const r = await fetch('/api/admin/documents/'+encodeURIComponent(docState.client), { headers: pmHeaders() });
     const data = await r.json();
     docState.items = (data.success && data.documents) ? data.documents : [];
   } catch(e){ docState.items=[]; }
@@ -5111,7 +5252,7 @@ async function docUpload(ev){
     try {
       const r = await fetch('/api/admin/documents/add', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ adminToken: docToken(), clientKey: docState.client, name: file.name, mediaType: file.type, data: base64 })
+        body:JSON.stringify({ adminToken: docToken(), sessionToken: pmSessionToken(), clientKey: docState.client, name: file.name, mediaType: file.type, data: base64 })
       });
       const d = await r.json();
       const up = document.getElementById('doc-uploading'); if(up) up.remove();
@@ -5159,7 +5300,7 @@ async function docDelete(id, name){
   try {
     const r = await fetch('/api/admin/documents/delete', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: docToken(), clientKey: docState.client, id })
+      body:JSON.stringify({ adminToken: docToken(), sessionToken: pmSessionToken(), clientKey: docState.client, id })
     });
     const d = await r.json();
     if(d.success){ docShowSync('✓ Document supprimé','ok'); docLoadDocs(); }
@@ -5168,6 +5309,7 @@ async function docDelete(id, name){
 }
 
 /* ── INIT ── */
+pmLoadMe();
 document.querySelectorAll('.ni').forEach(n => n.addEventListener('click', function(){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('act'));
   this.classList.add('act');
@@ -5882,6 +6024,25 @@ if ('serviceWorker' in navigator) {
       <div style="flex:1"></div>
       <button class="btn" onclick="objCloseModal()">Annuler</button>
       <button class="btn btn-navy" onclick="objSave()"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL ASSIGNATION CLIENTS ══ -->
+<div class="cal-modal-overlay" id="assign-modal" onclick="setAssignBg(event)">
+  <div class="cal-modal" style="max-width:440px;">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title" id="assign-title">Assigner des clients</div>
+      <button class="cal-modal-close" onclick="setAssignClose()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body">
+      <div class="perf-hint-box"><i class="ti ti-info-circle"></i> Ce collaborateur ne verra QUE les clients cochés — leurs stats, calendrier, publications et contrats. Les autres lui resteront invisibles.</div>
+      <div id="assign-list"></div>
+    </div>
+    <div class="cal-modal-foot">
+      <div style="flex:1"></div>
+      <button class="btn" onclick="setAssignClose()">Annuler</button>
+      <button class="btn btn-navy" onclick="setAssignSave()"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer</button>
     </div>
   </div>
 </div>
