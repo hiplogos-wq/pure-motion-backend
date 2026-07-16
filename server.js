@@ -51,6 +51,8 @@ function ensureShape() {
   if (!STORE.prospects) STORE.prospects = { items: [] };
   if (!STORE.publications) STORE.publications = {};
   if (!STORE.objectives) STORE.objectives = { items: [] };
+  if (!STORE.documents) STORE.documents = {};
+  if (!STORE.sessions) STORE.sessions = {};
 }
 
 // ── Connexion PostgreSQL ──
@@ -280,6 +282,89 @@ function maskPhone(p)   { return p ? p.slice(0,4) + '****' + p.slice(-2) : ''; }
 function maskEmail(e)   { const [l,d]=e.split('@'); return l.slice(0,2)+'***@'+d; }
 function makeToken(id)  { return Buffer.from(`${id}:${Date.now()}:${crypto.randomBytes(8).toString('hex')}`).toString('base64'); }
 
+// ══════════════════════════════════════════
+// SESSIONS & PERMISSIONS
+// Le serveur doit savoir QUI parle, pas seulement "quelqu'un a la clé admin".
+// ══════════════════════════════════════════
+const SESSION_DAYS = 30;
+
+function createSession(userId) {
+  const token = makeToken(userId);
+  if (!STORE.sessions) STORE.sessions = {};
+  // Purge les sessions expirées au passage
+  const now = Date.now();
+  Object.entries(STORE.sessions).forEach(([t, s]) => { if (!s || s.expiresAt < now) delete STORE.sessions[t]; });
+  STORE.sessions[token] = { userId, createdAt: now, expiresAt: now + SESSION_DAYS*24*60*60*1000 };
+  saveStore();
+  return token;
+}
+
+function destroySession(token) {
+  if (STORE.sessions && STORE.sessions[token]) { delete STORE.sessions[token]; saveStore(); }
+}
+
+// Identifie l'appelant. Renvoie null si non authentifié.
+// { role, user, clientKeys, allClients }
+function getAuth(req) {
+  // 1) Clé admin maîtresse (rétrocompatible)
+  const adminTok = req.headers['x-admin-token']
+    || (req.body && req.body.adminToken)
+    || (req.query && req.query.admin);
+  if (adminTok && adminTok === ADMIN_TOKEN) {
+    return { role: 'admin', user: null, userId: 'admin', clientKeys: [], allClients: true };
+  }
+  // 2) Jeton de session individuel
+  const tok = req.headers['x-session-token']
+    || (req.body && req.body.sessionToken)
+    || (req.query && req.query.s);
+  if (!tok) return null;
+  const sess = STORE.sessions && STORE.sessions[tok];
+  if (!sess || sess.expiresAt < Date.now()) return null;
+  const user = USERS[sess.userId];
+  if (!user) return null;
+  return {
+    role: user.role,
+    user,
+    userId: sess.userId,
+    clientKeys: Array.isArray(user.clientKeys) ? user.clientKeys : [],
+    allClients: user.role === 'admin'
+  };
+}
+
+// Personnel de l'agence : admin OU collaborateur
+function requireStaff(req, res) {
+  const a = getAuth(req);
+  if (!a || (a.role !== 'admin' && a.role !== 'collaborateur')) {
+    res.status(403).json({ success:false, error:'Accès non autorisé.' });
+    return null;
+  }
+  return a;
+}
+
+// Admin seulement (commercial, accès, paramètres)
+function requireAdmin(req, res) {
+  const a = getAuth(req);
+  if (!a || a.role !== 'admin') {
+    res.status(403).json({ success:false, error:'Réservé à l\'administrateur.' });
+    return null;
+  }
+  return a;
+}
+
+// Ce client est-il autorisé pour cet appelant ?
+function canClient(a, clientKey) {
+  if (!a) return false;
+  if (a.allClients) return true;
+  return a.clientKeys.includes(clientKey);
+}
+
+// Liste des clientKeys visibles par l'appelant
+function visibleClientKeys(a) {
+  if (a.allClients) return Object.values(USERS).filter(u=>u.clientKey).map(u=>u.clientKey);
+  return a.clientKeys.slice();
+}
+
+
 function log(level, msg, data={}) {
   const safe = { ...data };
   delete safe.password; delete safe.code; delete safe.passwordHash;
@@ -345,7 +430,7 @@ app.post('/api/client/set-password', loginLimiter, (req, res) => {
     success: true,
     activated: true,
     user: { name: found.user.name, role: found.user.role, clientKey: found.user.clientKey },
-    sessionToken: makeToken(found.key),
+    sessionToken: createSession(found.key),
     message: 'Mot de passe créé. Bienvenue !'
   });
 });
@@ -377,7 +462,7 @@ app.post('/api/client/login', loginLimiter, (req, res) => {
   return res.json({
     success: true,
     user: { name: found.user.name, role: found.user.role, clientKey: found.user.clientKey },
-    sessionToken: makeToken(found.key),
+    sessionToken: createSession(found.key),
     message: 'Connexion réussie !'
   });
 });
@@ -401,7 +486,7 @@ app.post('/api/admin/login', loginLimiter, (req, res) => {
   return res.json({
     success: true,
     user: { name: user.name, role: 'admin', email },
-    sessionToken: makeToken(email),
+    sessionToken: createSession(email),
     message: 'Connexion administrateur réussie !'
   });
 });
@@ -413,7 +498,7 @@ app.post('/api/admin/login', loginLimiter, (req, res) => {
 // ══════════════════════════════════════════
 app.post('/api/admin/clients/create', (req, res) => {
   const { adminToken, name, clientKey, email, phone, password, role = 'client' } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!name) return res.status(400).json({ success:false, error:'Le nom est requis.' });
   if (!email && !phone) return res.status(400).json({ success:false, error:'Renseigne au moins un email ou un numéro.' });
   if (phone && !validPhone(phone)) return res.status(400).json({ success:false, error:'Numéro invalide. Format : +225XXXXXXXXXX' });
@@ -459,7 +544,7 @@ app.post('/api/admin/clients/create', (req, res) => {
 // ══════════════════════════════════════════
 app.post('/api/admin/clients/reset', (req, res) => {
   const { adminToken, identifier, newPassword } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!identifier) return res.status(400).json({ success:false, error:'Identifiant du client requis.' });
 
   const found = findUser(identifier);
@@ -488,7 +573,7 @@ app.post('/api/admin/clients/reset', (req, res) => {
 // ══════════════════════════════════════════
 app.post('/api/admin/clients/delete', (req, res) => {
   const { adminToken, identifier } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!identifier) return res.status(400).json({ success:false, error:'Identifiant du client requis.' });
 
   const found = findUser(identifier);
@@ -505,6 +590,7 @@ app.post('/api/admin/clients/delete', (req, res) => {
   // 2. Efface ses stats
   if (clientKey && STORE.stats[clientKey]) delete STORE.stats[clientKey];
   if (clientKey && STORE.posts && STORE.posts[clientKey]) delete STORE.posts[clientKey];
+  if (clientKey && STORE.documents && STORE.documents[clientKey]) delete STORE.documents[clientKey];
   if (clientKey && STORE.tasks && Array.isArray(STORE.tasks.items)) {
     STORE.tasks.items = STORE.tasks.items.filter(t => t.clientKey !== clientKey);
   }
@@ -527,11 +613,11 @@ app.post('/api/admin/clients/delete', (req, res) => {
 // GET /api/admin/clients  (header x-admin-token)
 // ══════════════════════════════════════════
 app.get('/api/admin/clients', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
+  const a = requireStaff(req, res); if (!a) return;
   const clients = Object.values(USERS)
     .filter(u => u.role !== 'admin')
+    // Un collaborateur ne voit que les clients qui lui sont assignés
+    .filter(u => a.allClients || (u.clientKey && a.clientKeys.includes(u.clientKey)))
     .map(u => ({ name: u.name, clientKey: u.clientKey, email: u.email, phone: maskPhone(u.phone), role: u.role, activated: u.activated }));
   return res.json({ success:true, count: clients.length, clients });
 });
@@ -545,8 +631,9 @@ app.get('/api/admin/clients', (req, res) => {
 // Body : { adminToken, clientKey, entries:[...], published:bool }
 app.post('/api/admin/stats/save', (req, res) => {
   const { adminToken, clientKey, entries, published } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireStaff(req, res); if (!a) return;
   if (!clientKey) return res.status(400).json({ success:false, error:'clientKey requis.' });
+  if (!canClient(a, clientKey)) return res.status(403).json({ success:false, error:'Ce client ne t\'est pas assigné.' });
   if (!Array.isArray(entries)) return res.status(400).json({ success:false, error:'entries doit être une liste.' });
 
   STORE.stats[clientKey] = {
@@ -562,9 +649,8 @@ app.post('/api/admin/stats/save', (req, res) => {
 // Admin récupère les stats d'un client (même non publiées)
 // GET /api/admin/stats/:clientKey  (header x-admin-token)
 app.get('/api/admin/stats/:clientKey', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
+  const a = requireStaff(req, res); if (!a) return;
+  if (!canClient(a, req.params.clientKey)) return res.status(403).json({ success:false, error:'Ce client ne t\'est pas assigné.' });
   const s = STORE.stats[req.params.clientKey] || { entries:[], published:false };
   return res.json({ success:true, entries: s.entries || [], published: !!s.published, updatedAt: s.updatedAt || null });
 });
@@ -588,7 +674,8 @@ app.get('/api/client/stats/:clientKey', (req, res) => {
 // Body : { adminToken, clientKey, items:[{id,url,reseau,titre,date}] }
 app.post('/api/admin/publications/save', (req, res) => {
   const { adminToken, clientKey, items } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireStaff(req, res); if (!a) return;
+  if (!canClient(a, clientKey)) return res.status(403).json({ success:false, error:'Ce client ne t\'est pas assigné.' });
   if (!clientKey) return res.status(400).json({ success:false, error:'clientKey requis.' });
   if (!Array.isArray(items)) return res.status(400).json({ success:false, error:'items doit être une liste.' });
 
@@ -601,9 +688,8 @@ app.post('/api/admin/publications/save', (req, res) => {
 // Admin récupère les publications d'un client
 // GET /api/admin/publications/:clientKey  (header x-admin-token)
 app.get('/api/admin/publications/:clientKey', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
+  const a = requireStaff(req, res); if (!a) return;
+  if (!canClient(a, req.params.clientKey)) return res.status(403).json({ success:false, error:'Ce client ne t\'est pas assigné.' });
   const p = STORE.publications[req.params.clientKey] || { items:[] };
   return res.json({ success:true, items: p.items || [] });
 });
@@ -624,7 +710,7 @@ if (!STORE.contracts) STORE.contracts = {};
 // POST /api/admin/contracts/save
 app.post('/api/admin/contracts/save', (req, res) => {
   const { adminToken, contract } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!contract || !contract.clientKey || !contract.clientName) {
     return res.status(400).json({ success:false, error:'Informations du contrat incomplètes.' });
   }
@@ -650,10 +736,10 @@ app.post('/api/admin/contracts/save', (req, res) => {
 // Admin liste tous les contrats
 // GET /api/admin/contracts  (header x-admin-token)
 app.get('/api/admin/contracts', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
-  const contracts = Object.values(STORE.contracts || {});
+  const a = requireStaff(req, res); if (!a) return;
+  // Lecture seule pour les collaborateurs, limitée à leurs clients assignés
+  const contracts = Object.values(STORE.contracts || {})
+    .filter(ct => canClient(a, ct.clientKey));
   return res.json({ success:true, count: contracts.length, contracts });
 });
 
@@ -661,7 +747,7 @@ app.get('/api/admin/contracts', (req, res) => {
 // POST /api/admin/contracts/terminate
 app.post('/api/admin/contracts/terminate', (req, res) => {
   const { adminToken, id, motif } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!id || !STORE.contracts[id]) return res.status(404).json({ success:false, error:'Contrat introuvable.' });
   STORE.contracts[id].statut = 'resilié';
   STORE.contracts[id].motifResiliation = motif || 'Non précisé';
@@ -676,7 +762,7 @@ app.post('/api/admin/contracts/terminate', (req, res) => {
 // POST /api/admin/contracts/renew
 app.post('/api/admin/contracts/renew', (req, res) => {
   const { adminToken, id, renouvellement } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!id || !STORE.contracts[id]) return res.status(404).json({ success:false, error:'Contrat introuvable.' });
   STORE.contracts[id].renouvellement = {
     formule: renouvellement.formule,
@@ -697,7 +783,7 @@ app.post('/api/admin/contracts/renew', (req, res) => {
 // POST /api/admin/contracts/delete
 app.post('/api/admin/contracts/delete', (req, res) => {
   const { adminToken, id } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!id || !STORE.contracts[id]) return res.status(404).json({ success:false, error:'Contrat introuvable.' });
   delete STORE.contracts[id];
   saveStore();
@@ -732,7 +818,7 @@ app.post('/api/client/contract/respond', (req, res) => {
 // ══════════════════════════════════════════
 app.post('/api/admin/ai/proposal', async (req, res) => {
   const { adminToken, clientName, secteur, reseaux, objectif, contexte } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!ANTHROPIC_API_KEY) {
     return res.status(503).json({ success:false, error:'Clé API IA non configurée. Ajoute ANTHROPIC_API_KEY dans les variables Render.' });
   }
@@ -810,8 +896,9 @@ Sois précis, créatif et concret. 3-4 éléments par liste. Adapte au secteur $
 // POST /api/admin/posts/save
 app.post('/api/admin/posts/save', (req, res) => {
   const { adminToken, clientKey, posts } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireStaff(req, res); if (!a) return;
   if (!clientKey) return res.status(400).json({ success:false, error:'clientKey requis.' });
+  if (!canClient(a, clientKey)) return res.status(403).json({ success:false, error:'Ce client ne t\'est pas assigné.' });
   if (!Array.isArray(posts)) return res.status(400).json({ success:false, error:'posts doit être une liste.' });
 
   if (!STORE.posts) STORE.posts = {};
@@ -824,9 +911,8 @@ app.post('/api/admin/posts/save', (req, res) => {
 // Admin récupère les publications d'un client
 // GET /api/admin/posts/:clientKey  (header x-admin-token)
 app.get('/api/admin/posts/:clientKey', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
+  const a = requireStaff(req, res); if (!a) return;
+  if (!canClient(a, req.params.clientKey)) return res.status(403).json({ success:false, error:'Ce client ne t\'est pas assigné.' });
   const p = (STORE.posts && STORE.posts[req.params.clientKey]) || { items: [] };
   return res.json({ success:true, posts: p.items || [] });
 });
@@ -844,9 +930,7 @@ app.get('/api/client/posts/:clientKey', (req, res) => {
 // GET /api/admin/social-proof  (header x-admin-token)
 // ══════════════════════════════════════════
 app.get('/api/admin/social-proof', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
+  const a = requireStaff(req, res); if (!a) return;
 
   // Nom du client depuis sa clé
   const nameByKey = {};
@@ -856,6 +940,7 @@ app.get('/api/admin/social-proof', (req, res) => {
   let totalVues = 0, totalAbonnes = 0, clientsAvecStats = 0;
 
   Object.entries(STORE.stats || {}).forEach(([key, s]) => {
+    if (!canClient(a, key)) return; // client non assigné
     const entries = (s && s.entries) ? s.entries.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))) : [];
     if (entries.length < 1) return;
 
@@ -926,7 +1011,7 @@ app.get('/api/admin/social-proof', (req, res) => {
 // ══════════════════════════════════════════
 app.post('/api/admin/ai/read-stats', async (req, res) => {
   const { adminToken, images, reseau } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireStaff(req, res); if (!a) return;
   if (!ANTHROPIC_API_KEY) {
     return res.status(503).json({ success:false, error:'Clé API IA non configurée (ANTHROPIC_API_KEY sur Render).' });
   }
@@ -1021,8 +1106,9 @@ Mets null (pas 0) pour toute métrique absente ou illisible. Ne devine jamais un
 // POST /api/admin/calendar/save
 app.post('/api/admin/calendar/save', (req, res) => {
   const { adminToken, clientKey, events } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireStaff(req, res); if (!a) return;
   if (!clientKey) return res.status(400).json({ success:false, error:'clientKey requis.' });
+  if (!canClient(a, clientKey)) return res.status(403).json({ success:false, error:'Ce client ne t\'est pas assigné.' });
   if (!Array.isArray(events)) return res.status(400).json({ success:false, error:'events doit être une liste.' });
 
   STORE.calendar[clientKey] = { events, updatedAt: Date.now() };
@@ -1033,9 +1119,8 @@ app.post('/api/admin/calendar/save', (req, res) => {
 // Admin récupère le calendrier d'un client
 // GET /api/admin/calendar/:clientKey  (header x-admin-token)
 app.get('/api/admin/calendar/:clientKey', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
+  const a = requireStaff(req, res); if (!a) return;
+  if (!canClient(a, req.params.clientKey)) return res.status(403).json({ success:false, error:'Ce client ne t\'est pas assigné.' });
   const c = STORE.calendar[req.params.clientKey] || { events: [] };
   return res.json({ success:true, events: c.events || [] });
 });
@@ -1043,9 +1128,7 @@ app.get('/api/admin/calendar/:clientKey', (req, res) => {
 // Admin récupère TOUTES les publications d'une date (tous clients)
 // GET /api/admin/calendar-day/:date   ex: 2026-07-09
 app.get('/api/admin/calendar-day/:date', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
+  const a = requireStaff(req, res); if (!a) return;
   const date = req.params.date;
   const nameByKey = {};
   Object.values(USERS).forEach(u => { if (u.clientKey) nameByKey[u.clientKey] = u.name; });
@@ -1054,26 +1137,27 @@ app.get('/api/admin/calendar-day/:date', (req, res) => {
   Object.entries(STORE.calendar || {}).forEach(([key, c]) => {
     // Ignore les clients qui n'existent plus
     if (!nameByKey[key]) return;
+    // Ignore les clients non assignés à cet utilisateur
+    if (!canClient(a, key)) return;
     (c.events || []).forEach(e => {
       if (e.date === date) items.push({ ...e, clientKey: key, clientName: nameByKey[key] });
     });
   });
-  items.sort((a,b) => String(a.hour||'').localeCompare(String(b.hour||'')));
+  items.sort((x,y) => String(x.hour||'').localeCompare(String(y.hour||'')));
   return res.json({ success:true, date, items });
 });
 
 // Admin récupère TOUTES les publications de tous les clients (pour le calendrier du dashboard)
 // GET /api/admin/calendar-all   (header x-admin-token)
 app.get('/api/admin/calendar-all', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
+  const a = requireStaff(req, res); if (!a) return;
   const nameByKey = {};
   Object.values(USERS).forEach(u => { if (u.clientKey) nameByKey[u.clientKey] = u.name; });
 
   const items = [];
   Object.entries(STORE.calendar || {}).forEach(([key, c]) => {
-    if (!nameByKey[key]) return; // ignore les clients supprimés
+    if (!nameByKey[key]) return;      // client supprimé
+    if (!canClient(a, key)) return;   // client non assigné à cet utilisateur
     (c.events || []).forEach(e => {
       items.push({ ...e, clientKey: key, clientName: nameByKey[key] });
     });
@@ -1091,24 +1175,44 @@ app.get('/api/client/calendar/:clientKey', (req, res) => {
 // ══════════════════════════════════════════
 // TÂCHES (à faire, avec dates)
 // ══════════════════════════════════════════
+
+// Une tâche est visible par : l'admin (tout), son créateur,
+// ou un collaborateur si elle concerne un de ses clients assignés.
+function taskVisible(a, t) {
+  if (a.allClients) return true;
+  if (t.owner && a.userId && t.owner === a.userId) return true;
+  if (t.clientKey) return a.clientKeys.includes(t.clientKey);
+  return false; // tâche générale de quelqu'un d'autre → invisible
+}
+
 app.post('/api/admin/tasks/save', (req, res) => {
-  const { adminToken, tasks } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const { tasks } = req.body;
+  const a = requireStaff(req, res); if (!a) return;
   if (!Array.isArray(tasks)) return res.status(400).json({ success:false, error:'tasks doit être une liste.' });
 
   if (!STORE.tasks) STORE.tasks = {};
-  STORE.tasks.items = tasks;
+  const existing = Array.isArray(STORE.tasks.items) ? STORE.tasks.items : [];
+  const me = a.userId || 'admin';
+
+  // Un collaborateur ne renvoie que SES tâches visibles.
+  // On conserve donc celles des autres au lieu de les écraser.
+  const autres = existing.filter(t => !taskVisible(a, t));
+  const miennes = tasks.map(t => {
+    // Il ne peut pas créer/déplacer une tâche vers un client non assigné
+    if (t.clientKey && !canClient(a, t.clientKey)) return { ...t, clientKey: null };
+    return { ...t, owner: t.owner || me };
+  });
+
+  STORE.tasks.items = autres.concat(miennes);
   STORE.tasks.updatedAt = Date.now();
   saveStore();
-  return res.json({ success:true, count: tasks.length });
+  return res.json({ success:true, count: miennes.length });
 });
 
 app.get('/api/admin/tasks', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
-  const t = (STORE.tasks && STORE.tasks.items) ? STORE.tasks.items : [];
-  return res.json({ success:true, tasks: t });
+  const a = requireStaff(req, res); if (!a) return;
+  const all = (STORE.tasks && STORE.tasks.items) ? STORE.tasks.items : [];
+  return res.json({ success:true, tasks: all.filter(t => taskVisible(a, t)) });
 });
 
 // ══════════════════════════════════════════
@@ -1116,7 +1220,7 @@ app.get('/api/admin/tasks', (req, res) => {
 // ══════════════════════════════════════════
 app.post('/api/admin/prospects/save', (req, res) => {
   const { adminToken, prospects } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!Array.isArray(prospects)) return res.status(400).json({ success:false, error:'prospects doit être une liste.' });
 
   if (!STORE.prospects) STORE.prospects = {};
@@ -1127,9 +1231,7 @@ app.post('/api/admin/prospects/save', (req, res) => {
 });
 
 app.get('/api/admin/prospects', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
+  const a = requireStaff(req, res); if (!a) return;
   const p = (STORE.prospects && STORE.prospects.items) ? STORE.prospects.items : [];
   return res.json({ success:true, prospects: p });
 });
@@ -1142,7 +1244,7 @@ app.get('/api/admin/prospects', (req, res) => {
 // ══════════════════════════════════════════
 app.post('/api/admin/ai/prospect-score', async (req, res) => {
   const { adminToken, prospect } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!ANTHROPIC_API_KEY) return res.status(503).json({ success:false, error:'Clé API IA non configurée (ANTHROPIC_API_KEY sur Render).' });
   if (!prospect || !prospect.nom || !prospect.secteur) {
     return res.status(400).json({ success:false, error:'Nom et secteur du prospect requis.' });
@@ -1239,7 +1341,7 @@ Sois honnête : si le prospect a déjà une excellente présence digitale, le sc
 // ══════════════════════════════════════════
 app.post('/api/admin/ai/market-strategy', async (req, res) => {
   const { adminToken, secteursCibles } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!ANTHROPIC_API_KEY) return res.status(503).json({ success:false, error:'Clé API IA non configurée.' });
 
   const prompt = `Tu es expert en intelligence économique et prospection B2B sur le marché ivoirien.
@@ -1312,7 +1414,7 @@ Réponds UNIQUEMENT en JSON valide, sans backticks :
 // ══════════════════════════════════════════
 app.post('/api/admin/objectives/save', (req, res) => {
   const { adminToken, objectives } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!Array.isArray(objectives)) return res.status(400).json({ success:false, error:'objectives doit être une liste.' });
   if (!STORE.objectives) STORE.objectives = {};
   STORE.objectives.items = objectives;
@@ -1322,9 +1424,7 @@ app.post('/api/admin/objectives/save', (req, res) => {
 });
 
 app.get('/api/admin/objectives', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
+  const a = requireStaff(req, res); if (!a) return;
   const o = (STORE.objectives && STORE.objectives.items) ? STORE.objectives.items : [];
   return res.json({ success:true, objectives: o });
 });
@@ -1338,7 +1438,7 @@ app.get('/api/admin/objectives', (req, res) => {
 // Body : { adminToken, currentPassword, newPassword }
 app.post('/api/admin/change-password', (req, res) => {
   const { adminToken, currentPassword, newPassword } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!currentPassword || !newPassword) return res.status(400).json({ success:false, error:'Ancien et nouveau mot de passe requis.' });
   if (!validPw(newPassword)) return res.status(400).json({ success:false, error:'Le nouveau mot de passe doit faire au moins 6 caractères.' });
 
@@ -1365,9 +1465,7 @@ app.post('/api/admin/change-password', (req, res) => {
 // Lister les collaborateurs
 // GET /api/admin/collaborators  (header x-admin-token)
 app.get('/api/admin/collaborators', (req, res) => {
-  if (req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    return res.status(403).json({ success:false, error:'Accès non autorisé.' });
-  }
+  const a = requireAdmin(req, res); if (!a) return;
   const collabs = Object.entries(USERS)
     .filter(([id, u]) => u.role === 'collaborateur')
     .map(([id, u]) => ({
@@ -1375,9 +1473,27 @@ app.get('/api/admin/collaborators', (req, res) => {
       name: u.name,
       email: u.email || null,
       phone: u.phone || null,
-      activated: !!u.activated
+      activated: !!u.activated,
+      clientKeys: Array.isArray(u.clientKeys) ? u.clientKeys : []
     }));
   return res.json({ success:true, collaborators: collabs });
+});
+
+// Assigner des clients à un collaborateur
+// POST /api/admin/collaborators/assign  { adminToken, id, clientKeys:[] }
+app.post('/api/admin/collaborators/assign', (req, res) => {
+  const a = requireAdmin(req, res); if (!a) return;
+  const { id, clientKeys } = req.body;
+  if (!id || !USERS[id]) return res.status(404).json({ success:false, error:'Collaborateur introuvable.' });
+  if (USERS[id].role !== 'collaborateur') return res.status(400).json({ success:false, error:'Ce compte n\'est pas un collaborateur.' });
+  if (!Array.isArray(clientKeys)) return res.status(400).json({ success:false, error:'clientKeys doit être une liste.' });
+
+  // On ne garde que des clés de clients qui existent réellement
+  const valides = Object.values(USERS).filter(u => u.clientKey).map(u => u.clientKey);
+  USERS[id].clientKeys = clientKeys.filter(k => valides.includes(k));
+  persistClients();
+  log('INFO', 'Clients assignés', { collaborateur: USERS[id].name, nb: USERS[id].clientKeys.length });
+  return res.json({ success:true, clientKeys: USERS[id].clientKeys });
 });
 
 // Supprimer un collaborateur
@@ -1385,7 +1501,7 @@ app.get('/api/admin/collaborators', (req, res) => {
 // Body : { adminToken, id }
 app.post('/api/admin/collaborators/delete', (req, res) => {
   const { adminToken, id } = req.body;
-  if (adminToken !== ADMIN_TOKEN) return res.status(403).json({ success:false, error:'Accès non autorisé.' });
+  const a = requireAdmin(req, res); if (!a) return;
   if (!id) return res.status(400).json({ success:false, error:'Identifiant requis.' });
 
   const user = USERS[id];
@@ -1399,6 +1515,140 @@ app.post('/api/admin/collaborators/delete', (req, res) => {
 
   log('INFO', 'Collaborateur supprimé', { name });
   return res.json({ success:true, message:'Collaborateur « '+name+' » supprimé.' });
+});
+
+// ══════════════════════════════════════════
+// DOCUMENTS (contrats, factures... rattachés à un client)
+// Stockés en base64. Limite stricte pour protéger la base.
+// STORE.documents = { clientKey: [ {id,name,type,size,data,uploadedAt} ] }
+// ══════════════════════════════════════════
+const DOC_MAX_BYTES = 5 * 1024 * 1024;        // 5 Mo par document
+const DOC_ALLOWED = ['application/pdf','image/png','image/jpeg','image/webp'];
+
+// Admin téléverse un document pour un client
+// POST /api/admin/documents/add
+app.post('/api/admin/documents/add', (req, res) => {
+  const { adminToken, clientKey, name, mediaType, data } = req.body;
+  const a = requireStaff(req, res); if (!a) return;
+  if (!clientKey) return res.status(400).json({ success:false, error:'clientKey requis.' });
+  if (!canClient(a, clientKey)) return res.status(403).json({ success:false, error:'Ce client ne t\'est pas assigné.' });
+  if (!name || !data) return res.status(400).json({ success:false, error:'Nom et fichier requis.' });
+  if (!DOC_ALLOWED.includes(mediaType)) {
+    return res.status(400).json({ success:false, error:'Format non supporté (PDF, PNG, JPEG ou WEBP).' });
+  }
+  // Taille réelle du base64 (approx : 3/4 de la longueur)
+  const approxBytes = Math.floor(data.length * 0.75);
+  if (approxBytes > DOC_MAX_BYTES) {
+    return res.status(400).json({ success:false, error:'Fichier trop lourd (5 Mo maximum).' });
+  }
+
+  if (!STORE.documents) STORE.documents = {};
+  if (!STORE.documents[clientKey]) STORE.documents[clientKey] = [];
+  const doc = {
+    id: 'doc' + Date.now(),
+    name: String(name).slice(0, 120),
+    type: mediaType,
+    size: approxBytes,
+    data: data,
+    uploadedAt: Date.now()
+  };
+  STORE.documents[clientKey].push(doc);
+  saveStore();
+  log('INFO', 'Document ajouté', { clientKey, name: doc.name, size: approxBytes });
+  // On ne renvoie pas le base64 dans la réponse (inutile, lourd)
+  return res.json({ success:true, id: doc.id, name: doc.name });
+});
+
+// Admin liste les documents d'un client (métadonnées seulement, sans le contenu)
+// GET /api/admin/documents/:clientKey  (header x-admin-token)
+app.get('/api/admin/documents/:clientKey', (req, res) => {
+  const a = requireStaff(req, res); if (!a) return;
+  if (!canClient(a, req.params.clientKey)) return res.status(403).json({ success:false, error:'Ce client ne t\'est pas assigné.' });
+  const docs = (STORE.documents && STORE.documents[req.params.clientKey]) || [];
+  const meta = docs.map(d => ({ id:d.id, name:d.name, type:d.type, size:d.size, uploadedAt:d.uploadedAt }));
+  return res.json({ success:true, documents: meta });
+});
+
+// Admin supprime un document
+// POST /api/admin/documents/delete
+app.post('/api/admin/documents/delete', (req, res) => {
+  const { adminToken, clientKey, id } = req.body;
+  const a = requireStaff(req, res); if (!a) return;
+  if (!canClient(a, clientKey)) return res.status(403).json({ success:false, error:'Ce client ne t\'est pas assigné.' });
+  if (!STORE.documents || !STORE.documents[clientKey]) return res.status(404).json({ success:false, error:'Document introuvable.' });
+  STORE.documents[clientKey] = STORE.documents[clientKey].filter(d => d.id !== id);
+  saveStore();
+  return res.json({ success:true });
+});
+
+// Télécharge un document (admin OU le client concerné)
+// GET /api/documents/download/:clientKey/:id
+app.get('/api/documents/download/:clientKey/:id', (req, res) => {
+  const { clientKey, id } = req.params;
+  const isAdmin = req.headers['x-admin-token'] === ADMIN_TOKEN || req.query.admin === ADMIN_TOKEN;
+  // Le client accède avec sa clé dans l'URL (déjà secrète et propre à lui)
+  const docs = (STORE.documents && STORE.documents[clientKey]) || [];
+  const doc = docs.find(d => d.id === id);
+  if (!doc) return res.status(404).json({ success:false, error:'Document introuvable.' });
+
+  const buffer = Buffer.from(doc.data, 'base64');
+  res.set('Content-Type', doc.type);
+  res.set('Content-Disposition', 'inline; filename="' + encodeURIComponent(doc.name) + '"');
+  return res.send(buffer);
+});
+
+// Client liste SES documents (métadonnées seulement)
+// GET /api/client/documents/:clientKey
+app.get('/api/client/documents/:clientKey', (req, res) => {
+  const docs = (STORE.documents && STORE.documents[req.params.clientKey]) || [];
+  const meta = docs.map(d => ({ id:d.id, name:d.name, type:d.type, size:d.size, uploadedAt:d.uploadedAt }));
+  return res.json({ success:true, documents: meta });
+});
+
+// ══════════════════════════════════════════
+// MON COMPTE (session individuelle)
+// ══════════════════════════════════════════
+
+// Qui suis-je ? Utilisé par l'interface pour adapter l'affichage au rôle.
+// GET /api/me   (header x-session-token)
+app.get('/api/me', (req, res) => {
+  const a = getAuth(req);
+  if (!a) return res.status(401).json({ success:false, error:'Session expirée.' });
+  const noms = {};
+  Object.values(USERS).forEach(u => { if (u.clientKey) noms[u.clientKey] = u.name; });
+  return res.json({
+    success: true,
+    role: a.role,
+    name: a.user ? a.user.name : 'Administrateur',
+    allClients: !!a.allClients,
+    clientKeys: a.allClients ? Object.keys(noms) : a.clientKeys,
+    clients: (a.allClients ? Object.keys(noms) : a.clientKeys).map(k => ({ clientKey:k, name: noms[k] || k }))
+  });
+});
+
+// Changer MON mot de passe (collaborateur ou admin connecté par session)
+// POST /api/me/change-password  { sessionToken, current, next }
+app.post('/api/me/change-password', loginLimiter, (req, res) => {
+  const a = getAuth(req);
+  if (!a || !a.user) return res.status(401).json({ success:false, error:'Session expirée. Reconnecte-toi.' });
+  const { current, next } = req.body;
+  if (!current || !next) return res.status(400).json({ success:false, error:'Mot de passe actuel et nouveau requis.' });
+  if (String(next).length < 6) return res.status(400).json({ success:false, error:'Le nouveau mot de passe doit faire au moins 6 caractères.' });
+  if (!verifyPassword(current, a.user.passwordHash)) {
+    return res.status(401).json({ success:false, error:'Mot de passe actuel incorrect.' });
+  }
+  a.user.passwordHash = hashPassword(next);
+  persistClients();
+  log('INFO', 'Mot de passe changé', { name: a.user.name });
+  return res.json({ success:true, message:'Mot de passe mis à jour.' });
+});
+
+// Déconnexion : invalide la session côté serveur
+// POST /api/logout  { sessionToken }
+app.post('/api/logout', (req, res) => {
+  const tok = req.headers['x-session-token'] || (req.body && req.body.sessionToken);
+  if (tok) destroySession(tok);
+  return res.json({ success:true });
 });
 
 // ══════════════════════════════════════════
