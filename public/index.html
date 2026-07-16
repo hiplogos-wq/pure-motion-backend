@@ -620,6 +620,7 @@ async function createPassword(){
     btn.innerHTML='<i class="ti ti-check" style="font-size:14px;"></i> Créer mon mot de passe et me connecter'; btn.disabled=false;
     if(data.success){
       if(data.user){ state.role = data.user.role || 'client'; state.clientKey = data.user.clientKey || null; state.name = data.user.name || state.name; }
+      if(data.sessionToken) state.sessionToken = data.sessionToken;
       showSuccess();
     }
     else { showAlert('cr-err',true,data.error||'Erreur.'); }
@@ -648,6 +649,7 @@ async function doLogin(){
     btn.innerHTML='<i class="ti ti-login" style="font-size:14px;"></i> Me connecter'; btn.disabled=false;
     if(data.success){
       if(data.user){ state.role = data.user.role || 'client'; state.clientKey = data.user.clientKey || null; state.name = data.user.name || state.name; }
+      if(data.sessionToken) state.sessionToken = data.sessionToken;
       showSuccess();
     }
     else { showAlert('lg-err',true,data.error||'Mot de passe incorrect.'); document.getElementById('lg-pass').classList.add('err'); }
@@ -677,6 +679,7 @@ async function adminLogin(){
 
     if(data.success){
       state.name = data.user ? data.user.name : 'Admin';
+      if(data.sessionToken) state.sessionToken = data.sessionToken;
       showSuccess(true);
     } else {
       showAlert('ad-err',true,data.error||'Identifiants incorrects.');
@@ -697,6 +700,7 @@ function showSuccess(isAdmin){
       role: isAdmin ? 'admin' : (state.role || 'client'),
       name: state.name || (isAdmin ? 'Admin' : ''),
       clientKey: state.clientKey || null,
+      token: state.sessionToken || null,
       loggedAt: Date.now()
     }));
   } catch(e){}
