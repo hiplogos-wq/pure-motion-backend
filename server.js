@@ -509,12 +509,17 @@ app.post('/api/admin/clients/create', (req, res) => {
   if (email && USERS_BY_EMAIL[email.toLowerCase()]) return res.status(409).json({ success:false, error:'Cet email existe déjà.' });
 
   const internalId = email ? email.toLowerCase() : `${phone.replace('+','')}@client.puremotion.ci`;
+  const estCollab = role === 'collaborateur';
   const key = clientKey || (name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12) + Date.now().toString().slice(-4));
 
   USERS[internalId] = {
-    role: role === 'collaborateur' ? 'collaborateur' : 'client',
+    role: estCollab ? 'collaborateur' : 'client',
     name,
-    clientKey: key,
+    // Un collaborateur n'EST pas un client : pas de clientKey propre,
+    // sinon il apparaîtrait dans les sélecteurs de clients.
+    // Il reçoit à la place une liste de clients assignés.
+    clientKey: estCollab ? null : key,
+    clientKeys: estCollab ? [] : undefined,
     email: email ? email.toLowerCase() : null,
     phone: phone || null,
     passwordHash: password ? hashPassword(password) : null,
@@ -523,7 +528,7 @@ app.post('/api/admin/clients/create', (req, res) => {
   reindexAll();
   persistClients();
 
-  log('INFO', 'Client créé', { name, activated: !!password });
+  log('INFO', estCollab ? 'Collaborateur créé' : 'Client créé', { name, activated: !!password });
 
   const how = password
     ? 'Le mot de passe a été défini. Le client peut se connecter immédiatement.'
