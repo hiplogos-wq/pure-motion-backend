@@ -3458,6 +3458,7 @@ function accRenderClients(clients){
       + '<div class="acc-info"><div class="acc-name">'+c.name+' '+roleBadge+'</div><div class="acc-contact">'+(contacts.join('')||'<span>Aucun contact</span>')+'</div></div>'
       + status
       + '<div class="acc-actions">'
+      + '<button class="acc-btn" title="Renommer" onclick="accRenameOpen(\''+idr.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')"><i class="ti ti-pencil"></i></button>'
       + (estCollab ? '' : '<button class="acc-btn" title="Voir son tableau de bord" onclick="accPreview(\''+ckey.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')" style="color:var(--cyan);border-color:rgba(0,198,224,.3);"><i class="ti ti-eye"></i></button>')
       + '<button class="acc-btn" title="Réinitialiser le mot de passe" onclick="accQuickReset(\''+idr.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')"><i class="ti ti-refresh"></i></button>'
       + '<button class="acc-btn" title="'+(estCollab?'Supprimer ce collaborateur':'Supprimer ce client et toutes ses données')+'" onclick="accDelete(\''+idr.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')" style="color:var(--dn);border-color:rgba(162,45,45,.3);"><i class="ti ti-trash"></i></button>'
@@ -3562,6 +3563,36 @@ async function accQuickReset(identifier, name){
 function accResetPw(){} // placeholder (reset se fait via accQuickReset)
 
 // Supprimer un client et TOUTES ses données (irréversible)
+/* ── Renommer un compte (sans perdre ses données) ── */
+let accRenameId = '';
+
+function accRenameOpen(id, nom){
+  if(!accToken){ alert('Valide d\'abord ta clé administrateur en haut de la page.'); return; }
+  accRenameId = id;
+  document.getElementById('rename-current').textContent = nom;
+  document.getElementById('rename-input').value = nom;
+  document.getElementById('rename-status').textContent = '';
+  document.getElementById('rename-modal').classList.add('show');
+}
+function accRenameClose(){ document.getElementById('rename-modal').classList.remove('show'); }
+function accRenameBg(e){ if(e.target.id==='rename-modal') accRenameClose(); }
+
+async function accRenameSave(){
+  const st = document.getElementById('rename-status');
+  const nom = document.getElementById('rename-input').value.trim();
+  if(!nom){ st.style.color='var(--dn)'; st.textContent='Le nom ne peut pas être vide.'; return; }
+  st.style.color='var(--mut)'; st.textContent='Enregistrement...';
+  try {
+    const r = await fetch('/api/admin/clients/update', {
+      method:'POST', headers: pmHeaders({'Content-Type':'application/json'}),
+      body: JSON.stringify({ adminToken: accToken, sessionToken: pmSessionToken(), id: accRenameId, name: nom })
+    });
+    const d = await r.json();
+    if(d.success){ accRenameClose(); accLoadClients(); }
+    else { st.style.color='var(--dn)'; st.textContent='✗ '+(d.error||'Erreur'); }
+  } catch(e){ st.style.color='var(--dn)'; st.textContent='✗ Erreur de connexion.'; }
+}
+
 async function accDelete(identifier, name){
   const step1 = confirm('⚠️ SUPPRIMER '+name+' ?\n\nCela effacera DÉFINITIVEMENT :\n• Son compte et ses accès\n• Toutes ses statistiques\n• Son calendrier éditorial\n• Ses contrats\n\nCette action est IRRÉVERSIBLE.');
   if(!step1) return;
@@ -6133,6 +6164,33 @@ if ('serviceWorker' in navigator) {
       <div style="flex:1"></div>
       <button class="btn" onclick="setAssignClose()">Annuler</button>
       <button class="btn btn-navy" onclick="setAssignSave()"><i class="ti ti-check" style="font-size:13px"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL RENOMMER ══ -->
+<div class="cal-modal-overlay" id="rename-modal" onclick="accRenameBg(event)">
+  <div class="cal-modal" style="max-width:400px;">
+    <div class="cal-modal-head">
+      <div class="cal-modal-title">Renommer</div>
+      <button class="cal-modal-close" onclick="accRenameClose()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cal-modal-body">
+      <div class="perf-hint-box"><i class="ti ti-shield-check"></i> Seul le nom affiché change. Les stats, le calendrier, les publications et les documents restent intacts.</div>
+      <div class="cal-field">
+        <label>Nom actuel</label>
+        <div style="font-size:13px;font-weight:700;color:var(--mut);padding:4px 0;" id="rename-current"></div>
+      </div>
+      <div class="cal-field">
+        <label>Nouveau nom</label>
+        <input type="text" id="rename-input" placeholder="Ex: Soleil Communication"/>
+      </div>
+      <div id="rename-status" style="font-size:12px;margin-top:6px;"></div>
+    </div>
+    <div class="cal-modal-foot">
+      <div style="flex:1"></div>
+      <button class="btn" onclick="accRenameClose()">Annuler</button>
+      <button class="btn btn-navy" onclick="accRenameSave()"><i class="ti ti-check" style="font-size:13px"></i> Renommer</button>
     </div>
   </div>
 </div>
