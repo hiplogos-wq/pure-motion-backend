@@ -933,6 +933,21 @@ body.is-collab .collab-note{display:flex;}
 .assign-row{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--bord);border-radius:9px;margin-bottom:7px;cursor:pointer;font-size:13px;color:var(--txt);}
 .assign-row input{width:auto;margin:0;}
 .assign-row:has(input:checked){border-color:var(--cyan);background:rgba(0,198,224,.05);font-weight:600;}
+/* ══ CHOIX DU TYPE DE COMPTE ══ */
+.acc-role-picker{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.acc-role-card{cursor:pointer;display:block;}
+.acc-role-card input{position:absolute;opacity:0;pointer-events:none;}
+.acc-role-body{border:2px solid var(--bord);border-radius:11px;padding:12px 13px;display:flex;align-items:center;gap:10px;transition:all .15s;height:100%;}
+.acc-role-card:hover .acc-role-body{border-color:var(--hint);}
+.acc-role-card input:checked + .acc-role-body{border-color:var(--cyan);background:rgba(0,198,224,.06);}
+.acc-role-ico{font-size:22px;flex-shrink:0;}
+.acc-role-name{font-size:13px;font-weight:800;color:var(--txt);}
+.acc-role-desc{font-size:10px;color:var(--mut);line-height:1.4;margin-top:2px;}
+@media(max-width:820px){ .acc-role-picker{grid-template-columns:1fr;} }
+.acc-role-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:5px;vertical-align:middle;}
+.acc-role-badge.client{background:rgba(0,198,224,.12);color:#0c6b7d;}
+.acc-role-badge.collab{background:rgba(123,97,255,.14);color:#5b3fd6;}
+.acc-ava.collab{background:linear-gradient(135deg,#7B61FF,#5b3fd6)!important;}
 </style>
 </head>
 <body>
@@ -1503,7 +1518,7 @@ body.is-collab .collab-note{display:flex;}
           <div class="acces-intro-title">Gestion des accès clients</div>
           <div class="acces-intro-sub">Crée les comptes de tes clients pour qu'ils accèdent à leur espace. Ils se connectent par email ou numéro, avec un mot de passe que tu définis ou qu'ils créent eux-mêmes.</div>
         </div>
-        <button class="btn btn-gold" onclick="accOpenModal()"><i class="ti ti-user-plus" style="font-size:13px"></i> Nouveau client</button>
+        <button class="btn btn-sm" onclick="accOpenModal('collaborateur')"><i class="ti ti-users-plus" style="font-size:13px"></i> Nouveau collaborateur</button><button class="btn btn-gold" onclick="accOpenModal('client')"><i class="ti ti-user-plus" style="font-size:13px"></i> Nouveau client</button>
       </div>
 
       <div class="acces-token-box" id="acces-token-box">
@@ -2250,7 +2265,8 @@ async function dashLoad(){
 
     dashState.pubs    = (dp.success && dp.items) ? dp.items : [];
     dashState.tasks   = (dt.success && dt.tasks) ? dt.tasks : [];
-    dashState.clients = (dc.success && dc.clients) ? dc.clients : [];
+    // Les collaborateurs remontent aussi dans cette liste : on ne garde que les vrais clients
+    dashState.clients = (dc.success && dc.clients) ? dc.clients.filter(c => c.role !== 'collaborateur' && c.clientKey) : [];
     dashState.contracts = (dk.contracts) ? dk.contracts : [];
     dashState.allPubs = (da.success && da.items) ? da.items : [];
   } catch(e){
@@ -3408,14 +3424,19 @@ function sideRenderClients(clients){
 }
 
 function accRenderClients(clients){
-  sideRenderClients(clients);
+  // La barre latérale ne liste que les vrais clients (pas les collaborateurs)
+  sideRenderClients(clients.filter(c => c.role !== 'collaborateur' && c.clientKey));
   const list = document.getElementById('acc-list');
   if(!clients.length){
-    list.innerHTML='<div class="perf-empty"><i class="ti ti-user-plus"></i><div class="perf-empty-title">Aucun client</div><div>Clique sur "Nouveau client" pour créer le premier compte.</div></div>';
+    list.innerHTML='<div class="perf-empty"><i class="ti ti-user-plus"></i><div class="perf-empty-title">Aucun compte</div><div>Clique sur "Nouveau client" ou "Nouveau collaborateur" pour créer le premier compte.</div></div>';
     return;
   }
   list.innerHTML = clients.map(c=>{
     const initial = c.name.charAt(0).toUpperCase();
+    const estCollab = c.role === 'collaborateur';
+    const roleBadge = estCollab
+      ? '<span class="acc-role-badge collab">👥 Collaborateur</span>'
+      : '<span class="acc-role-badge client">🏪 Client</span>';
     const contacts = [];
     if(c.email) contacts.push('<span><i class="ti ti-mail" style="font-size:12px"></i> '+c.email+'</span>');
     if(c.phone) contacts.push('<span><i class="ti ti-phone" style="font-size:12px"></i> '+c.phone+'</span>');
@@ -3425,13 +3446,13 @@ function accRenderClients(clients){
     const idr = c.email || c.phone || c.name;
     const ckey = c.clientKey || '';
     return '<div class="acc-card">'
-      + '<div class="acc-ava">'+initial+'</div>'
-      + '<div class="acc-info"><div class="acc-name">'+c.name+'</div><div class="acc-contact">'+(contacts.join('')||'<span>Aucun contact</span>')+'</div></div>'
+      + '<div class="acc-ava'+(estCollab?' collab':'')+'">'+initial+'</div>'
+      + '<div class="acc-info"><div class="acc-name">'+c.name+' '+roleBadge+'</div><div class="acc-contact">'+(contacts.join('')||'<span>Aucun contact</span>')+'</div></div>'
       + status
       + '<div class="acc-actions">'
-      + '<button class="acc-btn" title="Voir son tableau de bord" onclick="accPreview(\''+ckey.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')" style="color:var(--cyan);border-color:rgba(0,198,224,.3);"><i class="ti ti-eye"></i></button>'
+      + (estCollab ? '' : '<button class="acc-btn" title="Voir son tableau de bord" onclick="accPreview(\''+ckey.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')" style="color:var(--cyan);border-color:rgba(0,198,224,.3);"><i class="ti ti-eye"></i></button>')
       + '<button class="acc-btn" title="Réinitialiser le mot de passe" onclick="accQuickReset(\''+idr.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')"><i class="ti ti-refresh"></i></button>'
-      + '<button class="acc-btn" title="Supprimer ce client et toutes ses données" onclick="accDelete(\''+idr.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')" style="color:var(--dn);border-color:rgba(162,45,45,.3);"><i class="ti ti-trash"></i></button>'
+      + '<button class="acc-btn" title="'+(estCollab?'Supprimer ce collaborateur':'Supprimer ce client et toutes ses données')+'" onclick="accDelete(\''+idr.replace(/'/g,"\\'")+'\',\''+c.name.replace(/'/g,"\\'")+'\')" style="color:var(--dn);border-color:rgba(162,45,45,.3);"><i class="ti ti-trash"></i></button>'
       + '</div>'
       + '</div>';
   }).join('');
@@ -3442,34 +3463,60 @@ function accPwMode(){
   document.getElementById('acc-password').style.display = mode==='admin' ? 'block' : 'none';
 }
 
-function accOpenModal(){
+function accOpenModal(role){
   if(!accToken){ alert('Valide d\'abord ta clé administrateur en haut de la page.'); return; }
-  document.getElementById('acc-modal-title').textContent='Nouveau compte client';
   document.getElementById('acc-edit-id').value='';
   ['acc-name','acc-email','acc-phone','acc-password'].forEach(id=>document.getElementById(id).value='');
   document.querySelector('input[name="acc-pwmode"][value="self"]').checked=true;
   document.getElementById('acc-password').style.display='none';
   document.getElementById('acc-clientkey').value='';
   document.getElementById('acc-reset-btn').style.display='none';
+  // Type de compte : client par défaut, ou celui demandé par le bouton
+  const r = (role === 'collaborateur') ? 'collaborateur' : 'client';
+  const radio = document.querySelector('input[name="acc-role"][value="'+r+'"]');
+  if(radio) radio.checked = true;
+  accRoleChange();
   document.getElementById('acc-modal').classList.add('show');
 }
 
 function accCloseModal(){ document.getElementById('acc-modal').classList.remove('show'); }
 function accModalBgClose(ev){ if(ev.target.id==='acc-modal') accCloseModal(); }
 
+/* ── Choix du type de compte (client ou collaborateur) ── */
+function accSelectedRole(){
+  const el = document.querySelector('input[name="acc-role"]:checked');
+  return el ? el.value : 'client';
+}
+
+function accRoleChange(){
+  const collab = accSelectedRole() === 'collaborateur';
+  // Un collaborateur n'est rattaché à aucune donnée client : on masque la clé de liaison
+  const keyField = document.getElementById('acc-key-field');
+  if(keyField) keyField.style.display = collab ? 'none' : '';
+  const hint = document.getElementById('acc-collab-hint');
+  if(hint) hint.style.display = collab ? 'flex' : 'none';
+  const label = document.getElementById('acc-name-label');
+  if(label) label.textContent = collab ? 'Nom du collaborateur' : 'Nom du client / de l\'entreprise';
+  const nameInput = document.getElementById('acc-name');
+  if(nameInput) nameInput.placeholder = collab ? 'Ex: Koffi Kouassi' : 'Ex: Soleil Communication';
+  const title = document.getElementById('acc-modal-title');
+  if(title) title.textContent = collab ? 'Nouveau collaborateur' : 'Nouveau compte client';
+}
+
 async function accSaveClient(){
+  const role = accSelectedRole();
   const name = document.getElementById('acc-name').value.trim();
   const email = document.getElementById('acc-email').value.trim();
   const phone = document.getElementById('acc-phone').value.trim();
   const pwMode = document.querySelector('input[name="acc-pwmode"]:checked').value;
   const password = pwMode==='admin' ? document.getElementById('acc-password').value : '';
-  const clientKey = document.getElementById('acc-clientkey').value;
+  const clientKey = role === 'collaborateur' ? '' : document.getElementById('acc-clientkey').value;
 
-  if(!name){ alert('Le nom est requis.'); return; }
+  if(!name){ alert(role==='collaborateur' ? 'Le nom du collaborateur est requis.' : 'Le nom est requis.'); return; }
   if(!email && !phone){ alert('Renseigne au moins un email ou un numéro.'); return; }
   if(pwMode==='admin' && password.length<6){ alert('Le mot de passe doit faire au moins 6 caractères.'); return; }
 
-  const body = { adminToken: accToken, sessionToken: pmSessionToken(), name };
+  const body = { adminToken: accToken, sessionToken: pmSessionToken(), name, role };
   if(email) body.email = email;
   if(phone) body.phone = phone;
   if(password) body.password = password;
@@ -5171,9 +5218,9 @@ async function setDeleteCollab(id, name){
 }
 
 function setAddCollab(){
-  // Redirige vers Gestion des accès où la création (avec rôle) existe déjà
-  alert('Pour ajouter un collaborateur : va dans Gestion des accès, crée un compte et choisis le rôle « Collaborateur ».');
+  // Ouvre directement le formulaire, pré-réglé sur "Collaborateur"
   showMain('acces');
+  setTimeout(()=>accOpenModal('collaborateur'), 60);
 }
 
 /* ══════════════════════════════════════════
@@ -5530,9 +5577,37 @@ showMain('dashboard', document.querySelector('.ni'));
       <input type="hidden" id="acc-edit-id"/>
 
       <div class="cal-field">
-        <label>Nom du client / de l'entreprise</label>
+        <label>Type de compte</label>
+        <div class="acc-role-picker">
+          <label class="acc-role-card">
+            <input type="radio" name="acc-role" value="client" checked onchange="accRoleChange()">
+            <div class="acc-role-body">
+              <div class="acc-role-ico">🏪</div>
+              <div>
+                <div class="acc-role-name">Client</div>
+                <div class="acc-role-desc">Consulte ses stats, son calendrier et ses documents</div>
+              </div>
+            </div>
+          </label>
+          <label class="acc-role-card">
+            <input type="radio" name="acc-role" value="collaborateur" onchange="accRoleChange()">
+            <div class="acc-role-body">
+              <div class="acc-role-ico">👥</div>
+              <div>
+                <div class="acc-role-name">Collaborateur</div>
+                <div class="acc-role-desc">T'aide à gérer les clients que tu lui assignes</div>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="cal-field">
+        <label id="acc-name-label">Nom du client / de l'entreprise</label>
         <input type="text" id="acc-name" placeholder="Ex: Soleil Communication"/>
       </div>
+
+      <div class="perf-hint-box" id="acc-collab-hint" style="display:none;"><i class="ti ti-users"></i> Après création, va dans <strong>Paramètres</strong> pour lui assigner les clients sur lesquels il travaillera. Sans assignation, il ne verra aucun client.</div>
 
       <div class="perf-hint-box"><i class="ti ti-info-circle"></i> Renseigne au moins un email OU un numéro. Le client pourra se connecter avec l'un ou l'autre.</div>
 
