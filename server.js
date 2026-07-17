@@ -1610,6 +1610,25 @@ app.get('/api/client/documents/:clientKey', (req, res) => {
   return res.json({ success:true, documents: meta });
 });
 
+// Renommer un client ou un collaborateur (sans toucher à ses données)
+// POST /api/admin/clients/update  { adminToken, id, name }
+app.post('/api/admin/clients/update', (req, res) => {
+  const a = requireAdmin(req, res); if (!a) return;
+  const { id, name } = req.body;
+  if (!id || !USERS[id]) return res.status(404).json({ success:false, error:'Compte introuvable.' });
+  if (USERS[id].role === 'admin') return res.status(403).json({ success:false, error:'Le compte administrateur ne peut pas être modifié ici.' });
+  const propre = String(name || '').trim();
+  if (!propre) return res.status(400).json({ success:false, error:'Le nom ne peut pas être vide.' });
+  if (propre.length > 80) return res.status(400).json({ success:false, error:'Nom trop long (80 caractères maximum).' });
+
+  const ancien = USERS[id].name;
+  USERS[id].name = propre;
+  persistClients();
+  log('INFO', 'Compte renommé', { ancien, nouveau: propre });
+  // La clé de liaison n'est PAS modifiée : stats, calendrier et documents restent rattachés.
+  return res.json({ success:true, name: propre });
+});
+
 // ══════════════════════════════════════════
 // MON COMPTE (session individuelle)
 // ══════════════════════════════════════════
