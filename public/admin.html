@@ -1651,11 +1651,11 @@ body.is-collab .collab-note{display:flex;}
 
     <div class="panel" id="panel-settings">
 
-      <div class="perf-hint-box" id="set-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour accéder aux paramètres.</div>
+      <div class="perf-hint-box admin-only" id="set-token-hint" style="display:none;"><i class="ti ti-info-circle"></i> Valide ta clé admin dans <strong>Gestion des accès</strong> pour accéder aux paramètres.</div>
 
       <!-- CONNEXION / MOT DE PASSE -->
       <div class="set-section">
-        <div class="set-section-title"><i class="ti ti-lock" style="color:var(--navy)"></i> Mon mot de passe administrateur</div>
+        <div class="set-section-title"><i class="ti ti-lock" style="color:var(--navy)"></i> <span id="set-pw-title">Mon mot de passe administrateur</span></div>
         <div class="set-card">
           <div class="cal-field">
             <label>Mot de passe actuel</label>
@@ -1677,19 +1677,19 @@ body.is-collab .collab-note{display:flex;}
       </div>
 
       <!-- COLLABORATEURS -->
-      <div class="set-section">
+      <div class="set-section admin-only">
         <div class="set-section-title">
           <span><i class="ti ti-users" style="color:var(--cyan)"></i> Collaborateurs</span>
           <button class="btn btn-sm" onclick="setAddCollab()"><i class="ti ti-plus" style="font-size:12px"></i> Ajouter</button>
         </div>
         <div class="set-card">
-          <div class="set-hint">Les collaborateurs ont accès à l'espace de travail (comme toi), pour t'aider à gérer les clients. Ils se créent via « Gestion des accès » en choisissant le rôle Collaborateur.</div>
+          <div class="set-hint">Un collaborateur accède au calendrier, aux stats, aux tâches et aux publications — uniquement pour les clients que tu lui assignes (icône bleue). Le commercial lui est visible en lecture seule.</div>
           <div id="set-collab-list"></div>
         </div>
       </div>
 
       <!-- GESTION DES CLIENTS -->
-      <div class="set-section">
+      <div class="set-section admin-only">
         <div class="set-section-title"><i class="ti ti-briefcase" style="color:var(--gold)"></i> Gestion des clients</div>
         <div class="set-card">
           <div class="set-hint">Pour créer, réinitialiser ou supprimer un client et toutes ses données, rends-toi dans le module dédié.</div>
@@ -1944,6 +1944,12 @@ function pmHeaders(extra){
   return h;
 }
 
+// Peut-on parler au serveur ? Clé admin OU session individuelle (collaborateur).
+// C'est ce qui permet à un collaborateur de travailler SANS jamais recevoir ta clé.
+function pmAuthed(){
+  return !!(pmAdminKey() || pmSessionToken());
+}
+
 /* ── Rôle de l'utilisateur connecté ── */
 let pmMe = { role:'admin', name:'', allClients:true, clientKeys:[], clients:[] };
 
@@ -1970,6 +1976,8 @@ function pmApplyRole(){
     // Le commercial devient consultable, jamais modifiable
     const t = document.getElementById('side-clients-title');
     if(t) t.textContent = 'Mes clients';
+    const pw = document.getElementById('set-pw-title');
+    if(pw) pw.textContent = 'Mon mot de passe';
     // Si le collaborateur est sur un module qui lui est fermé, on le ramène au dashboard
     const fermes = ['propositions','acces'];
     const actif = document.querySelector('.panel.act');
@@ -2240,7 +2248,7 @@ async function dashLoad(){
   const token = dashToken();
   const today = dashDateStr(new Date());
 
-  if(!token){
+  if(!pmAuthed()){
     document.getElementById('dash-quickstats').innerHTML = '';
     document.getElementById('dash-pubs').innerHTML = '<div class="dash-empty"><i class="ti ti-key"></i><div class="dash-empty-t">Clé admin requise</div><div class="dash-empty-s">Valide ta clé dans <a onclick="showMain(\'acces\')">Gestion des accès</a> pour voir tes données.</div></div>';
     document.getElementById('dash-tasks').innerHTML = '';
@@ -2357,7 +2365,7 @@ function dashRenderAlerts(){
    ══════════════════════════════════════════ */
 async function taskSync(){
   const token = dashToken();
-  if(!token) return false;
+  if(!pmAuthed()) return false;
   try {
     const r = await fetch('/api/admin/tasks/save', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -2610,7 +2618,7 @@ function calToken(){
 async function calLoadClients(){
   const token = calToken();
   const sel = document.getElementById('cal-client');
-  if(!token){
+  if(!pmAuthed()){
     sel.innerHTML = '<option value="">⚠️ Valide ta clé admin (Gestion des accès)</option>';
     document.getElementById('cal-contract-info').innerHTML = '';
     document.getElementById('cal-grid').innerHTML = '';
@@ -2973,7 +2981,7 @@ function perfSave(){
 // Synchronise les stats du client courant vers le serveur
 async function perfSyncToServer(publish){
   const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
-  if(!token){ perfShowSync('⚠️ Valide ta clé admin (Gestion des accès) pour synchroniser', 'warn'); return false; }
+  if(!pmAuthed()){ perfShowSync('⚠️ Valide ta clé admin (Gestion des accès) pour synchroniser', 'warn'); return false; }
   const entries = perfState.data[perfState.client] || [];
   try {
     const r = await fetch('/api/admin/stats/save', {
@@ -3028,7 +3036,7 @@ function perfChangeClient(){
 async function perfLoadClients(){
   const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
   const sel = document.getElementById('perf-client');
-  if(!token){
+  if(!pmAuthed()){
     sel.innerHTML = '<option value="">⚠️ Valide ta clé admin (Gestion des accès)</option>';
     return;
   }
@@ -3695,7 +3703,7 @@ function ctToken(){ return accToken || (function(){ try{ return sessionStorage.g
 
 async function ctLoad(){
   const token = ctToken();
-  if(!token){
+  if(!pmAuthed()){
     document.getElementById('ct-token-hint').style.display='flex';
     document.getElementById('ct-kpis').innerHTML='';
     document.getElementById('ct-list').innerHTML='';
@@ -3929,7 +3937,7 @@ const TARIF_FORMULES = {
 async function tarifLoad(){
   const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
   const hint = document.getElementById('tarif-token-hint');
-  if(!token){ if(hint) hint.style.display='flex'; document.getElementById('tarif-list').innerHTML=''; document.getElementById('tarif-kpis').innerHTML=''; return; }
+  if(!pmAuthed()){ if(hint) hint.style.display='flex'; document.getElementById('tarif-list').innerHTML=''; document.getElementById('tarif-kpis').innerHTML=''; return; }
   if(hint) hint.style.display='none';
   try {
     const r = await fetch('/api/admin/contracts', { headers: pmHeaders() });
@@ -4104,7 +4112,7 @@ async function pubLoadClients(){
   const token = pubToken();
   const sel = document.getElementById('pub-client');
   const hint = document.getElementById('pub-token-hint');
-  if(!token){ if(hint) hint.style.display='flex'; sel.innerHTML='<option value="">⚠️ Valide ta clé admin</option>'; return; }
+  if(!pmAuthed()){ if(hint) hint.style.display='flex'; sel.innerHTML='<option value="">⚠️ Valide ta clé admin</option>'; return; }
   if(hint) hint.style.display='none';
   try {
     const r = await fetch('/api/admin/clients', { headers: pmHeaders() });
@@ -4273,7 +4281,7 @@ function proofFmt(n){
 async function proofLoad(){
   const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
   const hint = document.getElementById('proof-token-hint');
-  if(!token){ if(hint) hint.style.display='flex'; document.getElementById('proof-content').innerHTML=''; return; }
+  if(!pmAuthed()){ if(hint) hint.style.display='flex'; document.getElementById('proof-content').innerHTML=''; return; }
   if(hint) hint.style.display='none';
 
   document.getElementById('proof-content').innerHTML='<div class="ai-loading"><div class="spin-big"></div><div>Calcul des preuves sociales...</div></div>';
@@ -4422,7 +4430,7 @@ function ocrRemove(i){
 
 async function ocrAnalyze(){
   const token = accToken || (function(){ try{ return sessionStorage.getItem('pm_admin_token')||''; }catch(e){ return ''; } })();
-  if(!token){ ocrShowStatus('⚠️ Valide ta clé admin dans Gestion des accès.', 'warn'); return; }
+  if(!pmAuthed()){ ocrShowStatus('⚠️ Valide ta clé admin dans Gestion des accès.', 'warn'); return; }
   if(!ocrImages.length){ ocrShowStatus('⚠️ Ajoute au moins une capture.', 'warn'); return; }
 
   const btn = document.getElementById('ocr-btn');
@@ -4531,7 +4539,7 @@ function proShowSync(msg,type){
 async function proLoad(){
   const token = proToken();
   const hint = document.getElementById('pro-token-hint');
-  if(!token){ if(hint) hint.style.display='flex'; document.getElementById('pro-list').innerHTML=''; document.getElementById('pro-kpis').innerHTML=''; return; }
+  if(!pmAuthed()){ if(hint) hint.style.display='flex'; document.getElementById('pro-list').innerHTML=''; document.getElementById('pro-kpis').innerHTML=''; return; }
   if(hint) hint.style.display='none';
   try {
     const r = await fetch('/api/admin/prospects', { headers: pmHeaders() });
@@ -4926,7 +4934,7 @@ function objToken(){
 async function objLoad(){
   const token = objToken();
   const hint = document.getElementById('obj-token-hint');
-  if(!token){ if(hint) hint.style.display='flex'; document.getElementById('obj-list').innerHTML=''; document.getElementById('obj-summary').innerHTML=''; return; }
+  if(!pmAuthed()){ if(hint) hint.style.display='flex'; document.getElementById('obj-list').innerHTML=''; document.getElementById('obj-summary').innerHTML=''; return; }
   if(hint) hint.style.display='none';
   try {
     const r = await fetch('/api/admin/objectives', { headers: pmHeaders() });
@@ -5082,15 +5090,14 @@ function setToken(){
 function setLoad(){
   const token = setToken();
   const hint = document.getElementById('set-token-hint');
-  if(!token){ if(hint) hint.style.display='flex'; document.getElementById('set-collab-list').innerHTML=''; return; }
+  if(!pmAuthed()){ if(hint) hint.style.display='flex'; document.getElementById('set-collab-list').innerHTML=''; return; }
   if(hint) hint.style.display='none';
   setLoadCollabs();
 }
 
 async function setChangePassword(){
-  const token = setToken();
   const status = document.getElementById('set-pw-status');
-  if(!token){ status.className='set-status err'; status.textContent='⚠️ Valide ta clé admin d\'abord.'; return; }
+  if(!pmAuthed()){ status.className='set-status err'; status.textContent='⚠️ Session expirée — reconnecte-toi.'; return; }
 
   const current = document.getElementById('set-current-pw').value;
   const nw = document.getElementById('set-new-pw').value;
@@ -5100,11 +5107,19 @@ async function setChangePassword(){
   if(nw.length < 6){ status.className='set-status err'; status.textContent='Le nouveau mot de passe doit faire au moins 6 caractères.'; return; }
   if(nw !== confirm){ status.className='set-status err'; status.textContent='Les deux nouveaux mots de passe ne correspondent pas.'; return; }
 
+  // Un collaborateur change SON mot de passe via sa session ;
+  // l'admin passe par la route administrateur.
+  const collab = pmMe.role === 'collaborateur';
+  const url  = collab ? '/api/me/change-password' : '/api/admin/change-password';
+  const body = collab
+    ? { sessionToken: pmSessionToken(), current: current, next: nw }
+    : { adminToken: setToken(), sessionToken: pmSessionToken(), currentPassword: current, newPassword: nw };
+
   status.className='set-status'; status.textContent='Changement en cours...';
   try {
-    const r = await fetch('/api/admin/change-password', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ adminToken: token, sessionToken: pmSessionToken(), currentPassword: current, newPassword: nw })
+    const r = await fetch(url, {
+      method:'POST', headers: pmHeaders({'Content-Type':'application/json'}),
+      body: JSON.stringify(body)
     });
     const d = await r.json();
     if(d.success){
@@ -5236,7 +5251,7 @@ async function docLoadClients(){
   const token = docToken();
   const sel = document.getElementById('doc-client');
   const hint = document.getElementById('doc-token-hint');
-  if(!token){ if(hint) hint.style.display='flex'; sel.innerHTML='<option value="">⚠️ Valide ta clé admin</option>'; return; }
+  if(!pmAuthed()){ if(hint) hint.style.display='flex'; sel.innerHTML='<option value="">⚠️ Valide ta clé admin</option>'; return; }
   if(hint) hint.style.display='none';
   try {
     const r = await fetch('/api/admin/clients', { headers: pmHeaders() });
@@ -5268,7 +5283,7 @@ async function docLoadDocs(){
 }
 
 function docPick(){
-  if(!docToken()){ alert('Valide d\'abord ta clé administrateur dans Gestion des accès.'); return; }
+  if(!pmAuthed()){ alert('Valide d\'abord ta clé administrateur dans Gestion des accès.'); return; }
   if(!docState.client){ alert('Sélectionne un client.'); return; }
   document.getElementById('doc-file').click();
 }
